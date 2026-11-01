@@ -62,7 +62,8 @@ def footer(repo):
         'revised 2026.</p>'
         f'<p>Code under the MIT licence; texts and figures under CC BY 4.0. <a href="{repo}">Source on GitHub</a>.</p>'
         '<p>Benchmark instances from the arc-routing literature, as collected in CARPData.jl (MIT). '
-        'Street data © OpenStreetMap contributors (ODbL). The in-browser solver runs on Pyodide, NetworkX and SciPy (HiGHS).</p>'
+        'Street data © OpenStreetMap contributors (ODbL). The in-browser solver is written in JavaScript; the optional '
+        'exact proof runs Python through Pyodide, with NetworkX and SciPy (HiGHS).</p>'
         '</div></footer>'
     )
 
@@ -214,7 +215,7 @@ def build(repo):
         shutil.copy(f, T / "py" / "cartero" / f.name)
         files.append(f.name)
     (T / "py" / "manifest.json").write_text(json.dumps({"files": files}))
-    for name in ("app.js", "worker.js"):
+    for name in ("app.js", "worker.js", "solver-worker.js"):
         shutil.copy(SITE / "try" / name, T / name)
     (T / "index.html").write_text(render((SITE / "try" / "index.html").read_text(encoding="utf-8"), "../", repo),
                                   encoding="utf-8")

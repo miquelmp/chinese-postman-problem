@@ -50,7 +50,8 @@ to stop as soon as the tour is certified within 0.5% of the optimum.
 | `cartero/mixed.py` | Mixed CPP: bounds, exact branch-and-cut, heuristic with local search, combined `solve_mixed` |
 | `cartero/euler.py` | Hierholzer's algorithm for directed and undirected multigraphs |
 | `cartero/fast.py` | Optional fast backend: SciPy Dijkstra + Blossom V with dual pricing |
-| `cartero/web.py` | JSON entry points used by the website (examples, `.GRA`, OpenStreetMap) |
+| `cartero/web.py` | JSON entry points used by the website's exact proof (examples, `.GRA`, OpenStreetMap) |
+| `site/assets/cpp.js`, `networks.js` | JavaScript port of the solver and the network builders, used by the website |
 | `cartero/io.py`, `instances.py` | File formats; test-network generators |
 | `experiments.py` | Reproduces every experiment in the 2026 report; writes `results/*.csv` |
 | `data/carp/` | Classical CARP benchmark instances (gdb, val, egl, Beullens, kshs) from [CARPData.jl](https://github.com/rafaelmartinelli/CARPData.jl) |
@@ -61,13 +62,20 @@ to stop as soon as the tour is certified within 0.5% of the optimum.
 
 ## Website
 
-`docs/` is a static site with no server-side code. The *Solve a network* page loads Python in the
-browser through [Pyodide](https://pyodide.org) and runs this package with NetworkX and SciPy.
+`docs/` is a static site with no server-side code. The *Solve a network* page runs a JavaScript port
+of the solver (`site/assets/cpp.js` and `networks.js`), so it is ready in under a second. For networks
+mixing one-way and two-way streets, an optional *Prove optimality* button loads this Python package in
+the browser through [Pyodide](https://pyodide.org) (vendored in `docs/pyodide`, about 37 MB) and runs
+the exact branch-and-cut.
+
+The JavaScript solver is checked against the Python package on 243 networks (every benchmark, as
+two-way and as mixed, plus generated towns): `python3 tests/js/make_cases.py` computes the optima in
+Python, and `node tests/js/test_cpp.mjs` checks that the JavaScript finds the same ones.
 
 Publish it with GitHub Pages: *Settings → Pages → Build and deployment → Deploy from a branch →
 `main` / `/docs`*.
 
-Rebuild it after changing the code, the reports or the site sources:
+Rebuild it after changing the code, the reports or the site sources (`tools/fetch_pyodide.sh` restores `docs/pyodide` if needed):
 
 ```bash
 pip install markdown

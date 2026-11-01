@@ -16,7 +16,7 @@
 <main class="wrap">
   <div class="prose" style="margin-top:2.5rem">
     <h1 style="font-size:var(--step-4)">Solve a network</h1>
-    <p class="lede">Choose a network and find the shortest tour that walks every street. Python runs inside your browser: nothing is sent to a server, except street data requested from OpenStreetMap.</p>
+    <p class="lede">Choose a network and find the shortest tour that walks every street. The solver runs inside your browser: nothing is sent to a server, except street data requested from OpenStreetMap.</p>
   </div>
 
   <div class="app">
@@ -44,7 +44,7 @@
       </div>
       <div class="field" data-for="delaunay">
         <label for="junctions">Junctions</label>
-        <input id="junctions" type="number" min="10" max="2500" value="150">
+        <input id="junctions" type="number" min="10" max="1500" value="150">
       </div>
       <div class="field" data-for="mixed-town">
         <label for="oneway">Share of one-way streets: <output id="oneway-out">60%</output></label>
@@ -68,25 +68,8 @@
         <button class="button secondary" id="fetch-osm" type="button">Fetch streets in this view</button>
       </div>
 
-      <h2 style="margin-top:1.25rem">Solver</h2>
-      <div class="field" data-kind="mixed">
-        <label for="time-limit">Time limit for one-way and two-way mixes</label>
-        <select id="time-limit">
-          <option value="5">5 seconds</option>
-          <option value="20" selected>20 seconds</option>
-          <option value="60">1 minute</option>
-        </select>
-      </div>
-      <div class="field" data-kind="mixed">
-        <label for="gap">Stop when the tour is within</label>
-        <select id="gap">
-          <option value="0">the proven optimum</option>
-          <option value="0.005">0.5% of the optimum</option>
-          <option value="0.02">2% of the optimum</option>
-        </select>
-      </div>
       <button class="button" id="solve" type="button" disabled>Find the route</button>
-      <p class="status" id="status" role="status" aria-live="polite">Loading Python and the solver…</p>
+      <p class="status" id="status" role="status" aria-live="polite">Loading…</p>
     </form>
 
     <div class="stage">
@@ -109,6 +92,22 @@
       </p>
       <dl class="stats" id="stats" hidden></dl>
       <p id="method" class="status"></p>
+      <div class="panel" id="proof" hidden style="margin:1rem 0">
+        <h2>Prove the optimum</h2>
+        <p id="proof-text" style="max-width:var(--measure)"></p>
+        <div class="row" id="proof-controls" style="align-items:end;max-width:32rem">
+          <div class="field" style="margin:0">
+            <label for="time-limit">Time limit</label>
+            <select id="time-limit">
+              <option value="10">10 seconds</option>
+              <option value="30" selected>30 seconds</option>
+              <option value="120">2 minutes</option>
+            </select>
+          </div>
+          <button class="button secondary" id="prove" type="button">Prove optimality</button>
+        </div>
+        <p class="status" id="proof-status" role="status" aria-live="polite"></p>
+      </div>
       <div class="download-row" id="downloads" hidden>
         <button class="text-button" id="dl-tour" type="button">Download the tour (CSV)</button>
         <button class="text-button" id="dl-net" type="button">Download the network (JSON)</button>
@@ -117,7 +116,7 @@
     </div>
   </div>
 </main>
-<footer class="site-footer"><div class="inner"><p>Miquel Monserrat Pons. Final-year project, ETSEIB (Universitat Politècnica de Catalunya), 1997; revised 2026.</p><p>Code under the MIT licence; texts and figures under CC BY 4.0. <a href="https://github.com/miquelmp/chinese-postman-problem">Source on GitHub</a>.</p><p>Benchmark instances from the arc-routing literature, as collected in CARPData.jl (MIT). Street data © OpenStreetMap contributors (ODbL). The in-browser solver runs on Pyodide, NetworkX and SciPy (HiGHS).</p></div></footer>
+<footer class="site-footer"><div class="inner"><p>Miquel Monserrat Pons. Final-year project, ETSEIB (Universitat Politècnica de Catalunya), 1997; revised 2026.</p><p>Code under the MIT licence; texts and figures under CC BY 4.0. <a href="https://github.com/miquelmp/chinese-postman-problem">Source on GitHub</a>.</p><p>Benchmark instances from the arc-routing literature, as collected in CARPData.jl (MIT). Street data © OpenStreetMap contributors (ODbL). The in-browser solver is written in JavaScript; the optional exact proof runs Python through Pyodide, with NetworkX and SciPy (HiGHS).</p></div></footer>
 <script src="../assets/net.js"></script>
 <script src="app.js"></script>
 </body>

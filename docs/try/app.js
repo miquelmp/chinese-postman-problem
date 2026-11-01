@@ -1,53 +1,49 @@
-/* Interface for the in-browser solver. Python runs in worker.js. */
+/* Interface for the in-browser solver.
+   solver-worker.js runs the JavaScript solver (instant start). Python (Pyodide, worker.js) is
+   loaded only on request, to prove the optimum of networks with both one-way and two-way streets. */
 (function () {
   "use strict";
   const $ = id => document.getElementById(id);
-  // Python is served with the site (docs/pyodide/); the public CDN is the fallback.
-  const OWN_PYODIDE = new URL("../pyodide/", location.href).href;
-  const CDN_PYODIDE = "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/";
-  const PYODIDE_OVERRIDE = new URLSearchParams(location.search).get("pyodide");
 
-  // ---------------------------------------------------------------- worker RPC
-  const worker = new Worker("worker.js");
-  let seq = 0;
-  const pending = new Map();
-  let onProgress = () => {};
-  worker.onmessage = e => {
-    if (e.data.progress) { onProgress(e.data.progress); return; }
-    const { id, ok, out, error } = e.data;
-    const p = pending.get(id); pending.delete(id);
-    ok ? p.resolve(out) : p.reject(new Error(error));
-  };
-  const rpc = (cmd, args) => new Promise((resolve, reject) => {
-    const id = ++seq; pending.set(id, { resolve, reject });
-    worker.postMessage({ id, cmd, args: args || {} });
-  });
+  // ---------------------------------------------------------------- workers
+  function makeRpc(url) {
+    const w = new Worker(url);
+    let seq = 0;
+    const pending = new Map();
+    const api = { onProgress: () => {}, worker: w };
+    w.onmessage = e => {
+      if (e.data.progress) { api.onProgress(e.data.progress); return; }
+      const { id, ok, out, error } = e.data, p = pending.get(id);
+      pending.delete(id);
+      ok ? p.resolve(out) : p.reject(new Error(error));
+    };
+    w.onerror = e => { for (const p of pending.values()) p.reject(new Error(e.message || "worker error")); pending.clear(); };
+    api.call = (cmd, args) => new Promise((resolve, reject) => {
+      const id = ++seq; pending.set(id, { resolve, reject });
+      w.postMessage({ id, cmd, args: args || {} });
+    });
+    return api;
+  }
+  const js = makeRpc("solver-worker.js");
+  let py = null;                       // created on demand
 
   // ---------------------------------------------------------------- state
-  let ready = false, busy = false, inst = null, result = null, view = null, seed = 0, map = null;
+  let busy = false, inst = null, result = null, view = null, seed = 0, map = null;
   const speeds = [0.5, 1, 2, 4, 8, 16];
-
   const status = (text, error) => { $("status").textContent = text; $("status").classList.toggle("error", !!error); };
-  // one unit per network: km when the streets add up to 10 km or more
-  const fmtLen = (v, units) => {
-    if (units !== "m") return (Math.round(v * 100) / 100).toLocaleString("en");
-    const total = inst ? inst.links.reduce((s, l) => s + l.w, 0) : v;
+  const kindOf = I => { const o = I.links.map(l => l.oneway); return o.every(Boolean) ? "directed" : o.some(Boolean) ? "mixed" : "undirected"; };
+  const kindName = k => ({ undirected: "two-way streets only", directed: "one-way streets only", mixed: "one-way and two-way streets" }[k]);
+  const fmtLen = v => {                // one unit per network: km when the streets add up to 10 km or more
+    if (!inst || inst.units !== "m") return (Math.round(v * 100) / 100).toLocaleString("en");
+    const total = inst.links.reduce((s, l) => s + l.w, 0);
     return total >= 10000 ? `${(v / 1000).toFixed(1)} km` : `${Math.round(v).toLocaleString("en")} m`;
   };
-  const kindName = k => ({ undirected: "two-way streets only", directed: "one-way streets only", mixed: "one-way and two-way streets" }[k]);
-  const kindOf = I => { const o = I.links.map(l => l.oneway); return o.every(Boolean) ? "directed" : o.some(Boolean) ? "mixed" : "undirected"; };
 
-  function setBusy(b) {
-    busy = b;
-    $("solve").disabled = b || !ready || !inst;
-    $("fetch-osm").disabled = b || !ready;
-  }
+  function setBusy(b) { busy = b; $("solve").disabled = b || !inst; $("fetch-osm").disabled = b; }
 
   function showFields() {
     const src = $("source").value;
     document.querySelectorAll("[data-for]").forEach(f => f.classList.toggle("hidden", !f.dataset.for.split(" ").includes(src)));
-    const mixedish = ["mixed-town", "osm"].includes(src) || (inst && kindOf(inst) === "mixed");
-    document.querySelectorAll("[data-kind=mixed]").forEach(f => f.classList.toggle("hidden", !mixedish));
     $("osm-map").classList.toggle("hidden", src !== "osm");
     if (src === "osm") ensureMap();
   }
@@ -63,41 +59,38 @@
     view.setSpeed(speeds[+$("speed").value]);
     view.onProgress((i, n) => { $("progress").textContent = n ? `${i} of ${n} streets walked` : ""; });
     view.onEnd(() => { $("play").textContent = "Play again"; });
-    $("player").hidden = true; $("stats").hidden = true; $("downloads").hidden = true;
+    $("player").hidden = $("stats").hidden = $("downloads").hidden = $("proof").hidden = true;
     $("method").textContent = "";
     const total = inst.links.reduce((s, l) => s + l.w, 0);
-    $("note").textContent = `${inst.name}: ${inst.nodes.length.toLocaleString("en")} junctions, ${inst.links.length.toLocaleString("en")} streets (${kindName(kindOf(inst))}), total ${fmtLen(total, inst.units)}. ${inst.note || ""}`;
-    showFields();
+    $("note").textContent = `${inst.name}: ${inst.nodes.length.toLocaleString("en")} junctions, ${inst.links.length.toLocaleString("en")} streets (${kindName(kindOf(inst))}), total ${fmtLen(total)}. ${inst.note || ""}`;
     setBusy(false);
     status("Ready. Press “Find the route”.");
   }
 
   let loadToken = 0;
   async function load() {
-    if (!ready) return;
-    const src = $("source").value;
-    const token = ++loadToken;                 // only the latest request may replace the network
+    const src = $("source").value, token = ++loadToken;
     const show = I => { if (token === loadToken) showInst(I); };
     try {
       if (["pfc1997", "konigsberg", "petersen", "grid", "delaunay", "oneway-grid", "mixed-town"].includes(src)) {
         setBusy(true); status("Building the network…");
-        const size = ["delaunay"].includes(src) ? +$("junctions").value : +$("side").value;
-        show(JSON.parse(await rpc("example", { name: src, size, oneway: +$("oneway").value, seed })));
+        const size = src === "delaunay" ? +$("junctions").value : +$("side").value;
+        show(await js.call("example", { name: src, size, share: +$("oneway").value, seed }));
       } else if (src === "benchmark") {
         const name = $("bench").value;
         if (!name) return;
         setBusy(true); status(`Loading ${name}…`);
         const text = await (await fetch(`data/carp/${name}.dat`)).text();
-        show(JSON.parse(await rpc("carp", { text, name: `Benchmark ${name}` })));
+        show(await js.call("carp", { text, name: `Benchmark ${name}` }));
       } else if (src === "upload") {
         const f = $("file").files[0];
         if (!f) { status("Choose a .GRA file."); return; }
         setBusy(true); status(`Reading ${f.name}…`);
-        show(JSON.parse(await rpc("gra", { text: await f.text(), name: f.name })));
+        show(await js.call("gra", { text: await f.text(), name: f.name }));
       } else if (src === "osm") {
         status("Choose an area on the map, then fetch its streets.");
       }
-    } catch (err) { setBusy(false); status(err.message, true); }
+    } catch (err) { if (token === loadToken) { setBusy(false); status(err.message, true); } }
   }
 
   // ---------------------------------------------------------------- solving
@@ -105,32 +98,43 @@
     if (!inst || busy) return;
     setBusy(true);
     const target = inst;
-    const kind = kindOf(inst);
-    const limit = +$("time-limit").value;
-    status(kind === "mixed" ? `Solving (up to ${limit} s for one-way and two-way mixes)…` : "Solving…");
+    status(kindOf(inst) === "mixed" ? "Solving (one-way and two-way streets: a few seconds)…" : "Solving…");
     try {
-      const res = JSON.parse(await rpc("solve", { inst: JSON.stringify(inst), timeLimit: limit, gapTol: +$("gap").value }));
-      if (!res.ok) throw new Error(res.error);
-      if (target !== inst) { setBusy(false); return; }   // the network changed meanwhile
-      result = res;
-      view.setResult(res);
-      renderStats(res);
-      $("player").hidden = false; $("downloads").hidden = false;
-      $("play").textContent = "Play the tour";
+      const res = await js.call("solve", { inst, maxSeconds: 4 });
+      if (target !== inst) return;
+      showResult(res);
       status("Done.");
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) view.finish();
     } catch (err) { status(err.message, true); }
-    setBusy(false);
+    finally { setBusy(false); }
+  }
+
+  function showResult(res) {
+    result = res;
+    view.setResult(res);
+    renderStats(res);
+    $("player").hidden = $("downloads").hidden = false;
+    $("play").textContent = "Play the tour";
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) view.finish();
+    const needProof = res.kind === "mixed" && !res.optimal;
+    $("proof").hidden = !needProof;
+    $("proof-status").textContent = "";
+    $("proof-status").classList.remove("error");
+    $("proof-controls").hidden = false;
+    if (needProof) {
+      $("proof-text").textContent =
+        `This tour is at most ${res.gap_pct.toFixed(2)}% longer than the best possible one, and usually much closer. ` +
+        `Streets that mix one-way and two-way traffic make the exact problem hard, so proving the optimum needs a ` +
+        `branch-and-cut solver: the page can download Python with it (about 37 MB the first time) and search for a shorter tour.`;
+    }
   }
 
   function renderStats(r) {
-    const u = inst.units;
     const extraWalks = r.steps - inst.links.length;
-    const quality = r.optimal ? "Proven optimal" : `Within ${r.gap_pct.toFixed(2)}% of optimal`;
+    const quality = r.optimal ? "Proven optimal" : `Within ${r.gap_pct.toFixed(2)}%`;
     const items = [
-      ["Streets, once each", fmtLen(r.original, u)],
-      ["Postman's tour", fmtLen(r.total, u)],
-      ["Extra distance", `${fmtLen(r.added, u)} (${r.added_pct.toFixed(1)}%)`],
+      ["Streets, once each", fmtLen(r.original)],
+      ["Postman's tour", fmtLen(r.total)],
+      ["Extra distance", `${fmtLen(r.added)} (${r.added_pct.toFixed(1)}%)`],
       ["Streets walked again", extraWalks.toLocaleString("en")],
       ["Quality", quality],
       ["Time", `${r.seconds.toFixed(2)} s`],
@@ -138,9 +142,57 @@
     $("stats").innerHTML = items.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
     $("stats").hidden = false;
     let m = `Method: ${r.method}.`;
-    if (r.kind === "mixed" && r.heuristic != null)
-      m += ` The heuristic alone found ${fmtLen(r.heuristic, u)}; the proven lower bound is ${fmtLen(r.lower_bound, u)}.`;
+    if (r.kind === "mixed") m += ` Proven lower bound: ${fmtLen(r.lower_bound)}.`;
     $("method").textContent = m;
+  }
+
+  // ---------------------------------------------------------------- exact proof with Python (on demand)
+  const OWN_PYODIDE = new URL("../pyodide/", location.href).href;
+  const CDN_PYODIDE = "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/";
+  async function pyodideURL() {
+    const override = new URLSearchParams(location.search).get("pyodide");
+    if (override) return override;
+    try { if ((await fetch(OWN_PYODIDE + "pyodide-lock.json", { method: "HEAD" })).ok) return OWN_PYODIDE; } catch (e) { /* CDN */ }
+    return CDN_PYODIDE;
+  }
+  let pyReady = null;
+  async function prove() {
+    if (!inst || !result || busy) return;
+    const target = inst, ps = $("proof-status");
+    setBusy(true); $("prove").disabled = true; ps.classList.remove("error");
+    const t0 = performance.now(), secs = () => Math.round((performance.now() - t0) / 1000);
+    let stage = "Starting Python…";
+    const timer = setInterval(() => { ps.textContent = `${stage} ${secs()} s`; }, 1000);
+    try {
+      if (!py) {
+        py = makeRpc("worker.js");
+        py.onProgress = text => { stage = text; ps.textContent = `${stage} ${secs()} s`; };
+        pyReady = pyodideURL().then(indexURL => py.call("init", { indexURL }));
+      }
+      await pyReady;
+      const limit = +$("time-limit").value;
+      stage = `Branch-and-cut: searching for a shorter tour (up to ${limit} s)…`;
+      const res = JSON.parse(await py.call("solve", { inst: JSON.stringify(inst), timeLimit: limit, gapTol: 0 }));
+      if (!res.ok) throw new Error(res.error);
+      if (target !== inst) return;
+      res.method = "branch-and-cut (HiGHS), started from the heuristic tour";
+      const before = result.total;
+      showResult(res);
+      $("proof").hidden = false;
+      if (res.optimal) {
+        $("proof-text").textContent = res.total < before
+          ? `Branch-and-cut found a tour ${fmtLen(before - res.total)} shorter than the heuristic one and proved that no shorter tour exists.`
+          : "Branch-and-cut proved that the heuristic tour was already the shortest possible.";
+        $("proof-controls").hidden = true;
+      } else {
+        $("proof-text").textContent = `The time limit was reached: the tour is now within ${res.gap_pct.toFixed(2)}% of the optimum. A longer time limit may prove it.`;
+      }
+      ps.textContent = `Python and the proof took ${secs()} s.`;
+    } catch (err) {
+      ps.textContent = "Could not prove the optimum: " + err.message + ". Reload the page to try again.";
+      ps.classList.add("error");
+      py = null;
+    } finally { clearInterval(timer); setBusy(false); $("prove").disabled = false; }
   }
 
   // ---------------------------------------------------------------- OpenStreetMap
@@ -150,30 +202,28 @@
     if (map) { setTimeout(() => map.invalidateSize(), 50); return; }
     addCss("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
     try { await addJs("https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"); }
-    catch { status("The map could not be loaded. Check your connection.", true); return; }
+    catch (e) { status("The map could not be loaded. Check your connection.", true); return; }
     map = L.map("osm-map").setView([41.3925, 2.1635], 17);
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19, attribution: "© OpenStreetMap contributors",
-    }).addTo(map);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap contributors" }).addTo(map);
   }
   async function fetchOsm() {
-    if (!map || busy || !ready) return;
-    const b = map.getBounds();
-    const s = b.getSouth(), w = b.getWest(), n = b.getNorth(), e = b.getEast();
+    if (!map || busy) return;
+    const b = map.getBounds(), s = b.getSouth(), w = b.getWest(), n = b.getNorth(), e = b.getEast();
     const km2 = (n - s) * 111 * (e - w) * 111 * Math.cos((n + s) / 2 * Math.PI / 180);
     if (km2 > 1.5) { status(`This view covers ${km2.toFixed(1)} km². Zoom in to about 1 km² or less.`, true); return; }
+    const token = ++loadToken;
     setBusy(true); status("Fetching streets from OpenStreetMap…");
     try {
-      const q = await rpc("query", { s, w, n, e });
+      const q = await js.call("query", { s, w, n, e });
       const resp = await fetch("https://overpass-api.de/api/interpreter", {
-        method: "POST", body: "data=" + encodeURIComponent(q),
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        method: "POST", body: "data=" + encodeURIComponent(q), headers: { "Content-Type": "application/x-www-form-urlencoded" },
       });
       if (resp.status === 429) throw new Error("OpenStreetMap is busy (too many requests). Try again in a minute.");
       if (!resp.ok) throw new Error(`OpenStreetMap answered with error ${resp.status}. Try a smaller area.`);
       const text = await resp.text();
       status("Building the street network…");
-      showInst(JSON.parse(await rpc("osm", { text, name: `OpenStreetMap area around ${((s + n) / 2).toFixed(4)}, ${((w + e) / 2).toFixed(4)}` })));
+      const I = await js.call("osm", { text, name: `OpenStreetMap area around ${((s + n) / 2).toFixed(4)}, ${((w + e) / 2).toFixed(4)}` });
+      if (token === loadToken) showInst(I);
     } catch (err) { setBusy(false); status(err.message, true); }
   }
 
@@ -200,13 +250,14 @@
   $("oneway").addEventListener("change", load);
   $("reseed").addEventListener("click", () => { seed++; load(); });
   $("solve").addEventListener("click", solve);
+  $("prove").addEventListener("click", prove);
   $("fetch-osm").addEventListener("click", fetchOsm);
   $("play").addEventListener("click", () => {
     if (!view) return;
     if (view.isPlaying()) { view.pause(); $("play").textContent = "Play the tour"; }
     else { view.play(); $("play").textContent = "Pause"; }
   });
-  $("final").addEventListener("click", () => { view && view.finish(); $("play").textContent = "Play again"; });
+  $("final").addEventListener("click", () => { if (view) { view.finish(); $("play").textContent = "Play again"; } });
   $("speed").addEventListener("input", () => view && view.setSpeed(speeds[+$("speed").value]));
 
   fetch("data/benchmarks.json").then(r => r.json()).then(list => {
@@ -214,29 +265,5 @@
   }).catch(() => {});
 
   showFields();
-  const t0 = performance.now();
-  let stage = "Loading Python and the solver…";
-  const elapsed = () => Math.round((performance.now() - t0) / 1000);
-  onProgress = text => { stage = text; status(`${stage} ${elapsed()} s`); };
-  const timer = setInterval(() => {
-    if (ready) return clearInterval(timer);
-    const t = elapsed();
-    status(t < 90 ? `${stage} ${t} s` :
-      `${stage} ${t} s. This is taking longer than usual: the download may be slow. Keep this page open, or reload it.`);
-  }, 1000);
-  worker.onerror = e => { clearInterval(timer); status("Python could not start: " + (e.message || "worker error") + ". Reload the page to try again.", true); };
-
-  async function pickPyodide() {
-    if (PYODIDE_OVERRIDE) return PYODIDE_OVERRIDE;
-    try {
-      const r = await fetch(OWN_PYODIDE + "pyodide-lock.json", { method: "HEAD" });
-      if (r.ok) return OWN_PYODIDE;
-    } catch (e) { /* fall through to the CDN */ }
-    return CDN_PYODIDE;
-  }
-  pickPyodide().then(indexURL => rpc("init", { indexURL })).then(() => {
-    ready = true; clearInterval(timer);
-    status(`Python loaded in ${elapsed()} s.`);
-    load();
-  }).catch(err => { clearInterval(timer); status("Python could not be loaded: " + err.message + ". Reload the page to try again.", true); });
+  load();
 })();
