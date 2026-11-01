@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cartero"
+version = "2026.1.0"
+description = "Chinese Postman Problem solvers: undirected, directed and mixed, with proven optimality"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Miquel Monserrat Pons" }]
+keywords = ["chinese postman", "arc routing", "matching", "eulerian circuit", "operations research"]
+dependencies = ["networkx>=3.0", "scipy>=1.11", "numpy>=1.24"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+site = ["markdown>=3.4"]
+
+[project.urls]
+Homepage = "https://github.com/miquelmp/chinese-postman-problem"
+
+[tool.setuptools]
+packages = ["cartero"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

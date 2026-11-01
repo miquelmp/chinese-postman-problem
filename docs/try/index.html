@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Solve a network — The Chinese Postman Problem</title>
+<meta name="description" content="Run the Chinese Postman solver in your browser on examples, your own files or an area of OpenStreetMap.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="site-header"><div class="inner"><a class="brand" href="../">The Chinese Postman</a><nav class="site-nav" aria-label="Main"><a href="../try/" aria-current="page">Solve a network</a><a href="../report/">2026 report</a><a href="../1997/">1997 report</a><a href="https://github.com/miquelmp/chinese-postman-problem">Code</a></nav></div></header>
+<main class="wrap">
+  <div class="prose" style="margin-top:2.5rem">
+    <h1 style="font-size:var(--step-4)">Solve a network</h1>
+    <p class="lede">Choose a network and find the shortest tour that walks every street. Python runs inside your browser: nothing is sent to a server, except street data requested from OpenStreetMap.</p>
+  </div>
+
+  <div class="app">
+    <form class="panel" id="controls" onsubmit="return false">
+      <h2>Network</h2>
+      <div class="field">
+        <label for="source">Source</label>
+        <select id="source">
+          <option value="pfc1997">1997 worked example</option>
+          <option value="konigsberg">Bridges of Königsberg</option>
+          <option value="petersen">Petersen graph</option>
+          <option value="grid">Grid town</option>
+          <option value="delaunay">Organic town</option>
+          <option value="oneway-grid">One-way grid</option>
+          <option value="mixed-town">Town with one-way streets</option>
+          <option value="benchmark">Benchmark network</option>
+          <option value="upload">Your file (.GRA)</option>
+          <option value="osm">An area of OpenStreetMap</option>
+        </select>
+      </div>
+
+      <div class="field" data-for="grid oneway-grid mixed-town">
+        <label for="side">Blocks per side</label>
+        <input id="side" type="number" min="3" max="40" value="10">
+      </div>
+      <div class="field" data-for="delaunay">
+        <label for="junctions">Junctions</label>
+        <input id="junctions" type="number" min="10" max="2500" value="150">
+      </div>
+      <div class="field" data-for="mixed-town">
+        <label for="oneway">Share of one-way streets: <output id="oneway-out">60%</output></label>
+        <input id="oneway" type="range" min="0" max="1" step="0.05" value="0.6">
+      </div>
+      <div class="field" data-for="grid delaunay oneway-grid mixed-town">
+        <button class="text-button" id="reseed" type="button">Generate another town</button>
+      </div>
+      <div class="field" data-for="benchmark">
+        <label for="bench">Instance</label>
+        <select id="bench"></select>
+        <span class="hint">Classical arc-routing benchmarks; see the 2026 report, chapter 7.</span>
+      </div>
+      <div class="field" data-for="upload">
+        <label for="file">File in the 1997 .GRA format</label>
+        <input id="file" type="file" accept=".gra,.GRA,.txt">
+        <span class="hint">First line: junctions. Second: streets. Then one line per street: <code>from to cost</code>.</span>
+      </div>
+      <div class="field" data-for="osm">
+        <span class="hint">Pan and zoom the map to a few blocks (up to about 1 km²), then fetch the streets. One-way streets are kept.</span>
+        <button class="button secondary" id="fetch-osm" type="button">Fetch streets in this view</button>
+      </div>
+
+      <h2 style="margin-top:1.25rem">Solver</h2>
+      <div class="field" data-kind="mixed">
+        <label for="time-limit">Time limit for one-way and two-way mixes</label>
+        <select id="time-limit">
+          <option value="5">5 seconds</option>
+          <option value="20" selected>20 seconds</option>
+          <option value="60">1 minute</option>
+        </select>
+      </div>
+      <div class="field" data-kind="mixed">
+        <label for="gap">Stop when the tour is within</label>
+        <select id="gap">
+          <option value="0">the proven optimum</option>
+          <option value="0.005">0.5% of the optimum</option>
+          <option value="0.02">2% of the optimum</option>
+        </select>
+      </div>
+      <button class="button" id="solve" type="button" disabled>Find the route</button>
+      <p class="status" id="status" role="status" aria-live="polite">Loading Python and the solver…</p>
+    </form>
+
+    <div class="stage">
+      <div id="osm-map" class="hidden"></div>
+      <div class="stage-frame">
+        <svg id="net" role="img" aria-label="Street network"></svg>
+        <div class="stage-empty" id="empty">The network appears here.</div>
+      </div>
+      <div class="player" id="player" hidden>
+        <button class="button secondary" id="play" type="button">Play the tour</button>
+        <button class="text-button" id="final" type="button">Show the whole route</button>
+        <label>Speed <input id="speed" type="range" min="0" max="5" step="1" value="1"></label>
+        <span id="progress"></span>
+      </div>
+      <p class="hint" style="font-size:.85rem;color:var(--ink-soft)">
+        <span class="key"><i class="k-street"></i>street</span>&nbsp;&nbsp;
+        <span class="key"><i class="k-route"></i>walked once</span>&nbsp;&nbsp;
+        <span class="key"><i class="k-repeat"></i>walked twice or more</span>&nbsp;&nbsp;
+        <span id="odd-key">Dark dots: junctions with an odd number of streets.</span> Arrows: one-way streets.
+      </p>
+      <dl class="stats" id="stats" hidden></dl>
+      <p id="method" class="status"></p>
+      <div class="download-row" id="downloads" hidden>
+        <button class="text-button" id="dl-tour" type="button">Download the tour (CSV)</button>
+        <button class="text-button" id="dl-net" type="button">Download the network (JSON)</button>
+      </div>
+      <p id="note" class="status"></p>
+    </div>
+  </div>
+</main>
+<footer class="site-footer"><div class="inner"><p>Miquel Monserrat Pons. Final-year project, ETSEIB (Universitat Politècnica de Catalunya), 1997; revised 2026.</p><p>Code under the MIT licence; texts and figures under CC BY 4.0. <a href="https://github.com/miquelmp/chinese-postman-problem">Source on GitHub</a>.</p><p>Benchmark instances from the arc-routing literature, as collected in CARPData.jl (MIT). Street data © OpenStreetMap contributors (ODbL). The in-browser solver runs on Pyodide, NetworkX and SciPy (HiGHS).</p></div></footer>
+<script src="../assets/net.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+title: "The Chinese Postman Problem — 2026 revision"
+message: "If you use this software or report, please cite it as below."
+type: software
+authors:
+  - family-names: "Monserrat Pons"
+    given-names: "Miquel"
+version: "2026.1.0"
+date-released: "2026-11-01"
+license: MIT
+repository-code: "https://github.com/miquelmp/chinese-postman-problem"
+references:
+  - type: thesis
+    title: "Resolución del problema del cartero chino (CPP) mediante la aplicación de un proceso de branch and bound"
+    authors:
+      - family-names: "Monserrat Pons"
+        given-names: "Miquel"
+    year: 1997
+    thesis-type: "Final-year project"
+    institution:
+      name: "ETSEIB, Universitat Politècnica de Catalunya"

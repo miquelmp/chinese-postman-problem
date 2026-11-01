@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Chinese Postman Problem, 1997 and 2026</title>
+<meta name="description" content="A 1997 final-year project on the Chinese Postman Problem, revisited with thirty years of algorithms: both reports, open-source code, and a solver that runs in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="site-header"><div class="inner"><a class="brand" href="./">The Chinese Postman</a><nav class="site-nav" aria-label="Main"><a href="try/">Solve a network</a><a href="report/">2026 report</a><a href="1997/">1997 report</a><a href="https://github.com/miquelmp/chinese-postman-problem">Code</a></nav></div></header>
+<main class="wrap">
+
+  <div class="hero">
+    <div>
+      <h1>The shortest walk that covers every street</h1>
+      <p class="lede">A postman has to walk down every street of a district and return to the office. Some streets must be walked twice; the question is which ones, so that the extra distance is as small as possible.</p>
+      <p>This site revisits a 1997 final-year engineering project on this problem, the Chinese Postman Problem, with thirty years of algorithmic progress. Read both reports, run the solver in your browser, or use the code.</p>
+      <div class="actions">
+        <a class="button" href="try/">Solve a network</a>
+        <a href="report/">Read the 2026 report</a>
+      </div>
+    </div>
+    <figure class="hero-figure">
+      <svg id="hero-net" role="img" aria-label="Animated postman tour of the 1997 example network: 15 streets walked, 3 of them twice"></svg>
+      <figcaption>
+        <span class="key"><i class="k-route"></i>walked once</span>
+        <span class="key"><i class="k-repeat"></i>walked twice</span>
+        <span id="hero-progress">The 1997 example: 12 streets, optimal tour 63 = 54 + 9.</span>
+        <button class="text-button" id="hero-toggle" type="button">Play</button>
+      </figcaption>
+    </figure>
+  </div>
+
+  <section class="prose">
+    <h2>The problem</h2>
+    <p class="reading-intro">A route that walks every street exactly once and returns to its start exists only when every junction joins an even number of streets: Euler proved this in 1736 for the seven bridges of Königsberg. Real districts have junctions with an odd number of streets, so some streets must be walked again. The Chinese mathematician Kwan Mei-Ko posed the question in 1962: which streets should be repeated so that the extra distance is as small as possible?</p>
+    <p>The answer pairs up the odd junctions so that the total distance between paired junctions is minimal, repeats the streets along those connections, and then walks the result. Mail delivery, refuse collection, snow ploughing and street sweeping all face this problem every day.</p>
+  </section>
+
+  <section>
+    <h2>Thirty years later</h2>
+    <div class="prose">
+      <p>The 1997 project solved the pairing with a purpose-built branch-and-bound search. The 2026 revision keeps the same method and replaces each stage with what is available today.</p>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Stage</th><th>1997</th><th>2026</th></tr></thead>
+        <tbody>
+          <tr><td>Pairing odd junctions</td><td>Branch-and-bound with a time limit</td><td>Edmonds' blossom algorithm: proven optimum in polynomial time</td></tr>
+          <tr><td>Shortest paths</td><td>Fulkerson iteration on the full matrix</td><td>Dijkstra from odd junctions only</td></tr>
+          <tr><td>Building the tour</td><td>Cycle splicing</td><td>Hierholzer's algorithm, linear time</td></tr>
+          <tr><td>One-way streets</td><td>Future work</td><td>Solved: minimum-cost flow</td></tr>
+          <tr><td>One-way and two-way together</td><td>Not covered</td><td>Branch-and-cut and a heuristic with a quality certificate</td></tr>
+          <tr><td>Largest network solved exactly</td><td>About 20 odd junctions</td><td>12,066 odd junctions in 102 seconds</td></tr>
+          <tr><td>Platform</td><td>Turbo C on MS-DOS</td><td>Python, open source, also in the browser</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>What the experiments show</h2>
+    <figure class="chart">
+      <svg viewBox="0 0 760 400" role="img" aria-label="With Blossom V, two minutes covers 12,000 odd junctions instead of 800">
+<text x="0" y="22" font-size="17" font-weight="800" fill="var(--ink)">With Blossom V, two minutes now covers 12,000 odd junctions instead of 800</text>
+<line x1="70" x2="730" y1="330.0" y2="330.0" stroke="var(--rule)"/><text x="62" y="334.0" text-anchor="end" font-size="12" fill="var(--ink-soft)">0.01 s</text>
+<line x1="70" x2="730" y1="269.7" y2="269.7" stroke="var(--rule)"/><text x="62" y="273.7" text-anchor="end" font-size="12" fill="var(--ink-soft)">0.1 s</text>
+<line x1="70" x2="730" y1="209.4" y2="209.4" stroke="var(--rule)"/><text x="62" y="213.4" text-anchor="end" font-size="12" fill="var(--ink-soft)">1 s</text>
+<line x1="70" x2="730" y1="149.1" y2="149.1" stroke="var(--rule)"/><text x="62" y="153.1" text-anchor="end" font-size="12" fill="var(--ink-soft)">10 s</text>
+<line x1="70" x2="730" y1="88.8" y2="88.8" stroke="var(--rule)"/><text x="62" y="92.8" text-anchor="end" font-size="12" fill="var(--ink-soft)">100 s</text>
+<text x="70.0" y="350" text-anchor="middle" font-size="12" fill="var(--ink-soft)">30</text>
+<text x="192.2" y="350" text-anchor="middle" font-size="12" fill="var(--ink-soft)">100</text>
+<text x="303.7" y="350" text-anchor="middle" font-size="12" fill="var(--ink-soft)">300</text>
+<text x="425.9" y="350" text-anchor="middle" font-size="12" fill="var(--ink-soft)">1,000</text>
+<text x="537.4" y="350" text-anchor="middle" font-size="12" fill="var(--ink-soft)">3,000</text>
+<text x="659.6" y="350" text-anchor="middle" font-size="12" fill="var(--ink-soft)">10,000</text>
+<line x1="70" x2="730" y1="330" y2="330" stroke="var(--ink)"/>
+<text x="400.0" y="374" text-anchor="middle" font-size="12" fill="var(--ink-soft)">odd junctions to pair</text>
+<line x1="70" x2="730" y1="84.0" y2="84.0" stroke="var(--street)" stroke-dasharray="4 4"/><text x="76" y="78.0" font-size="12" fill="var(--ink-soft)">two minutes</text>
+<path d="M104.2 304.9L172.1 266.7L230.6 216.6L275.0 188.4L312.8 156.6L344.0 137.7L363.0 121.1L383.7 103.6" fill="none" stroke="var(--street)" stroke-width="2.5" stroke-dasharray="none"/>
+<circle cx="104.2" cy="304.9" r="4" fill="var(--street)"><title>100 junctions, 42 odd: 0.03 s</title></circle>
+<circle cx="172.1" cy="266.7" r="4" fill="var(--street)"><title>225 junctions, 82 odd: 0.11 s</title></circle>
+<circle cx="230.6" cy="216.6" r="4" fill="var(--street)"><title>400 junctions, 146 odd: 0.76 s</title></circle>
+<circle cx="275.0" cy="188.4" r="4" fill="var(--street)"><title>625 junctions, 226 odd: 2.23 s</title></circle>
+<circle cx="312.8" cy="156.6" r="4" fill="var(--street)"><title>900 junctions, 328 odd: 7.50 s</title></circle>
+<circle cx="344.0" cy="137.7" r="4" fill="var(--street)"><title>1,225 junctions, 446 odd: 15.43 s</title></circle>
+<circle cx="363.0" cy="121.1" r="4" fill="var(--street)"><title>1,600 junctions, 538 odd: 29.10 s</title></circle>
+<circle cx="383.7" cy="103.6" r="4" fill="var(--street)"><title>2,025 junctions, 660 odd: 56.73 s</title></circle>
+<path d="M117.7 275.6L200.0 225.7L266.5 175.6L302.4 156.9L339.3 131.0L380.6 102.6L404.0 85.2" fill="none" stroke="var(--street)" stroke-width="2.5" stroke-dasharray="6 4"/>
+<circle cx="117.7" cy="275.6" r="4" fill="var(--street)"><title>100 junctions, 48 odd: 0.08 s</title></circle>
+<circle cx="200.0" cy="225.7" r="4" fill="var(--street)"><title>225 junctions, 108 odd: 0.54 s</title></circle>
+<circle cx="266.5" cy="175.6" r="4" fill="var(--street)"><title>400 junctions, 208 odd: 3.64 s</title></circle>
+<circle cx="302.4" cy="156.9" r="4" fill="var(--street)"><title>625 junctions, 296 odd: 7.43 s</title></circle>
+<circle cx="339.3" cy="131.0" r="4" fill="var(--street)"><title>900 junctions, 426 odd: 19.95 s</title></circle>
+<circle cx="380.6" cy="102.6" r="4" fill="var(--street)"><title>1,225 junctions, 640 odd: 59.06 s</title></circle>
+<circle cx="404.0" cy="85.2" r="4" fill="var(--street)"><title>1,600 junctions, 806 odd: 114.66 s</title></circle>
+<path d="M383.7 247.7L469.5 202.5L544.7 161.4L607.6 128.4L678.7 88.1" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-dasharray="none"/>
+<circle cx="383.7" cy="247.7" r="4" fill="var(--ink)"><title>2,025 junctions, 660 odd: 0.23 s</title></circle>
+<circle cx="469.5" cy="202.5" r="4" fill="var(--ink)"><title>4,900 junctions, 1,536 odd: 1.30 s</title></circle>
+<circle cx="544.7" cy="161.4" r="4" fill="var(--ink)"><title>10,000 junctions, 3,224 odd: 6.24 s</title></circle>
+<circle cx="607.6" cy="128.4" r="4" fill="var(--ink)"><title>19,600 junctions, 5,988 odd: 22.01 s</title></circle>
+<circle cx="678.7" cy="88.1" r="4" fill="var(--ink)"><title>40,000 junctions, 12,066 odd: 102.49 s</title></circle>
+<path d="M426.5 225.7L519.3 180.3L590.7 142.3L659.7 103.9" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-dasharray="6 4"/>
+<circle cx="426.5" cy="225.7" r="4" fill="var(--ink)"><title>2,025 junctions, 1,006 odd: 0.54 s</title></circle>
+<circle cx="519.3" cy="180.3" r="4" fill="var(--ink)"><title>5,000 junctions, 2,510 odd: 3.03 s</title></circle>
+<circle cx="590.7" cy="142.3" r="4" fill="var(--ink)"><title>10,000 junctions, 5,072 odd: 12.96 s</title></circle>
+<circle cx="659.7" cy="103.9" r="4" fill="var(--ink)"><title>20,000 junctions, 10,006 odd: 56.11 s</title></circle>
+<text x="394.0" y="73.2" text-anchor="end" font-size="13" fill="var(--ink-soft)">Pure Python: 806 odd, 115 s</text>
+<text x="668.7" y="74.1" text-anchor="end" font-size="13" font-weight="700" fill="var(--ink)">Blossom V: 12,066 odd, 102 s</text>
+<text x="730" y="320" text-anchor="end" font-size="12" fill="var(--ink-soft)">solid: grid cities; dashed: organic towns</text>
+</svg>
+      <figcaption>Solve time against the number of odd junctions, both axes logarithmic. Grid cities and organic towns of up to 40,000 junctions, one processor core.</figcaption>
+    </figure>
+    <figure class="chart">
+      <svg viewBox="0 0 760 360" role="img" aria-label="A single postman tour costs a median 96.6% of the best known fleet solution">
+<text x="0" y="22" font-size="17" font-weight="800" fill="var(--ink)">One postman costs a median 96.6% of the best known fleet solution</text>
+<line x1="60" x2="730" y1="310.0" y2="310.0" stroke="var(--rule)"/><text x="52" y="314.0" text-anchor="end" font-size="12" fill="var(--ink-soft)">60%</text>
+<line x1="60" x2="730" y1="247.5" y2="247.5" stroke="var(--rule)"/><text x="52" y="251.5" text-anchor="end" font-size="12" fill="var(--ink-soft)">70%</text>
+<line x1="60" x2="730" y1="185.0" y2="185.0" stroke="var(--rule)"/><text x="52" y="189.0" text-anchor="end" font-size="12" fill="var(--ink-soft)">80%</text>
+<line x1="60" x2="730" y1="122.5" y2="122.5" stroke="var(--rule)"/><text x="52" y="126.5" text-anchor="end" font-size="12" fill="var(--ink-soft)">90%</text>
+<line x1="60" x2="730" y1="60.0" y2="60.0" stroke="var(--rule)"/><text x="52" y="64.0" text-anchor="end" font-size="12" fill="var(--ink-soft)">100%</text>
+<line x1="60" x2="730" y1="60.0" y2="60.0" stroke="var(--ink)"/><text x="60" y="52.0" font-size="12" fill="var(--ink-soft)">100% = best known solution with several vehicles</text>
+<line x1="60" x2="730" y1="81.3" y2="81.3" stroke="var(--street)" stroke-dasharray="4 4"/><text x="60" y="97.3" font-size="12" fill="var(--ink-soft)">median 96.6%</text>
+<circle cx="60.0" cy="275.0" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>kshs1: 65.6% with 4 vehicles</title></circle>
+<circle cx="77.6" cy="236.2" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb8: 71.8% with 10 vehicles</title></circle>
+<circle cx="95.3" cy="195.6" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>kshs4: 78.3% with 4 vehicles</title></circle>
+<circle cx="112.9" cy="175.6" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb9: 81.5% with 10 vehicles</title></circle>
+<circle cx="130.5" cy="171.9" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>kshs2: 82.1% with 4 vehicles</title></circle>
+<circle cx="148.2" cy="161.2" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb12: 83.8% with 7 vehicles</title></circle>
+<circle cx="165.8" cy="111.3" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb5: 91.8% with 6 vehicles</title></circle>
+<circle cx="183.4" cy="105.6" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb4: 92.7% with 4 vehicles</title></circle>
+<circle cx="201.1" cy="104.4" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb2: 92.9% with 6 vehicles</title></circle>
+<circle cx="218.7" cy="103.8" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb1: 93.0% with 5 vehicles</title></circle>
+<circle cx="236.3" cy="100.6" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb7: 93.5% with 5 vehicles</title></circle>
+<circle cx="253.9" cy="100.0" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb6: 93.6% with 5 vehicles</title></circle>
+<circle cx="271.6" cy="96.2" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb3: 94.2% with 5 vehicles</title></circle>
+<circle cx="289.2" cy="94.4" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>kshs5: 94.5% with 3 vehicles</title></circle>
+<circle cx="306.8" cy="90.6" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>val3A: 95.1% with 2 vehicles</title></circle>
+<circle cx="324.5" cy="87.5" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>val2A: 95.6% with 2 vehicles</title></circle>
+<circle cx="342.1" cy="86.9" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb23: 95.7% with 10 vehicles</title></circle>
+<circle cx="359.7" cy="85.0" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb14: 96.0% with 5 vehicles</title></circle>
+<circle cx="377.4" cy="83.1" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb18: 96.3% with 5 vehicles</title></circle>
+<circle cx="395.0" cy="81.3" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb15: 96.6% with 4 vehicles</title></circle>
+<circle cx="412.6" cy="78.8" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb13: 97.0% with 6 vehicles</title></circle>
+<circle cx="430.3" cy="78.8" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>val4A: 97.0% with 3 vehicles</title></circle>
+<circle cx="447.9" cy="77.5" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>kshs3: 97.2% with 4 vehicles</title></circle>
+<circle cx="465.5" cy="72.5" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb11: 98.0% with 5 vehicles</title></circle>
+<circle cx="483.2" cy="72.5" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb22: 98.0% with 8 vehicles</title></circle>
+<circle cx="500.8" cy="71.9" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>val5A: 98.1% with 3 vehicles</title></circle>
+<circle cx="518.4" cy="70.0" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb16: 98.4% with 5 vehicles</title></circle>
+<circle cx="536.1" cy="68.1" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb21: 98.7% with 6 vehicles</title></circle>
+<circle cx="553.7" cy="65.6" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>val10A: 99.1% with 3 vehicles</title></circle>
+<circle cx="571.3" cy="65.6" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>val6A: 99.1% with 3 vehicles</title></circle>
+<circle cx="588.9" cy="61.9" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>val8A: 99.7% with 3 vehicles</title></circle>
+<circle cx="606.6" cy="60.0" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb10: 100.0% with 4 vehicles</title></circle>
+<circle cx="624.2" cy="60.0" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb17: 100.0% with 5 vehicles</title></circle>
+<circle cx="641.8" cy="60.0" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb19: 100.0% with 3 vehicles</title></circle>
+<circle cx="659.5" cy="60.0" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>gdb20: 100.0% with 4 vehicles</title></circle>
+<circle cx="677.1" cy="60.0" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>val1A: 100.0% with 2 vehicles</title></circle>
+<circle cx="694.7" cy="60.0" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>val7A: 100.0% with 3 vehicles</title></circle>
+<circle cx="712.4" cy="60.0" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>val9A: 100.0% with 3 vehicles</title></circle>
+<circle cx="730.0" cy="60.0" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1"><title>kshs6: 100.0% with 3 vehicles</title></circle>
+<text x="70.0" y="279.0" font-size="12" fill="var(--ink-soft)">kshs1, 4 vehicles: 65.6%</text>
+<text x="730" y="52.0" text-anchor="end" font-size="12" fill="var(--ink)">8 networks at 100%: capacity adds nothing</text>
+<text x="395.0" y="352" text-anchor="middle" font-size="12" fill="var(--ink-soft)">39 networks, sorted</text>
+</svg>
+      <figcaption>On 39 classical benchmark networks where every street needs service, one postman's optimal tour costs a median 96.6% of the best known solution with several vehicles. The single-postman problem is a close lower bound for fleet routing.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>Read and run</h2>
+    <ul class="signposts">
+      <li><a href="try/">Solve a network</a><p>Pick an example, upload a file in the 1997 format, or choose an area of OpenStreetMap, and watch the postman's tour. The solver runs in your browser.</p></li>
+      <li><a href="report/">2026 report</a><p>The revised report: matching, Eulerian circuits, one-way and mixed streets, experiments on 92 benchmark networks.</p></li>
+      <li><a href="1997/">1997 report</a><p>The original final-year project, ETSEIB, supervised by Ramón Companys Pascual. Readable online and downloadable.</p></li>
+      <li><a href="https://github.com/miquelmp/chinese-postman-problem">Code and data</a><p>Python package, tests, benchmark instances and every result file, under the MIT licence.</p></li>
+    </ul>
+  </section>
+</main>
+<footer class="site-footer"><div class="inner"><p>Miquel Monserrat Pons. Final-year project, ETSEIB (Universitat Politècnica de Catalunya), 1997; revised 2026.</p><p>Code under the MIT licence; texts and figures under CC BY 4.0. <a href="https://github.com/miquelmp/chinese-postman-problem">Source on GitHub</a>.</p><p>Benchmark instances from the arc-routing literature, as collected in CARPData.jl (MIT). Street data © OpenStreetMap contributors (ODbL). The in-browser solver runs on Pyodide, NetworkX and SciPy (HiGHS).</p></div></footer>
+<script src="assets/net.js"></script>
+<script>
+(function () {
+  const inst = {"name": "1997 worked example (park maintenance network)", "nodes": [{"id": 0, "x": 0.42, "y": 0.95, "label": "1"}, {"id": 1, "x": 0.08, "y": 0.78, "label": "8"}, {"id": 2, "x": 0.8, "y": 0.86, "label": "4"}, {"id": 3, "x": 0.36, "y": 0.6, "label": "7"}, {"id": 4, "x": 0.8, "y": 0.48, "label": "5"}, {"id": 5, "x": 1.0, "y": 0.3, "label": "2"}, {"id": 6, "x": 0.36, "y": 0.24, "label": "6"}, {"id": 7, "x": 0.68, "y": 0.1, "label": "3"}], "links": [{"u": 0, "v": 1, "w": 2, "oneway": false}, {"u": 0, "v": 3, "w": 1, "oneway": false}, {"u": 1, "v": 3, "w": 5, "oneway": false}, {"u": 0, "v": 2, "w": 6, "oneway": false}, {"u": 3, "v": 2, "w": 4, "oneway": false}, {"u": 3, "v": 6, "w": 7, "oneway": false}, {"u": 2, "v": 4, "w": 2, "oneway": false}, {"u": 6, "v": 4, "w": 1, "oneway": false}, {"u": 6, "v": 7, "w": 4, "oneway": false}, {"u": 7, "v": 4, "w": 7, "oneway": false}, {"u": 4, "v": 5, "w": 6, "oneway": false}, {"u": 7, "v": 5, "w": 9, "oneway": false}], "units": "", "note": "From chapter 3 of both reports; the optimum is 63 = 54 + 9."};
+  const res = {"circuit": [0, 1, 3, 0, 3, 2, 3, 6, 4, 7, 6, 7, 5, 4, 2, 0]};
+  const svg = document.getElementById("hero-net");
+  const view = Postman.draw(svg, inst, { labels: true, weights: true, odd: true, width: 640 });
+  view.setResult(res);
+  view.setSpeed(0.8);
+  const btn = document.getElementById("hero-toggle"), prog = document.getElementById("hero-progress");
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  view.onProgress((i, n) => {
+    if (i > 0) prog.textContent = `Street ${i} of ${n} walked. Optimal tour 63 = 54 + 9.`;
+  });
+  view.onEnd(() => { btn.textContent = "Replay"; });
+  btn.addEventListener("click", () => {
+    if (view.isPlaying()) { view.pause(); btn.textContent = "Play"; }
+    else { view.play(); btn.textContent = "Pause"; }
+  });
+  if (reduce) view.finish();
+  else { view.play(); btn.textContent = "Pause"; }
+})();
+</script>
+</body>
+</html>

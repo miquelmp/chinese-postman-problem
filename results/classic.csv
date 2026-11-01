@@ -1,0 +1,5 @@
+family,instance,vertices,edges,odd,original,added,total,added_pct,seconds,t_shortest_paths,t_matching,t_euler
+classic,1997 example,8,12,4,54,9,63,16.67,0.001,0.0003,0.0005,0.0002
+classic,Königsberg,4,7,4,7,2,9,28.57,0.0003,0.0001,0.0002,0.0001
+classic,Petersen,10,15,10,15,5,20,33.33,0.0006,0.0001,0.0003,0.0002
+classic,Dodecahedron,20,30,20,30,10,40,33.33,0.0014,0.0005,0.0008,0.0002

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Chinese Postman Problem, 1997 and 2026</title>
+<meta name="description" content="A 1997 final-year project on the Chinese Postman Problem, revisited with thirty years of algorithms: both reports, open-source code, and a solver that runs in your browser.">
+{{HEAD}}
+</head>
+<body>
+{{HEADER:home}}
+<main class="wrap">
+
+  <div class="hero">
+    <div>
+      <h1>The shortest walk that covers every street</h1>
+      <p class="lede">A postman has to walk down every street of a district and return to the office. Some streets must be walked twice; the question is which ones, so that the extra distance is as small as possible.</p>
+      <p>This site revisits a 1997 final-year engineering project on this problem, the Chinese Postman Problem, with thirty years of algorithmic progress. Read both reports, run the solver in your browser, or use the code.</p>
+      <div class="actions">
+        <a class="button" href="try/">Solve a network</a>
+        <a href="report/">Read the 2026 report</a>
+      </div>
+    </div>
+    <figure class="hero-figure">
+      <svg id="hero-net" role="img" aria-label="Animated postman tour of the 1997 example network: 15 streets walked, 3 of them twice"></svg>
+      <figcaption>
+        <span class="key"><i class="k-route"></i>walked once</span>
+        <span class="key"><i class="k-repeat"></i>walked twice</span>
+        <span id="hero-progress">The 1997 example: 12 streets, optimal tour 63 = 54 + 9.</span>
+        <button class="text-button" id="hero-toggle" type="button">Play</button>
+      </figcaption>
+    </figure>
+  </div>
+
+  <section class="prose">
+    <h2>The problem</h2>
+    <p class="reading-intro">A route that walks every street exactly once and returns to its start exists only when every junction joins an even number of streets: Euler proved this in 1736 for the seven bridges of Königsberg. Real districts have junctions with an odd number of streets, so some streets must be walked again. The Chinese mathematician Kwan Mei-Ko posed the question in 1962: which streets should be repeated so that the extra distance is as small as possible?</p>
+    <p>The answer pairs up the odd junctions so that the total distance between paired junctions is minimal, repeats the streets along those connections, and then walks the result. Mail delivery, refuse collection, snow ploughing and street sweeping all face this problem every day.</p>
+  </section>
+
+  <section>
+    <h2>Thirty years later</h2>
+    <div class="prose">
+      <p>The 1997 project solved the pairing with a purpose-built branch-and-bound search. The 2026 revision keeps the same method and replaces each stage with what is available today.</p>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Stage</th><th>1997</th><th>2026</th></tr></thead>
+        <tbody>
+          <tr><td>Pairing odd junctions</td><td>Branch-and-bound with a time limit</td><td>Edmonds' blossom algorithm: proven optimum in polynomial time</td></tr>
+          <tr><td>Shortest paths</td><td>Fulkerson iteration on the full matrix</td><td>Dijkstra from odd junctions only</td></tr>
+          <tr><td>Building the tour</td><td>Cycle splicing</td><td>Hierholzer's algorithm, linear time</td></tr>
+          <tr><td>One-way streets</td><td>Future work</td><td>Solved: minimum-cost flow</td></tr>
+          <tr><td>One-way and two-way together</td><td>Not covered</td><td>Branch-and-cut and a heuristic with a quality certificate</td></tr>
+          <tr><td>Largest network solved exactly</td><td>About 20 odd junctions</td><td>12,066 odd junctions in 102 seconds</td></tr>
+          <tr><td>Platform</td><td>Turbo C on MS-DOS</td><td>Python, open source, also in the browser</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>What the experiments show</h2>
+    <figure class="chart">
+      {{CHART_SCALING}}
+      <figcaption>Solve time against the number of odd junctions, both axes logarithmic. Grid cities and organic towns of up to 40,000 junctions, one processor core.</figcaption>
+    </figure>
+    <figure class="chart">
+      {{CHART_CARP}}
+      <figcaption>On 39 classical benchmark networks where every street needs service, one postman's optimal tour costs a median 96.6% of the best known solution with several vehicles. The single-postman problem is a close lower bound for fleet routing.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>Read and run</h2>
+    <ul class="signposts">
+      <li><a href="try/">Solve a network</a><p>Pick an example, upload a file in the 1997 format, or choose an area of OpenStreetMap, and watch the postman's tour. The solver runs in your browser.</p></li>
+      <li><a href="report/">2026 report</a><p>The revised report: matching, Eulerian circuits, one-way and mixed streets, experiments on 92 benchmark networks.</p></li>
+      <li><a href="1997/">1997 report</a><p>The original final-year project, ETSEIB, supervised by Ramón Companys Pascual. Readable online and downloadable.</p></li>
+      <li><a href="{{REPO}}">Code and data</a><p>Python package, tests, benchmark instances and every result file, under the MIT licence.</p></li>
+    </ul>
+  </section>
+</main>
+{{FOOTER}}
+<script src="assets/net.js"></script>
+<script>
+(function () {
+  const inst = {{HERO_INSTANCE}};
+  const res = {{HERO_RESULT}};
+  const svg = document.getElementById("hero-net");
+  const view = Postman.draw(svg, inst, { labels: true, weights: true, odd: true, width: 640 });
+  view.setResult(res);
+  view.setSpeed(0.8);
+  const btn = document.getElementById("hero-toggle"), prog = document.getElementById("hero-progress");
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  view.onProgress((i, n) => {
+    if (i > 0) prog.textContent = `Street ${i} of ${n} walked. Optimal tour 63 = 54 + 9.`;
+  });
+  view.onEnd(() => { btn.textContent = "Replay"; });
+  btn.addEventListener("click", () => {
+    if (view.isPlaying()) { view.pause(); btn.textContent = "Play"; }
+    else { view.play(); btn.textContent = "Pause"; }
+  });
+  if (reduce) view.finish();
+  else { view.play(); btn.textContent = "Pause"; }
+})();
+</script>
+</body>
+</html>
