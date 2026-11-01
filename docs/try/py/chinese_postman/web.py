@@ -45,17 +45,17 @@ def _layout(G, seed=1):
     return nx.spring_layout(nx.Graph(G), seed=seed, iterations=200)
 
 
-PFC_POS = {1: (0.42, 0.95), 8: (0.08, 0.78), 4: (0.80, 0.86), 7: (0.36, 0.60),
+EXAMPLE_POS = {1: (0.42, 0.95), 8: (0.08, 0.78), 4: (0.80, 0.86), 7: (0.36, 0.60),
            5: (0.80, 0.48), 2: (1.00, 0.30), 6: (0.36, 0.24), 3: (0.68, 0.10)}
-PFC_EDGES = [(1, 8, 2), (1, 7, 1), (8, 7, 5), (1, 4, 6), (7, 4, 4), (7, 6, 7),
+EXAMPLE_EDGES = [(1, 8, 2), (1, 7, 1), (8, 7, 5), (1, 4, 6), (7, 4, 4), (7, 6, 7),
              (4, 5, 2), (6, 5, 1), (6, 3, 4), (3, 5, 7), (5, 2, 6), (3, 2, 9)]
 
 
 def example(name: str, size: int = 10, oneway: float = 0.6, seed: int = 0) -> dict:
     """Ready-made instances. `size` is the grid side or the number of junctions."""
-    if name == "pfc1997":
-        return _inst("1997 worked example (park maintenance network)", PFC_POS,
-                     [(u, v, w, False) for u, v, w in PFC_EDGES],
+    if name == "example1997":
+        return _inst("1997 worked example (park maintenance network)", EXAMPLE_POS,
+                     [(u, v, w, False) for u, v, w in EXAMPLE_EDGES],
                      note="From chapter 3 of both reports; the optimum is 63 = 54 + 9.")
     if name == "konigsberg":
         pos = {"A": (0.5, 0.5), "B": (0.45, 0.95), "C": (0.45, 0.05), "D": (0.95, 0.5)}

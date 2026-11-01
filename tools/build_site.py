@@ -4,7 +4,7 @@
     python3 tools/build_site.py --repo https://github.com/miquelmp/chinese-postman-problem
 
 Inputs:  site/ (page templates, CSS, JS), report/ (2026 report as Markdown and PDF),
-         the 1997 PDF, results/*.csv, data/carp/*.dat and the cartero package itself.
+         the 1997 PDF, results/*.csv, data/carp/*.dat and the chinese_postman package itself.
 Output:  docs/ — static files only; the solver runs in the browser through Pyodide.
 """
 from __future__ import annotations
@@ -187,7 +187,7 @@ def build_report(repo):
 
 # ------------------------------------------------------------------ build
 def build(repo):
-    from cartero import web
+    from chinese_postman import web
     DOCS.mkdir(exist_ok=True)
     for item in DOCS.iterdir():          # docs/pyodide is vendored once, not rebuilt
         if item.name == "pyodide":
@@ -197,7 +197,7 @@ def build(repo):
     (DOCS / ".nojekyll").write_text("")
 
     # home
-    inst = web.example("pfc1997")
+    inst = web.example("example1997")
     res = web.solve(inst)
     page = (SITE / "index.html").read_text(encoding="utf-8")
     page = page.replace("{{HERO_INSTANCE}}", json.dumps(inst)).replace("{{HERO_RESULT}}",
@@ -207,12 +207,12 @@ def build(repo):
 
     # try
     T = DOCS / "try"
-    (T / "py" / "cartero").mkdir(parents=True)
+    (T / "py" / "chinese_postman").mkdir(parents=True)
     files = []
-    for f in sorted((ROOT / "cartero").glob("*.py")):
+    for f in sorted((ROOT / "chinese_postman").glob("*.py")):
         if f.name == "fast.py":          # native backend: not usable in the browser
             continue
-        shutil.copy(f, T / "py" / "cartero" / f.name)
+        shutil.copy(f, T / "py" / "chinese_postman" / f.name)
         files.append(f.name)
     (T / "py" / "manifest.json").write_text(json.dumps({"files": files}))
     for name in ("app.js", "worker.js", "solver-worker.js"):

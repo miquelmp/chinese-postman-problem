@@ -9,8 +9,8 @@ import os
 import sys
 import time
 
-from cartero import read_carp, read_gra, solve_directed, solve_undirected
-from cartero import instances as I
+from chinese_postman import read_carp, read_gra, solve_directed, solve_undirected
+from chinese_postman import instances as I
 
 OUT = "results"
 os.makedirs(OUT, exist_ok=True)
@@ -37,7 +37,7 @@ def save(name, rows):
 
 def classic():
     rows = []
-    cases = [("1997 example", read_gra("examples/pfc_1997.gra")), ("Königsberg", I.konigsberg()),
+    cases = [("1997 example", read_gra("examples/example_1997.gra")), ("Königsberg", I.konigsberg()),
              ("Petersen", I.petersen()), ("Dodecahedron", I.dodecahedron())]
     for name, G in cases:
         sol = solve_undirected(G)
@@ -108,7 +108,7 @@ def directed():
 def scaling_fast(budget=600.0):
     """Same generators, much larger, with the Blossom V backend (SciPy Dijkstra + pricing)."""
     import resource
-    from cartero.fast import solve_undirected_fast
+    from chinese_postman.fast import solve_undirected_fast
     rows = []
     plans = {"manhattan": (45, 70, 100, 140, 200), "delaunay": (2025, 5000, 10000, 20000, 40000)}
     for kind, sizes in plans.items():
@@ -132,7 +132,7 @@ def scaling_fast(budget=600.0):
 
 
 def _mixed_row(family, name, M, limit):
-    from cartero.mixed import bounds, solve_exact, solve_heuristic
+    from chinese_postman.mixed import bounds, solve_exact, solve_heuristic
     n, two, one = M.counts()
     t = time.perf_counter(); pre = bounds(M); tb = time.perf_counter() - t
     he = solve_heuristic(M, pre=pre)
@@ -155,7 +155,7 @@ def _mixed_row(family, name, M, limit):
 
 
 def mixed(limit=300.0):
-    from cartero.mixed import city_grid, from_graph
+    from chinese_postman.mixed import city_grid, from_graph
     rows = []
     for size in (8, 12, 16, 20, 30, 40, 60, 80):
         for seed in range(3 if size <= 20 else 1):

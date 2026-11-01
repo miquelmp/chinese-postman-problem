@@ -5,9 +5,9 @@ from pathlib import Path
 import networkx as nx
 import pytest
 
-from cartero import read_gra, solve_directed, solve_undirected
-from cartero import instances as I
-from cartero.mixed import (MixedGraph, bounds, city_grid, from_graph, solve_brute_force,
+from chinese_postman import read_gra, solve_directed, solve_undirected
+from chinese_postman import instances as I
+from chinese_postman.mixed import (MixedGraph, bounds, city_grid, from_graph, solve_brute_force,
                            solve_exact, solve_heuristic)
 
 ROOT = Path(__file__).parent.parent
@@ -65,7 +65,7 @@ def test_exact_and_heuristic_against_brute_force(seed):
 
 
 def test_all_two_way_equals_undirected_cpp():
-    G = read_gra(ROOT / "examples" / "pfc_1997.gra")
+    G = read_gra(ROOT / "examples" / "example_1997.gra")
     M = MixedGraph([(u, v, w, False) for u, v, w in G.edges(data="weight")])
     assert solve_exact(M).total_cost == solve_heuristic(M).total_cost == 63
 
@@ -88,7 +88,7 @@ def test_city_grid_is_feasible_and_bounded(seed):
 
 
 # ---------------------------------------------------------------- combined strategy
-from cartero.mixed import solve_mixed
+from chinese_postman.mixed import solve_mixed
 
 
 @pytest.mark.parametrize("seed", range(8))
@@ -117,7 +117,7 @@ def test_combined_respects_tolerance():
 
 
 def test_combined_all_two_way_proven_by_bound():
-    G = read_gra(ROOT / "examples" / "pfc_1997.gra")
+    G = read_gra(ROOT / "examples" / "example_1997.gra")
     M = MixedGraph([(u, v, w, False) for u, v, w in G.edges(data="weight")])
     r = solve_mixed(M)
     assert r.optimal and r.total_cost == 63 and not r.info["exact_ran"]

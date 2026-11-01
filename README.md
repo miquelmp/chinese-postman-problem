@@ -8,7 +8,7 @@ Pascual) with thirty years of algorithmic progress.
 
 
 - **Website** (`docs/`): the story, both reports, and a solver that runs in your browser.
-- **Python package** `cartero`: undirected, directed and mixed Chinese Postman solvers, all with
+- **Python package** `chinese_postman`: undirected, directed and mixed Chinese Postman solvers, all with
   proven optimality or a certified gap.
 - **Reports** (`report/`): the 2026 revision (Markdown and PDF) and the original 1997 report (PDF, Spanish).
 - **Data and results**: 92 classical benchmark road networks and every result file behind the report.
@@ -29,11 +29,11 @@ pytest -q                            # 115 tests (170 with the optional Blossom 
 ```
 
 ```python
-from cartero import read_gra, solve_undirected
-sol = solve_undirected(read_gra("examples/pfc_1997.gra"), start=1)
+from chinese_postman import read_gra, solve_undirected
+sol = solve_undirected(read_gra("examples/example_1997.gra"), start=1)
 print(sol.summary())                 # total 63 = 54 + 9, as in the 1997 report
 
-from cartero.mixed import city_grid, solve_mixed
+from chinese_postman.mixed import city_grid, solve_mixed
 M = city_grid(20, 20, seed=0)        # whole streets one-way with probability 0.6
 sol = solve_mixed(M, time_limit=300) # heuristic first, then branch-and-cut while it pays
 print(sol.total_cost, sol.optimal, sol.info["gap_pct"])
@@ -46,16 +46,16 @@ to stop as soon as the tour is certified within 0.5% of the optimum.
 
 | Path | Contents |
 |---|---|
-| `cartero/cpp.py` | Undirected CPP (Edmonds' method) and directed CPP (minimum-cost flow) |
-| `cartero/mixed.py` | Mixed CPP: bounds, exact branch-and-cut, heuristic with local search, combined `solve_mixed` |
-| `cartero/euler.py` | Hierholzer's algorithm for directed and undirected multigraphs |
-| `cartero/fast.py` | Optional fast backend: SciPy Dijkstra + Blossom V with dual pricing |
-| `cartero/web.py` | JSON entry points used by the website's exact proof (examples, `.GRA`, OpenStreetMap) |
+| `chinese_postman/cpp.py` | Undirected CPP (Edmonds' method) and directed CPP (minimum-cost flow) |
+| `chinese_postman/mixed.py` | Mixed CPP: bounds, exact branch-and-cut, heuristic with local search, combined `solve_mixed` |
+| `chinese_postman/euler.py` | Hierholzer's algorithm for directed and undirected multigraphs |
+| `chinese_postman/fast.py` | Optional fast backend: SciPy Dijkstra + Blossom V with dual pricing |
+| `chinese_postman/web.py` | JSON entry points used by the website's exact proof (examples, `.GRA`, OpenStreetMap) |
 | `site/assets/cpp.js`, `networks.js` | JavaScript port of the solver and the network builders, used by the website |
-| `cartero/io.py`, `instances.py` | File formats; test-network generators |
+| `chinese_postman/io.py`, `instances.py` | File formats; test-network generators |
 | `experiments.py` | Reproduces every experiment in the 2026 report; writes `results/*.csv` |
 | `data/carp/` | Classical CARP benchmark instances (gdb, val, egl, Beullens, kshs) from [CARPData.jl](https://github.com/rafaelmartinelli/CARPData.jl) |
-| `examples/pfc_1997.gra` | The worked example of the 1997 report |
+| `examples/example_1997.gra` | The worked example of the 1997 report |
 | `report/` | 2026 report (Markdown source and PDF) and the 1997 report (PDF) |
 | `site/` | Website sources; `tools/build_site.py` builds them into `docs/` |
 | `native/` | C wrapper and build script for the optional Blossom V backend |

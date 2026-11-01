@@ -1,4 +1,4 @@
-/* Street networks for the website, in plain JavaScript (JavaScript twin of cartero/web.py).
+/* Street networks for the website, in plain JavaScript (JavaScript twin of chinese_postman/web.py).
    Every builder returns {name, nodes:[{id,x,y,label}], links:[{u,v,w,oneway}], units, note}. */
 (function (root) {
   "use strict";
@@ -38,14 +38,14 @@
   }
 
   // ---------------------------------------------------------------- examples
-  const PFC_POS = { 1: [0.42, 0.95], 8: [0.08, 0.78], 4: [0.80, 0.86], 7: [0.36, 0.60],
+  const EXAMPLE_POS = { 1: [0.42, 0.95], 8: [0.08, 0.78], 4: [0.80, 0.86], 7: [0.36, 0.60],
                     5: [0.80, 0.48], 2: [1.00, 0.30], 6: [0.36, 0.24], 3: [0.68, 0.10] };
-  const PFC_EDGES = [[1, 8, 2], [1, 7, 1], [8, 7, 5], [1, 4, 6], [7, 4, 4], [7, 6, 7],
+  const EXAMPLE_EDGES = [[1, 8, 2], [1, 7, 1], [8, 7, 5], [1, 4, 6], [7, 4, 4], [7, 6, 7],
                      [4, 5, 2], [6, 5, 1], [6, 3, 4], [3, 5, 7], [5, 2, 6], [3, 2, 9]];
 
-  function pfc1997() {
-    const pos = new Map(Object.entries(PFC_POS).map(([k, v]) => [+k, v]));
-    return make("1997 worked example (park maintenance network)", pos, PFC_EDGES.map(([u, v, w]) => [u, v, w, false]),
+  function example1997() {
+    const pos = new Map(Object.entries(EXAMPLE_POS).map(([k, v]) => [+k, v]));
+    return make("1997 worked example (park maintenance network)", pos, EXAMPLE_EDGES.map(([u, v, w]) => [u, v, w, false]),
                 { note: "From chapter 3 of both reports; the optimum is 63 = 54 + 9." });
   }
 
@@ -309,7 +309,7 @@
   function example(name, size, share, seed) {
     seed = seed || 0;
     switch (name) {
-      case "pfc1997": return pfc1997();
+      case "example1997": return example1997();
       case "konigsberg": return konigsberg();
       case "petersen": return petersen();
       case "grid": return grid(size || 10, seed);

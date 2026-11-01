@@ -10,9 +10,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from cartero import web                                   # noqa: E402
-from cartero.mixed import MixedGraph, from_graph, solve_exact  # noqa: E402
-from cartero import read_carp                             # noqa: E402
+from chinese_postman import web                                   # noqa: E402
+from chinese_postman.mixed import MixedGraph, from_graph, solve_exact  # noqa: E402
+from chinese_postman import read_carp                             # noqa: E402
 
 
 def strip(inst):
@@ -21,7 +21,7 @@ def strip(inst):
 
 def main():
     cases, seen = [], set()
-    ex = [("pfc1997", {}), ("konigsberg", {}), ("petersen", {})]
+    ex = [("example1997", {}), ("konigsberg", {}), ("petersen", {})]
     ex += [("grid", {"size": s, "seed": k}) for s in (4, 8, 15, 25) for k in range(2)]
     ex += [("delaunay", {"size": s, "seed": k}) for s in (30, 150, 400) for k in range(2)]
     ex += [("oneway-grid", {"size": s, "seed": k}) for s in (4, 8, 20) for k in range(2)]

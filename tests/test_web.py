@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from cartero import web
+from chinese_postman import web
 
 
 def walk_ok(inst, res):
@@ -20,7 +20,7 @@ def walk_ok(inst, res):
 
 
 @pytest.mark.parametrize("name,kw,kind", [
-    ("pfc1997", {}, "undirected"),
+    ("example1997", {}, "undirected"),
     ("konigsberg", {}, "undirected"),
     ("petersen", {}, "undirected"),
     ("grid", {"size": 8}, "undirected"),
@@ -38,12 +38,12 @@ def test_examples_solve(name, kw, kind):
 
 
 def test_known_values():
-    assert web.solve(web.example("pfc1997"))["total"] == 63
+    assert web.solve(web.example("example1997"))["total"] == 63
     assert web.solve(web.example("konigsberg"))["total"] == 9
 
 
 def test_gra_roundtrip():
-    text = open("examples/pfc_1997.gra").read()
+    text = open("examples/example_1997.gra").read()
     res = web.solve(web.from_gra(text))
     assert res["total"] == 63
 
@@ -54,7 +54,7 @@ def test_carp_text():
 
 
 def test_errors_are_reported():
-    inst = web.example("pfc1997")
+    inst = web.example("example1997")
     inst["links"] = inst["links"][:2]            # disconnected
     inst["links"].append({"u": 6, "v": 7, "w": 1, "oneway": False})
     res = json.loads(web.solve_json(json.dumps(inst)))

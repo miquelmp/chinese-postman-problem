@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cartero"
+name = "chinese-postman"
 version = "2026.1.0"
 description = "Chinese Postman Problem solvers: undirected, directed and mixed, with proven optimality"
 readme = "README.md"
@@ -26,7 +26,7 @@ site = ["markdown>=3.4"]
 Homepage = "https://github.com/miquelmp/chinese-postman-problem"
 
 [tool.setuptools]
-packages = ["cartero"]
+packages = ["chinese_postman"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

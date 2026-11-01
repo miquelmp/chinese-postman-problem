@@ -380,7 +380,7 @@
 <p>Each vertex keeps a pointer into its adjacency list that only moves forward, and each edge is marked used once. The total work is therefore O(n + m). This per-vertex pointer is the refinement that makes the 2026 implementation strictly linear in the size of the graph.</p>
 <p>Fleury's rule, discussed in the 1997 report, also works but must test at each step whether an edge is a bridge of the remaining graph. Even with modern dynamic connectivity structures this is slower and more complicated than Hierholzer, so it is no longer used in practice.</p>
 <h2 id="6-implementation">6. Implementation</h2>
-<p>The solver is a small Python 3 package, <code>cartero</code>, built on NetworkX and covered by 170 automated tests (115 when the optional Blossom V library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with seven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).</p>
+<p>The solver is a small Python 3 package, <code>chinese_postman</code>, built on NetworkX and covered by 170 automated tests (115 when the optional Blossom V library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with seven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).</p>
 <h3 id="61-modules">6.1 Modules</h3>
 <div class="table-scroll"><table>
 <thead>
@@ -499,9 +499,9 @@
 </table></div>
 <p>Every test also verifies the tour itself: it is closed, it covers every original edge, and its length equals the original edges plus the duplicates.</p>
 <h3 id="65-usage">6.5 Usage</h3>
-<pre><code class="language-python">from cartero import read_gra, solve_undirected
+<pre><code class="language-python">from chinese_postman import read_gra, solve_undirected
 
-sol = solve_undirected(read_gra(&quot;exemples/pfc_1997.gra&quot;), start=1)
+sol = solve_undirected(read_gra(&quot;examples/example_1997.gra&quot;), start=1)
 print(sol.summary())
 </code></pre>
 <h3 id="66-web-version">6.6 Web version</h3>
@@ -538,7 +538,7 @@ print(sol.summary())
 </tbody>
 </table></div>
 <p>The port is checked against the Python package. On 243 networks, from classic graphs to benchmark files and mixed towns, it returns the same optimum in every undirected and directed case, stays a mean 0.25% above the optimum on mixed ones, and always returns a valid closed tour; on 3,000 random matchings it agreed with NetworkX every time. The page is ready to solve in under a second.</p>
-<p>Only one step still needs Python: proving that a mixed tour is optimal. On request the page loads Pyodide, Python compiled to WebAssembly, with SciPy and the <code>cartero</code> package, and runs the branch-and-cut of chapter 9 inside the browser in a few seconds.</p>
+<p>Only one step still needs Python: proving that a mixed tour is optimal. On request the page loads Pyodide, Python compiled to WebAssembly, with SciPy and the <code>chinese_postman</code> package, and runs the branch-and-cut of chapter 9 inside the browser in a few seconds.</p>
 <p>The interactive version accepts files of up to 2,500 junctions and OpenStreetMap areas of up to about one square kilometre, or 1,500 junctions. Larger networks are better solved with the Python package and its Blossom V backend.</p>
 <h2 id="7-computational-experiments">7. Computational experiments</h2>
 <p>Every instance tested, 92 distinct real and benchmark road networks and synthetic cities with up to 40,000 junctions, was solved to proven optimality, apart from one 40,000-junction town stopped at the memory limit (section 7.4). None comes from the 1997 Vilanova i la Geltrú case studies. All runs used one core of a 2026 cloud Linux container, Python 3 and NetworkX 3.7.</p>
@@ -1321,7 +1321,7 @@ print(sol.summary())
 </table></div>
 <p><strong>First and later passes.</strong> The 1997 idea of a street costing more the first time it is traversed (snow still on it, bins still full) is exactly the split between service cost and deadheading cost used in the rural postman problem and the CARP. A street is served once at its service cost; any further traversal costs only its travel time.</p>
 <p><strong>From one postman to a fleet.</strong> Chapter 7 shows that on the classical CARP benchmarks a single CPP tour is usually within a few percent of the best known multi-vehicle solution. The CPP is thus a strong lower bound and a useful first step: split the tour into pieces that respect vehicle capacity (the route-first, cluster-second approach), then improve them locally.</p>
-<p><strong>Real street data.</strong> OpenStreetMap now provides free, worldwide street networks. The website of section 6.6 already reads them: it downloads a district's streets through the Overpass API, keeps junctions and street lengths, and marks one-way streets, so a district such as the ones studied in 1997 can be modelled in seconds instead of digitised by hand. For whole towns, the OSMnx library (Boeing, 2017) downloads the same data as a NetworkX multigraph that <code>cartero</code> takes after a short conversion.</p>
+<p><strong>Real street data.</strong> OpenStreetMap now provides free, worldwide street networks. The website of section 6.6 already reads them: it downloads a district's streets through the Overpass API, keeps junctions and street lengths, and marks one-way streets, so a district such as the ones studied in 1997 can be modelled in seconds instead of digitised by hand. For whole towns, the OSMnx library (Boeing, 2017) downloads the same data as a NetworkX multigraph that <code>chinese_postman</code> takes after a short conversion.</p>
 <p><strong>Suggested next steps for this project:</strong></p>
 <ol>
 <li>Cycle-reversal moves for the mixed CPP heuristic, to remove its few remaining gaps of 3–5%.</li>

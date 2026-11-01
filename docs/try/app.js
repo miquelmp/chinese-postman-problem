@@ -72,7 +72,7 @@
     const src = $("source").value, token = ++loadToken;
     const show = I => { if (token === loadToken) showInst(I); };
     try {
-      if (["pfc1997", "konigsberg", "petersen", "grid", "delaunay", "oneway-grid", "mixed-town"].includes(src)) {
+      if (["example1997", "konigsberg", "petersen", "grid", "delaunay", "oneway-grid", "mixed-town"].includes(src)) {
         setBusy(true); status("Building the network…");
         const size = src === "delaunay" ? +$("junctions").value : +$("side").value;
         show(await js.call("example", { name: src, size, share: +$("oneway").value, seed }));

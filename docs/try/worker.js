@@ -1,4 +1,4 @@
-/* Runs Python (Pyodide) and the cartero solver off the main thread. */
+/* Runs Python (Pyodide) and the chinese_postman solver off the main thread. */
 let pyodide = null;
 
 function lastLine(err) {
@@ -23,15 +23,15 @@ async function init(indexURL) {
   const lock = await (await fetch(indexURL + "pyodide-lock.json")).json();
   await pyodide.loadPackage(indexURL + lock.packages.networkx.file_name);
   const manifest = await (await fetch("py/manifest.json")).json();
-  pyodide.FS.mkdirTree("/home/pyodide/cartero");
+  pyodide.FS.mkdirTree("/home/pyodide/chinese_postman");
   for (const f of manifest.files) {
-    const text = await (await fetch("py/cartero/" + f)).text();
-    pyodide.FS.writeFile("/home/pyodide/cartero/" + f, text);
+    const text = await (await fetch("py/chinese_postman/" + f)).text();
+    pyodide.FS.writeFile("/home/pyodide/chinese_postman/" + f, text);
   }
   pyodide.runPython(`
 import sys, json
 sys.path.insert(0, "/home/pyodide")
-from cartero import web
+from chinese_postman import web
 
 def example_json(name, size, oneway, seed):
     return json.dumps(web.example(name, size=int(size), oneway=float(oneway), seed=int(seed)))

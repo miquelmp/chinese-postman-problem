@@ -7,8 +7,8 @@ from pathlib import Path
 import networkx as nx
 import pytest
 
-from cartero import read_carp, read_gra, solve_directed, solve_undirected
-from cartero import instances as I
+from chinese_postman import read_carp, read_gra, solve_directed, solve_undirected
+from chinese_postman import instances as I
 
 ROOT = Path(__file__).parent.parent
 
@@ -38,7 +38,7 @@ def brute_force_added(G):
 
 
 def test_1997_example():
-    G = read_gra(ROOT / "examples" / "pfc_1997.gra")
+    G = read_gra(ROOT / "examples" / "example_1997.gra")
     sol = solve_undirected(G, start=1)
     assert (sol.original_cost, sol.added_cost, sol.total_cost) == (54, 9, 63)
     assert {frozenset(p) for p in sol.pairs} == {frozenset({1, 4}), frozenset({3, 6})}
@@ -115,7 +115,7 @@ def test_gdb_cpp_below_carp_bound(path):
 
 
 # ---------------------------------------------------------------- Blossom V backend
-from cartero import fast
+from chinese_postman import fast
 
 needs_blossom5 = pytest.mark.skipif(not fast.available(), reason="native/libblossom5.so not built")
 

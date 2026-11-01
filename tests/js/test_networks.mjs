@@ -9,7 +9,7 @@ const NW = require("../../site/assets/networks.js");
 let fail = 0;
 const check = (cond, msg) => { if (!cond) { console.log("FAIL", msg); fail++; } };
 
-for (const [name, size, share] of [["pfc1997"], ["konigsberg"], ["petersen"], ["grid", 12], ["grid", 40],
+for (const [name, size, share] of [["example1997"], ["konigsberg"], ["petersen"], ["grid", 12], ["grid", 40],
                                     ["delaunay", 200], ["delaunay", 2500], ["oneway-grid", 15], ["mixed-town", 12, 0.6],
                                     ["mixed-town", 25, 1.0]]) {
   for (const seed of [0, 1]) {
@@ -21,12 +21,12 @@ for (const [name, size, share] of [["pfc1997"], ["konigsberg"], ["petersen"], ["
     if (seed === 0) console.log(`${inst.name.padEnd(34)} ${String(inst.nodes.length).padStart(5)} junctions ${String(inst.links.length).padStart(5)} streets  ${r.kind.padEnd(10)} total ${r.total}  ${r.optimal ? "optimal" : "gap " + r.gap_pct + "%"}  ${Date.now() - t} ms`);
   }
 }
-check(CPP.solve(NW.example("pfc1997")).total === 63, "1997 example optimum 63");
+check(CPP.solve(NW.example("example1997")).total === 63, "1997 example optimum 63");
 check(CPP.solve(NW.example("konigsberg")).total === 9, "Königsberg 9 crossings");
 check(CPP.solve(NW.example("petersen")).total === 20, "Petersen 20");
 
-const gra = fs.readFileSync(new URL("../../examples/pfc_1997.gra", import.meta.url), "utf8");
-check(CPP.solve(NW.fromGra(gra, "pfc")).total === 63, ".GRA parsing");
+const gra = fs.readFileSync(new URL("../../examples/example_1997.gra", import.meta.url), "utf8");
+check(CPP.solve(NW.fromGra(gra, "example")).total === 63, ".GRA parsing");
 let threw = false; try { NW.fromGra("hello world", "x"); } catch (e) { threw = /not a valid/.test(e.message); }
 check(threw, "invalid .GRA reported");
 const carp = fs.readFileSync(new URL("../../data/carp/gdb1.dat", import.meta.url), "utf8");

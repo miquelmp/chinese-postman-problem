@@ -199,7 +199,7 @@ Fleury's rule, discussed in the 1997 report, also works but must test at each st
 
 ## 6. Implementation
 
-The solver is a small Python 3 package, `cartero`, built on NetworkX and covered by 170 automated tests (115 when the optional Blossom V library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with seven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).
+The solver is a small Python 3 package, `chinese_postman`, built on NetworkX and covered by 170 automated tests (115 when the optional Blossom V library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with seven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).
 
 ### 6.1 Modules
 
@@ -248,9 +248,9 @@ Every test also verifies the tour itself: it is closed, it covers every original
 ### 6.5 Usage
 
 ```python
-from cartero import read_gra, solve_undirected
+from chinese_postman import read_gra, solve_undirected
 
-sol = solve_undirected(read_gra("exemples/pfc_1997.gra"), start=1)
+sol = solve_undirected(read_gra("examples/example_1997.gra"), start=1)
 print(sol.summary())
 ```
 
@@ -267,7 +267,7 @@ The project website, [miquelmp.github.io/chinese-postman-problem](https://miquel
 
 The port is checked against the Python package. On 243 networks, from classic graphs to benchmark files and mixed towns, it returns the same optimum in every undirected and directed case, stays a mean 0.25% above the optimum on mixed ones, and always returns a valid closed tour; on 3,000 random matchings it agreed with NetworkX every time. The page is ready to solve in under a second.
 
-Only one step still needs Python: proving that a mixed tour is optimal. On request the page loads Pyodide, Python compiled to WebAssembly, with SciPy and the `cartero` package, and runs the branch-and-cut of chapter 9 inside the browser in a few seconds.
+Only one step still needs Python: proving that a mixed tour is optimal. On request the page loads Pyodide, Python compiled to WebAssembly, with SciPy and the `chinese_postman` package, and runs the branch-and-cut of chapter 9 inside the browser in a few seconds.
 
 The interactive version accepts files of up to 2,500 junctions and OpenStreetMap areas of up to about one square kilometre, or 1,500 junctions. Larger networks are better solved with the Python package and its Blossom V backend.
 
@@ -501,7 +501,7 @@ The undirected, directed and mixed CPP are now solved; the problems that real fl
 
 **From one postman to a fleet.** Chapter 7 shows that on the classical CARP benchmarks a single CPP tour is usually within a few percent of the best known multi-vehicle solution. The CPP is thus a strong lower bound and a useful first step: split the tour into pieces that respect vehicle capacity (the route-first, cluster-second approach), then improve them locally.
 
-**Real street data.** OpenStreetMap now provides free, worldwide street networks. The website of section 6.6 already reads them: it downloads a district's streets through the Overpass API, keeps junctions and street lengths, and marks one-way streets, so a district such as the ones studied in 1997 can be modelled in seconds instead of digitised by hand. For whole towns, the OSMnx library (Boeing, 2017) downloads the same data as a NetworkX multigraph that `cartero` takes after a short conversion.
+**Real street data.** OpenStreetMap now provides free, worldwide street networks. The website of section 6.6 already reads them: it downloads a district's streets through the Overpass API, keeps junctions and street lengths, and marks one-way streets, so a district such as the ones studied in 1997 can be modelled in seconds instead of digitised by hand. For whole towns, the OSMnx library (Boeing, 2017) downloads the same data as a NetworkX multigraph that `chinese_postman` takes after a short conversion.
 
 **Suggested next steps for this project:**
 

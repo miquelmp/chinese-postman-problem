@@ -1,5 +1,5 @@
 /* Chinese Postman Problem solvers in plain JavaScript (browser and Node).
-   JavaScript port of the Python package `cartero`; tests/js checks both give the same optimum.
+   JavaScript port of the Python package `chinese_postman`; tests/js checks both give the same optimum.
 
    Instance: {nodes:[{id,...}], links:[{u, v, w, oneway}]}  (w = non-negative integer cost)
    solve(instance) -> {kind, total, original, added, lower_bound, optimal, gap_pct, circuit, ...}
@@ -499,7 +499,7 @@
   }
 
   // ------------------------------------------------------------------ mixed CPP
-  /** Heuristic for the mixed CPP with a certified lower bound (as cartero.mixed.solve_heuristic):
+  /** Heuristic for the mixed CPP with a certified lower bound (as chinese_postman.mixed.solve_heuristic):
       four starting orientations (two roundings of the LP relaxation, solved as a min-cost flow,
       and the Euler-circuit orientation of the undirected CPP, both ways), each completed by an
       exact min-cost rebalance, then dual-guided street reversals (local search).
