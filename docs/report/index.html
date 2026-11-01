@@ -40,9 +40,10 @@
 <h2 id="abstract">Abstract</h2>
 <p>This report revises a 1997 final-year project on the Chinese Postman Problem: find the cheapest closed route that covers every street of a network at least once. The method is unchanged in outline: pair the odd-degree junctions by shortest paths at minimum total cost, duplicate those paths, and walk the resulting Eulerian circuit. The 1997 branch-and-bound for the pairing step is replaced by Edmonds' blossom algorithm, which is exact and polynomial; shortest paths use Dijkstra, the circuit uses Hierholzer's linear-time algorithm, the directed version is added through minimum-cost flow, and the mixed version, with one-way and two-way streets together and NP-hard, through branch-and-cut and a new heuristic.</p>
 <p>The new Python implementation was tested on classic graphs, on 92 benchmark road networks from the arc-routing literature (including real networks in Cumbria and Flanders), and on synthetic towns of up to 40,000 junctions. Every instance within the memory budget was solved to proven optimality. With a second backend that runs Kolmogorov's Blossom V on a sparse candidate graph and adds pairs by dual pricing, a network with 12,066 odd vertices solves in 102 seconds, against about 800 odd vertices in the same time in pure Python. On benchmarks where every street needs service, the single-postman tour comes within a median 3.4% of the best known multi-vehicle solution, making the CPP a tight bound for fleet routing. For mixed networks, branch-and-cut proves the optimum on every benchmark network within 5.2 seconds and on towns of up to 1,600 junctions, and the heuristic averages 0.27% above the optimum. The report closes with a map of the harder arc-routing variants where the branch-and-bound ideas of 1997 remain useful.</p>
+<p>A JavaScript port of the solver runs in the web browser, so anyone can solve their own street network, from a file or straight from OpenStreetMap, at <a href="https://miquelmp.github.io/chinese-postman-problem/">miquelmp.github.io/chinese-postman-problem</a>.</p>
 <h2 id="1-introduction">1. Introduction</h2>
 <p>The Chinese Postman Problem (CPP) asks for the cheapest closed walk that traverses every edge of a graph at least once. The 1997 project solved it by duplicating edges until every vertex has even degree, choosing those duplicates with a custom branch-and-bound (B&amp;B) search. This revision keeps the same overall method but replaces the B&amp;B with an exact, polynomial-time matching algorithm, and tests the result on a much wider set of instances.</p>
-<p>The problem is named after the Chinese mathematician Kwan Mei-Ko (Guan Meigu), who posed it in 1962. Edmonds and Johnson showed in 1973 that the undirected version can be solved in polynomial time by reducing it to a minimum-weight perfect matching.</p>
+<p>The problem is named after the Chinese mathematician Kwan Mei-Ko (Guan Meigu), who posed it in 1960. Edmonds and Johnson showed in 1973 that the undirected version can be solved in polynomial time by reducing it to a minimum-weight perfect matching.</p>
 <p>Typical applications are any service that must cover streets rather than visit points:</p>
 <ul>
 <li>mail and parcel delivery on foot;</li>
@@ -223,7 +224,7 @@
 <td>Original algorithm</td>
 </tr>
 <tr>
-<td>Gabow (1976), Lawler (1976)</td>
+<td>Gabow (1974), Lawler (1976)</td>
 <td>—</td>
 <td>O(n³)</td>
 <td>Standard textbook bound</td>
@@ -258,8 +259,113 @@
 <li>Pricing: scan all pairs (u, v) not in the graph and add those with negative reduced cost, d(u, v) &lt; y(u) + y(v), counting blossom prices. Re-solve and repeat.</li>
 <li>When no pair has negative reduced cost, the duals are feasible for the whole complete graph, so the matching is optimal for it too.</li>
 </ol>
-<p>This is column generation applied to matching, the same strategy Blossom V uses for its geometric instances. On road networks the first candidate graph is usually already enough: one or two pricing rounds suffice. Related ideas reach even further: the sparse blossom algorithm of Higgott and Gidney (2023), developed for quantum error correction, matches millions of vertices without ever building distances between all pairs.</p>
+<p>This is column generation applied to matching, the same strategy Blossom V uses for its geometric instances. On road networks the first candidate graph is usually already enough: one or two pricing rounds suffice. Related ideas reach even further: the sparse blossom algorithm of Higgott and Gidney (2025), developed for quantum error correction, matches millions of vertices without ever building distances between all pairs.</p>
 <p>Blossom V may be used for evaluation and non-commercial research only and may not be redistributed. The package therefore ships only a small C wrapper and a script that downloads and compiles it; NetworkX stays the default backend, and commercial use would need a licence from UCL Business or a free alternative such as LEMON (Boost licence).</p>
+<h3 id="45-milestones-in-matching-19652025">4.5 Milestones in matching, 1965–2025</h3>
+<p>Minimum-weight perfect matching has kept improving since Edmonds' blossom algorithm, both in theory and in working code. The table lists the milestones most relevant to postman problems, dated by publication.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Year</th>
+<th>Authors</th>
+<th>Contribution</th>
+<th>Relevance here</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1965</td>
+<td>Edmonds</td>
+<td>Blossom algorithm and the matching polytope</td>
+<td>Foundation of the exact method, O(n⁴)</td>
+</tr>
+<tr>
+<td>1974–1976</td>
+<td>Gabow; Lawler</td>
+<td>O(n³) implementations</td>
+<td>Textbook bound, used by NetworkX</td>
+</tr>
+<tr>
+<td>1980</td>
+<td>Micali and Vazirani</td>
+<td>O(m√n) maximum-cardinality matching</td>
+<td>Fastest bound for the unweighted case</td>
+</tr>
+<tr>
+<td>1986</td>
+<td>Galil, Micali and Gabow</td>
+<td>O(nm log n) weighted matching</td>
+<td>Faster on sparse graphs</td>
+</tr>
+<tr>
+<td>1990</td>
+<td>Gabow</td>
+<td>O(nm + n² log n)</td>
+<td>Still the best strongly polynomial bound</td>
+</tr>
+<tr>
+<td>1991</td>
+<td>Gabow and Tarjan</td>
+<td>Cost scaling for integer weights</td>
+<td>Near O(m√n log(nN))</td>
+</tr>
+<tr>
+<td>1999</td>
+<td>Cook and Rohe</td>
+<td>Blossom IV, with variable ε and pricing</td>
+<td>First code to match millions of points</td>
+</tr>
+<tr>
+<td>2002</td>
+<td>Mehlhorn and Schäfer</td>
+<td>O(nm log n) implementation in LEDA</td>
+<td>Data structures that make the bound practical</td>
+</tr>
+<tr>
+<td>2009</td>
+<td>Kolmogorov</td>
+<td>Blossom V</td>
+<td>Fast backend of this revision</td>
+</tr>
+<tr>
+<td>2011</td>
+<td>Dezső, Jüttner and Kovács</td>
+<td>LEMON graph library</td>
+<td>Free alternative with a permissive licence</td>
+</tr>
+<tr>
+<td>2014</td>
+<td>Duan and Pettie</td>
+<td>(1 − ε)-approximate weighted matching in linear time</td>
+<td>Fast near-optimal pairing</td>
+</tr>
+<tr>
+<td>2018</td>
+<td>Duan, Pettie and Su</td>
+<td>Exact scaling algorithm, O(m√n log(nN))</td>
+<td>Best known bound for integer costs</td>
+</tr>
+<tr>
+<td>2022</td>
+<td>Chen, Kyng, Liu, Peng, Probst Gutenberg and Sachdeva</td>
+<td>Minimum-cost flow in almost-linear time</td>
+<td>Directed CPP in near-linear time, in theory</td>
+</tr>
+<tr>
+<td>2023</td>
+<td>Wu and Zhong</td>
+<td>Fusion Blossom, parallel matching</td>
+<td>Quantum error correction at scale</td>
+</tr>
+<tr>
+<td>2025</td>
+<td>Higgott and Gidney</td>
+<td>Sparse Blossom</td>
+<td>Millions of vertices without all-pair distances</td>
+</tr>
+</tbody>
+</table></div>
+<p>Here N is the largest integer cost. Two lessons follow for the CPP. First, the worst-case bounds have improved far more than road networks need: with the sparse pricing of section 4.4, a well-engineered O(n³) code is limited by the memory for distances, not by the matching. Second, the most active work now comes from quantum error correction, where decoders must pair millions of defects per second. Their local, sparse search is the natural next step for very large postman instances.</p>
 <h2 id="5-eulerian-circuits">5. Eulerian circuits</h2>
 <p>Once every degree is even, Hierholzer's algorithm (1873) writes out the tour in time proportional to the number of edges. It is the algorithm the 1997 project already sketched in its section 5.2.2, now implemented so that each edge is looked at once.</p>
 <p>The idea follows the constructive proof of Euler's theorem. Walk from the start vertex along unused edges until you are stuck; with all degrees even, you can only get stuck back at the start, so you have a closed sub-tour. Then return along that sub-tour to the first vertex that still has unused edges, walk a new sub-tour from there and splice it in. Repeat until no unused edges remain.</p>
@@ -274,7 +380,7 @@
 <p>Each vertex keeps a pointer into its adjacency list that only moves forward, and each edge is marked used once. The total work is therefore O(n + m). This per-vertex pointer is the refinement that makes the 2026 implementation strictly linear in the size of the graph.</p>
 <p>Fleury's rule, discussed in the 1997 report, also works but must test at each step whether an edge is a bridge of the remaining graph. Even with modern dynamic connectivity structures this is slower and more complicated than Hierholzer, so it is no longer used in practice.</p>
 <h2 id="6-implementation">6. Implementation</h2>
-<p>The solver is a small Python 3 package, <code>cartero</code>, built on NetworkX and covered by 157 automated tests (102 when the optional Blossom V library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with six modules of plain Python and an optional compiled matching library.</p>
+<p>The solver is a small Python 3 package, <code>cartero</code>, built on NetworkX and covered by 170 automated tests (115 when the optional Blossom V library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with seven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).</p>
 <h3 id="61-modules">6.1 Modules</h3>
 <div class="table-scroll"><table>
 <thead>
@@ -314,6 +420,11 @@
 <td><code>instances.py</code></td>
 <td>Annex 2 data</td>
 <td>Generators for the test families of chapter 7</td>
+</tr>
+<tr>
+<td><code>web.py</code></td>
+<td>— (new)</td>
+<td>Builds networks for the website from examples, .GRA and CARP files and OpenStreetMap; reference for the JavaScript port</td>
 </tr>
 </tbody>
 </table></div>
@@ -374,6 +485,16 @@
 <td>41</td>
 <td>Exact equals brute-force enumeration on 25 random networks; bound ≤ optimum ≤ heuristic; all-two-way and all-one-way cases equal the pure CPPs; the combined strategy proves optimality, including through the cutoff</td>
 </tr>
+<tr>
+<td>Web builders</td>
+<td>13</td>
+<td>Examples, .GRA, CARP and OpenStreetMap input give the expected networks and solve; bad input gives a clear message</td>
+</tr>
+<tr>
+<td>JavaScript solver</td>
+<td>243 networks</td>
+<td>The website solver gives the Python optimum on every undirected and directed case, never claims a false optimum on mixed ones, and returns a valid tour</td>
+</tr>
 </tbody>
 </table></div>
 <p>Every test also verifies the tour itself: it is closed, it covers every original edge, and its length equals the original edges plus the duplicates.</p>
@@ -383,6 +504,42 @@
 sol = solve_undirected(read_gra(&quot;exemples/pfc_1997.gra&quot;), start=1)
 print(sol.summary())
 </code></pre>
+<h3 id="66-web-version">6.6 Web version</h3>
+<p>The project website, <a href="https://miquelmp.github.io/chinese-postman-problem/">miquelmp.github.io/chinese-postman-problem</a>, lets anyone solve a postman problem in the browser: one of the built-in examples, a <code>.GRA</code> or CARP file, or a district chosen on an OpenStreetMap map. For an immediate answer the solver is ported to JavaScript and runs inside the page, with no server and nothing to install.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Part</th>
+<th>File</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Matching</td>
+<td><code>site/assets/cpp.js</code></td>
+<td>Edmonds' blossom algorithm, exact, following Van Rantwijk's reference implementation</td>
+</tr>
+<tr>
+<td>Directed and mixed streets</td>
+<td><code>site/assets/cpp.js</code></td>
+<td>Minimum-cost flow; lower bounds and the mixed heuristic of chapter 9, with its starting orientations, balancing and local search</td>
+</tr>
+<tr>
+<td>Tour</td>
+<td><code>site/assets/cpp.js</code></td>
+<td>Hierholzer's algorithm, as in chapter 5</td>
+</tr>
+<tr>
+<td>Networks</td>
+<td><code>site/assets/networks.js</code></td>
+<td>Built-in examples, <code>.GRA</code> and CARP readers, OpenStreetMap import through the Overpass API</td>
+</tr>
+</tbody>
+</table></div>
+<p>The port is checked against the Python package. On 243 networks, from classic graphs to benchmark files and mixed towns, it returns the same optimum in every undirected and directed case, stays a mean 0.25% above the optimum on mixed ones, and always returns a valid closed tour; on 3,000 random matchings it agreed with NetworkX every time. The page is ready to solve in under a second.</p>
+<p>Only one step still needs Python: proving that a mixed tour is optimal. On request the page loads Pyodide, Python compiled to WebAssembly, with SciPy and the <code>cartero</code> package, and runs the branch-and-cut of chapter 9 inside the browser in a few seconds.</p>
+<p>The interactive version accepts files of up to 2,500 junctions and OpenStreetMap areas of up to about one square kilometre, or 1,500 junctions. Larger networks are better solved with the Python package and its Blossom V backend.</p>
 <h2 id="7-computational-experiments">7. Computational experiments</h2>
 <p>Every instance tested, 92 distinct real and benchmark road networks and synthetic cities with up to 40,000 junctions, was solved to proven optimality, apart from one 40,000-junction town stopped at the memory limit (section 7.4). None comes from the 1997 Vilanova i la Geltrú case studies. All runs used one core of a 2026 cloud Linux container, Python 3 and NetworkX 3.7.</p>
 <h3 id="71-instance-families">7.1 Instance families</h3>
@@ -892,7 +1049,7 @@ print(sol.summary())
 <tr>
 <td>Verification</td>
 <td>Manual checks</td>
-<td>157 automated tests, every tour validated</td>
+<td>170 automated tests in Python and 243 networks re-checked in JavaScript, every tour validated</td>
 <td>Results checked on each run</td>
 </tr>
 </tbody>
@@ -1164,7 +1321,7 @@ print(sol.summary())
 </table></div>
 <p><strong>First and later passes.</strong> The 1997 idea of a street costing more the first time it is traversed (snow still on it, bins still full) is exactly the split between service cost and deadheading cost used in the rural postman problem and the CARP. A street is served once at its service cost; any further traversal costs only its travel time.</p>
 <p><strong>From one postman to a fleet.</strong> Chapter 7 shows that on the classical CARP benchmarks a single CPP tour is usually within a few percent of the best known multi-vehicle solution. The CPP is thus a strong lower bound and a useful first step: split the tour into pieces that respect vehicle capacity (the route-first, cluster-second approach), then improve them locally.</p>
-<p><strong>Real street data.</strong> OpenStreetMap now provides free, worldwide street networks. The OSMnx library downloads a town's drivable streets as a NetworkX multigraph with lengths and one-way flags, which <code>cartero</code> can take after a short conversion (lengths to weights, two-way streets to undirected edges). A district such as the ones studied in 1997 can be modelled in minutes instead of digitised by hand.</p>
+<p><strong>Real street data.</strong> OpenStreetMap now provides free, worldwide street networks. The website of section 6.6 already reads them: it downloads a district's streets through the Overpass API, keeps junctions and street lengths, and marks one-way streets, so a district such as the ones studied in 1997 can be modelled in seconds instead of digitised by hand. For whole towns, the OSMnx library (Boeing, 2017) downloads the same data as a NetworkX multigraph that <code>cartero</code> takes after a short conversion.</p>
 <p><strong>Suggested next steps for this project:</strong></p>
 <ol>
 <li>Cycle-reversal moves for the mixed CPP heuristic, to remove its few remaining gaps of 3–5%.</li>
@@ -1179,21 +1336,37 @@ print(sol.summary())
 <li><strong>Directed streets.</strong> The directed CPP, proposed as future work in 1997, is solved by minimum-cost flow in under half a second on a 3,600-junction one-way grid.</li>
 <li><strong>A strong bound for fleets.</strong> On 39 benchmark networks where every street needs service, the single-postman tour costs a median 96.6% of the best known multi-vehicle solution. The CPP is therefore both a quick estimate and a tight lower bound for capacitated arc routing.</li>
 <li><strong>Mixed streets.</strong> The mixed CPP, NP-hard, is solved exactly by branch-and-cut on every benchmark network (at most 5.2 s) and on towns of up to 1,600 junctions; beyond that a polynomial heuristic with dual-guided local search stays about 1% from the best known solution. Separation and bounding, the core of the 1997 work, is exactly what makes this possible.</li>
+<li><strong>Open to everyone.</strong> The code, the results, this report and the 1997 original are published at github.com/miquelmp/chinese-postman-problem, and the website solves any street network in the browser, from a file or from OpenStreetMap, in seconds for networks of up to 2,500 junctions.</li>
 </ol>
 <p>The two observations of 1997 about practice still hold. Routine services such as refuse collection or mail delivery are bounded by a working shift, so the networks involved stay moderate in size; and for one-off emergencies such as snow clearing, a fast near-optimal answer can be worth more than a slow proven one. What has changed is that, for the CPP itself, a fast answer and a proven one are now the same answer.</p>
 <p>The natural continuation is the rural postman problem and capacitated routing for fleets, using the same code base, the same benchmark files, and real street networks from OpenStreetMap.</p>
 <h2 id="references">References</h2>
 <p><strong>Problem and algorithms</strong></p>
 <ul>
-<li>Kwan Mei-Ko (1962). Graphic programming using odd or even points. <em>Chinese Mathematics</em> 1, 273–277.</li>
+<li>Kwan Mei-Ko (1960). Graphic programming using odd or even points. <em>Acta Mathematica Sinica</em> 10, 263–266 (in Chinese). English translation in <em>Chinese Mathematics</em> 1 (1962), 273–277.</li>
 <li>Edmonds, J. (1965). Paths, trees, and flowers. <em>Canadian Journal of Mathematics</em> 17, 449–467.</li>
 <li>Edmonds, J. (1965). Maximum matching and a polyhedron with 0,1-vertices. <em>Journal of Research of the National Bureau of Standards</em> 69B, 125–130.</li>
 <li>Edmonds, J. and Johnson, E. L. (1973). Matching, Euler tours and the Chinese postman. <em>Mathematical Programming</em> 5, 88–124.</li>
 <li>Hierholzer, C. (1873). Über die Möglichkeit, einen Linienzug ohne Wiederholung und ohne Unterbrechung zu umfahren. <em>Mathematische Annalen</em> 6, 30–32.</li>
-<li>Gabow, H. N. (1976). An efficient implementation of Edmonds' algorithm for maximum matching on graphs. <em>Journal of the ACM</em> 23, 221–234.</li>
-<li>Galil, Z., Micali, S. and Gabow, H. (1986). An O(EV log V) algorithm for finding a maximal weighted matching in general graphs. <em>SIAM Journal on Computing</em> 15, 120–130.</li>
-<li>Kolmogorov, V. (2009). Blossom V: a new implementation of a minimum cost perfect matching algorithm. <em>Mathematical Programming Computation</em> 1, 43–67.</li>
-<li>Higgott, O. and Gidney, C. (2023). Sparse Blossom: correcting a million errors per core second with minimum-weight matching. arXiv:2303.15933.</li>
+<li>Papadimitriou, C. H. (1976). On the complexity of edge traversing. <em>Journal of the ACM</em> 23(3), 544–554.</li>
+<li>Frederickson, G. N. (1979). Approximation algorithms for some postman problems. <em>Journal of the ACM</em> 26(3), 538–554.</li>
+</ul>
+<p><strong>Matching algorithms</strong></p>
+<ul>
+<li>Gabow, H. N. (1974). <em>Implementation of algorithms for maximum matching on nonbipartite graphs</em>. PhD thesis, Stanford University.</li>
+<li>Lawler, E. L. (1976). <em>Combinatorial Optimization: Networks and Matroids</em>. Holt, Rinehart and Winston, New York.</li>
+<li>Micali, S. and Vazirani, V. V. (1980). An O(√|V|·|E|) algorithm for finding maximum matching in general graphs. <em>Proceedings of the 21st Annual Symposium on Foundations of Computer Science</em>, 17–27.</li>
+<li>Galil, Z., Micali, S. and Gabow, H. (1986). An O(EV log V) algorithm for finding a maximal weighted matching in general graphs. <em>SIAM Journal on Computing</em> 15(1), 120–130.</li>
+<li>Gabow, H. N. (1990). Data structures for weighted matching and nearest common ancestors with linking. <em>Proceedings of the 1st Annual ACM-SIAM Symposium on Discrete Algorithms</em>, 434–443.</li>
+<li>Gabow, H. N. and Tarjan, R. E. (1991). Faster scaling algorithms for general graph matching problems. <em>Journal of the ACM</em> 38(4), 815–853.</li>
+<li>Cook, W. and Rohe, A. (1999). Computing minimum-weight perfect matchings. <em>INFORMS Journal on Computing</em> 11(2), 138–148.</li>
+<li>Mehlhorn, K. and Schäfer, G. (2002). Implementation of O(nm log n) weighted matchings in general graphs: the power of data structures. <em>ACM Journal of Experimental Algorithmics</em> 7, article 4.</li>
+<li>Kolmogorov, V. (2009). Blossom V: a new implementation of a minimum cost perfect matching algorithm. <em>Mathematical Programming Computation</em> 1(1), 43–67.</li>
+<li>Duan, R. and Pettie, S. (2014). Linear-time approximation for maximum weight matching. <em>Journal of the ACM</em> 61(1), article 1.</li>
+<li>Duan, R., Pettie, S. and Su, H.-H. (2018). Scaling algorithms for weighted matching in general graphs. <em>ACM Transactions on Algorithms</em> 14(1), article 8.</li>
+<li>Chen, L., Kyng, R., Liu, Y. P., Peng, R., Probst Gutenberg, M. and Sachdeva, S. (2022). Maximum flow and minimum-cost flow in almost-linear time. <em>Proceedings of the 63rd IEEE Symposium on Foundations of Computer Science</em>, 612–623.</li>
+<li>Wu, Y. and Zhong, L. (2023). Fusion Blossom: fast MWPM decoders for QEC. <em>Proceedings of the IEEE International Conference on Quantum Computing and Engineering</em>. arXiv:2305.08307.</li>
+<li>Higgott, O. and Gidney, C. (2025). Sparse Blossom: correcting a million errors per core second with minimum-weight matching. <em>Quantum</em> 9, 1600.</li>
 </ul>
 <p><strong>Arc routing</strong></p>
 <ul>
@@ -1208,10 +1381,18 @@ print(sol.summary())
 <li>Beullens, P., Muyldermans, L., Cattrysse, D. and Van Oudheusden, D. (2003). A guided local search heuristic for the capacitated arc routing problem. <em>European Journal of Operational Research</em> 147, 629–643. (C–F)</li>
 <li>Brandão, J. and Eglese, R. (2008). A deterministic tabu search algorithm for the capacitated arc routing problem. <em>Computers &amp; Operations Research</em> 35, 1112–1126. (egl-g)</li>
 <li>Martinelli, R. CARPData.jl: classical CARP instances in a common format. <a href="https://github.com/rafaelmartinelli/CARPData.jl">github.com/rafaelmartinelli/CARPData.jl</a> (MIT licence; files used as distributed).</li>
+<li>Kiuchi, M., Shinano, Y., Hirabayashi, R. and Saruwatari, Y. (1995). An exact algorithm for the capacitated arc routing problem using parallel branch and bound method. <em>Abstracts of the 1995 Spring National Conference of the Operations Research Society of Japan</em>, 28–29. (kshs)</li>
 </ul>
 <p><strong>Software</strong></p>
 <ul>
 <li>Hagberg, A., Schult, D. and Swart, P. (2008). Exploring network structure, dynamics, and function using NetworkX. <em>Proceedings of SciPy 2008</em>, 11–15.</li>
+<li>Virtanen, P. et al. (2020). SciPy 1.0: fundamental algorithms for scientific computing in Python. <em>Nature Methods</em> 17, 261–272.</li>
+<li>Huangfu, Q. and Hall, J. A. J. (2018). Parallelizing the dual revised simplex method. <em>Mathematical Programming Computation</em> 10, 119–142. (HiGHS)</li>
+<li>Dezső, B., Jüttner, A. and Kovács, P. (2011). LEMON – an open source C++ graph template library. <em>Electronic Notes in Theoretical Computer Science</em> 264(5), 23–45.</li>
+<li>Van Rantwijk, J. (2008). Maximum weighted matching in general graphs (mwmatching.py), jorisvr.nl/article/maximum-matching. Basis of the JavaScript matching code.</li>
+<li>Boeing, G. (2017). OSMnx: new methods for acquiring, constructing, analyzing, and visualizing complex street networks. <em>Computers, Environment and Urban Systems</em> 65, 126–139.</li>
+<li>Pyodide: Python compiled to WebAssembly, pyodide.org. Used for the in-browser optimality proof.</li>
+<li>OpenStreetMap contributors. Street data © OpenStreetMap contributors, Open Database Licence, read through the Overpass API.</li>
 </ul>
 <p><strong>Original project</strong></p>
 <ul>

@@ -57,10 +57,10 @@
       <div class="field" data-for="upload">
         <label for="file">File in the 1997 .GRA format</label>
         <input id="file" type="file" accept=".gra,.GRA,.txt">
-        <span class="hint">First line: junctions. Second: streets. Then one line per street: <code>from to cost</code>.</span>
+        <span class="hint">First line: junctions. Second: streets. Then one line per street: <code>from to cost</code>. Up to 2,500 junctions; for larger networks use the Python package.</span>
       </div>
       <div class="field" data-for="osm">
-        <span class="hint">Pan and zoom the map to a few blocks (up to about 1 km²), then fetch the streets. One-way streets are kept.</span>
+        <span class="hint">Pan and zoom the map to a few blocks (up to about 1 km², or 1,500 junctions), then fetch the streets. One-way streets are kept.</span>
         <button class="button secondary" id="fetch-osm" type="button">Fetch streets in this view</button>
       </div>
 

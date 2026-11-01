@@ -207,3 +207,9 @@ input[type="range"] { width: 100%; accent-color: var(--ink); }
 @media (prefers-reduced-motion: reduce) {
   * { scroll-behavior: auto !important; }
 }
+
+/* How to cite */
+.citation {
+  font-family: var(--serif); padding-left: 1.5em; text-indent: -1.5em;
+  overflow-wrap: anywhere;
+}
