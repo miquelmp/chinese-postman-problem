@@ -187,9 +187,11 @@ def build_report(repo):
 # ------------------------------------------------------------------ build
 def build(repo):
     from cartero import web
-    if DOCS.exists():
-        shutil.rmtree(DOCS)
-    DOCS.mkdir()
+    DOCS.mkdir(exist_ok=True)
+    for item in DOCS.iterdir():          # docs/pyodide is vendored once, not rebuilt
+        if item.name == "pyodide":
+            continue
+        shutil.rmtree(item) if item.is_dir() else item.unlink()
     shutil.copytree(SITE / "assets", DOCS / "assets")
     (DOCS / ".nojekyll").write_text("")
 
@@ -232,6 +234,8 @@ def build(repo):
     (DOCS / "report").mkdir()
     shutil.copy(PDF_2026, DOCS / "report" / PDF_2026.name)
     (DOCS / "report" / "index.html").write_text(render(build_report(repo), "../", repo), encoding="utf-8")
+    if not (DOCS / "pyodide" / "pyodide.js").exists():
+        print("Note: docs/pyodide is missing; run tools/fetch_pyodide.sh, or the site will use the CDN.")
     print(f"Built {sum(1 for _ in DOCS.rglob('*') if _.is_file())} files into {DOCS}")
 
 

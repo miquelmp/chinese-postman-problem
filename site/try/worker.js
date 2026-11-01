@@ -10,10 +10,15 @@ function lastLine(err) {
   return msg[msg.length - 1];
 }
 
+const progress = text => self.postMessage({ progress: text });
+
 async function init(indexURL) {
+  progress("Downloading Python (about 12 MB the first time)…");
   importScripts(indexURL + "pyodide.js");
   pyodide = await loadPyodide({ indexURL });
+  progress("Loading NumPy and SciPy (about 23 MB the first time)…");
   await pyodide.loadPackage(["numpy", "scipy"]);
+  progress("Loading NetworkX and the solver…");
   // NetworkX alone: its declared extras (Matplotlib, Pillow…) are not needed by the solver
   const lock = await (await fetch(indexURL + "pyodide-lock.json")).json();
   await pyodide.loadPackage(indexURL + lock.packages.networkx.file_name);

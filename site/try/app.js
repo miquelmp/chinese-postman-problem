@@ -2,14 +2,18 @@
 (function () {
   "use strict";
   const $ = id => document.getElementById(id);
-  const PYODIDE = new URLSearchParams(location.search).get("pyodide")
-    || "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/";
+  // Python is served with the site (docs/pyodide/); the public CDN is the fallback.
+  const OWN_PYODIDE = new URL("../pyodide/", location.href).href;
+  const CDN_PYODIDE = "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/";
+  const PYODIDE_OVERRIDE = new URLSearchParams(location.search).get("pyodide");
 
   // ---------------------------------------------------------------- worker RPC
   const worker = new Worker("worker.js");
   let seq = 0;
   const pending = new Map();
+  let onProgress = () => {};
   worker.onmessage = e => {
+    if (e.data.progress) { onProgress(e.data.progress); return; }
     const { id, ok, out, error } = e.data;
     const p = pending.get(id); pending.delete(id);
     ok ? p.resolve(out) : p.reject(new Error(error));
@@ -211,9 +215,28 @@
 
   showFields();
   const t0 = performance.now();
-  rpc("init", { indexURL: PYODIDE }).then(() => {
-    ready = true;
-    status(`Python loaded in ${((performance.now() - t0) / 1000).toFixed(0)} s.`);
+  let stage = "Loading Python and the solver…";
+  const elapsed = () => Math.round((performance.now() - t0) / 1000);
+  onProgress = text => { stage = text; status(`${stage} ${elapsed()} s`); };
+  const timer = setInterval(() => {
+    if (ready) return clearInterval(timer);
+    const t = elapsed();
+    status(t < 90 ? `${stage} ${t} s` :
+      `${stage} ${t} s. This is taking longer than usual: the download may be slow. Keep this page open, or reload it.`);
+  }, 1000);
+  worker.onerror = e => { clearInterval(timer); status("Python could not start: " + (e.message || "worker error") + ". Reload the page to try again.", true); };
+
+  async function pickPyodide() {
+    if (PYODIDE_OVERRIDE) return PYODIDE_OVERRIDE;
+    try {
+      const r = await fetch(OWN_PYODIDE + "pyodide-lock.json", { method: "HEAD" });
+      if (r.ok) return OWN_PYODIDE;
+    } catch (e) { /* fall through to the CDN */ }
+    return CDN_PYODIDE;
+  }
+  pickPyodide().then(indexURL => rpc("init", { indexURL })).then(() => {
+    ready = true; clearInterval(timer);
+    status(`Python loaded in ${elapsed()} s.`);
     load();
-  }).catch(err => status("Python could not be loaded: " + err.message, true));
+  }).catch(err => { clearInterval(timer); status("Python could not be loaded: " + err.message + ". Reload the page to try again.", true); });
 })();

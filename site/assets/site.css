@@ -190,7 +190,7 @@ input[type="range"] { width: 100%; accent-color: var(--ink); }
 .stats dt { font-size: 0.8rem; color: var(--ink-soft); }
 .stats dd { margin: 0; font-size: var(--step-1); font-weight: 800; font-variant-numeric: tabular-nums; }
 #osm-map { height: 22rem; border-radius: 6px; border: 1px solid var(--rule); margin-bottom: 0.75rem; }
-.hidden { display: none !important; }
+.hidden, [hidden] { display: none !important; }
 
 /* ---------- responsive ---------- */
 @media (max-width: 60rem) {
