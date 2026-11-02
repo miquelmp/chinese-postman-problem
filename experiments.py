@@ -237,14 +237,43 @@ def _mixed_row(family, name, M, limit):
     return r
 
 
-def mixed(limit=300.0):
-    from chinese_postman.mixed import city_grid, from_graph
+def record_environment():
+    """Write results/environment.json: the machine and versions behind the timings."""
+    import json
+    import platform
+    import networkx
+    import numpy
+    import scipy
+    cpu = next((line.split(":", 1)[1].strip() for line in open("/proc/cpuinfo", encoding="utf-8")
+                if line.startswith("model name")), platform.processor())
+    pages = os.sysconf("SC_PHYS_PAGES") * os.sysconf("SC_PAGE_SIZE")
+    with open(f"{OUT}/environment.json", "w", encoding="utf-8") as f:
+        json.dump(dict(cpu=cpu, cores=os.cpu_count(), ram_gb=round(pages / 1024 ** 3, 1),
+                       system=platform.platform(), python=platform.python_version(),
+                       numpy=numpy.__version__, scipy=scipy.__version__,
+                       networkx=networkx.__version__, date=time.strftime("%Y-%m-%d")), f, indent=2)
+
+
+def mixed_towns(limit=300.0, seeds=5):
+    """Five towns per size. Resumes from results/mixed_city.csv if a run was interrupted."""
+    from chinese_postman.mixed import city_grid
+    record_environment()
     rows = []
+    if os.path.exists(f"{OUT}/mixed_city.csv"):
+        with open(f"{OUT}/mixed_city.csv", newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+    done = {r["instance"] for r in rows}
     for size in (8, 12, 16, 20, 30, 40, 60, 80):
-        for seed in range(3 if size <= 20 else 1):
-            M = city_grid(size, size, seed=seed)
-            rows.append(_mixed_row("mixed-city", f"city-{size}x{size}-s{seed}", M, limit))
-            save("mixed_city", rows)
+        for seed in range(seeds):
+            name = f"city-{size}x{size}-s{seed}"
+            if name not in done:
+                rows.append(_mixed_row("mixed-city", name, city_grid(size, size, seed=seed), limit))
+                save("mixed_city", rows)
+
+
+def mixed(limit=300.0):
+    from chinese_postman.mixed import from_graph
+    mixed_towns(limit)
     rows = []
     seen = set()
     for fam, prefix in FAMILIES.items():
