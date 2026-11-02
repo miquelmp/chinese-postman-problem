@@ -1,0 +1,3 @@
+family,instance,vertices,edges,odd,original,added,total,added_pct,seconds,t_shortest_paths,t_matching,t_euler,rounds,added_edges,initial_edges,peak_rss_gb
+lemon-manhattan,manhattan-45x45,2025,3558,660,621510,78710,700220,12.66,0.337,0.1882,0.0493,0.0995,1,0,3842,0.1
+lemon-manhattan,manhattan-70x70,4900,8695,1536,1522480,185720,1708200,12.2,1.6243,0.905,0.1271,0.5921,2,4,8833,0.17

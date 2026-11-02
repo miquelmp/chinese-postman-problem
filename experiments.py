@@ -161,7 +161,7 @@ def directed():
 
 
 def scaling_fast(budget=600.0):
-    """Same generators, much larger, with the Blossom V backend (SciPy Dijkstra + pricing)."""
+    """Same generators, much larger, with the LEMON backend (SciPy Dijkstra + pricing)."""
     import resource
     from chinese_postman.fast import solve_undirected_fast
     rows = []
@@ -175,13 +175,13 @@ def scaling_fast(budget=600.0):
             el = time.perf_counter() - t
             rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024 ** 2
             name = f"{kind}-{size}x{size}" if kind == "manhattan" else f"{kind}-{size}"
-            rows.append(row("blossom5-" + kind, name, G, sol, dict(
+            rows.append(row("lemon-" + kind, name, G, sol, dict(
                 rounds=sol.matching_stats["rounds"], added_edges=sol.matching_stats["added_edges"],
                 initial_edges=sol.matching_stats["initial_edges"], peak_rss_gb=round(rss, 2))))
             print(f"{kind:9} n={G.number_of_nodes():6} m={G.number_of_edges():6} odd={sol.odd_vertices:6} "
                   f"total {el:7.1f}s  " + " ".join(f"{k}={v:.1f}s" for k, v in sol.seconds.items())
                   + f"  rounds={sol.matching_stats['rounds']} peakGB={rss:.2f}", flush=True)
-            save("scaling_blossom5", rows)
+            save("scaling_lemon", rows)
             if el > budget:
                 break
 
