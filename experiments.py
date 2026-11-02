@@ -275,7 +275,8 @@ def mixed_towns(limit=300.0, seeds=5):
 
 def mcpp(limit=120.0, step=4):
     """Published mixed instances of Corberan et al. (run tools/fetch_mcpp.sh first): every
-    `step`-th file, balanced across the sets. Resumes from results/mixed_published.csv."""
+    `step`-th file, balanced across the sets, smallest networks first so that an interrupted run
+    still covers both sets evenly. Resumes from results/mixed_published.csv."""
     from chinese_postman.mixed import read_mcpp
     record_environment()
     rows = []
@@ -283,7 +284,7 @@ def mcpp(limit=120.0, step=4):
         with open(f"{OUT}/mixed_published.csv", newline="", encoding="utf-8") as f:
             rows = list(csv.DictReader(f))
     done = {r["instance"] for r in rows}
-    for path in sorted(glob.glob("data/mcpp/M*"))[::step]:
+    for path in sorted(sorted(glob.glob("data/mcpp/M*"))[::step], key=lambda p: os.path.basename(p)[2:4]):
         name = os.path.basename(path)
         if name not in done:
             rows.append(_mixed_row("mcpp-" + name[:2], name, read_mcpp(path), limit))
