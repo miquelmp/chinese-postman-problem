@@ -9,7 +9,7 @@ Pascual) with today's implementations.
 
 - **Website** (`docs/`): the story, both reports, and a solver that runs in your browser.
 - **Python package** `chinese_postman`: undirected, directed and mixed Chinese Postman solvers, all with
-  proven optimality or a certified gap, and the extensions proposed in 1997: streets that need service
+  proven optimality or a certified gap, and the paths left open in 1997: streets that need service
   only once (rural postman), several postmen, and capacitated fleets.
 - **Reports** (`report/`): the 2026 revision (Markdown and PDF) and the original 1997 report (PDF, Spanish).
 - **Data and results**: 92 classical benchmark road networks and every result file behind the report.

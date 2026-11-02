@@ -387,7 +387,7 @@ def solve_k_exact(G: nx.MultiGraph, k: int, depot=None, time_limit: float = 120.
         if left <= 0.5:
             return None, False, None
         res = milp(cost, constraints=[LinearConstraint(np.array(rows), lo, hi)], integrality=integ,
-                   bounds=Bounds(lb_, ub), options={"time_limit": left, "disp": False})
+                   bounds=Bounds(lb_, ub), options={"time_limit": left, "mip_rel_gap": 0.0, "disp": False})
         if res.x is None:
             return None, False, None
         x = res.x

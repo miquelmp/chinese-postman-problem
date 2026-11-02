@@ -187,7 +187,7 @@ def ext_stats():
         f"Over the {len(multi)} networks with several pieces and a proven optimum, Frederickson's heuristic alone is a mean "
         f"{_pct(statistics.mean(fg))} above the optimum (worst {_pct(max(fg))}, well inside its guarantee of 50%), and the local "
         f"search brings this to {_pct(statistics.mean(hg))} (worst {_pct(max(hg))}). "
-        + (f"On the {len(open_)} largest towns, with up to {max(int(r['required']) for r in open_)} streets to serve, the "
+        + (f"On the other {len(open_)} towns, with up to {max(int(r['required']) for r in open_)} streets to serve, the "
            f"optimum is not proved in two minutes, but the best route is within {_pct(max(bg))} of the lower bound."
            if open_ else ""))
     if not all((ROOT / "results" / n).exists() for n in ("fleet_small.csv", "fleet_benchmarks.csv", "carp.csv")):
@@ -198,7 +198,7 @@ def ext_stats():
     sg = [f(r, "split_gap_pct") for r in ks]
     hk = [f(r, "heuristic_gap_pct") for r in ks]
     ratio = max(f(r, "split_ratio") for r in ks)
-    bgap = [100 * (f(r, "optimum") - f(r, "lower_bound")) / f(r, "lower_bound") for r in ks]
+    bgap = [100 * (f(r, "optimum") - f(r, "lower_bound")) / f(r, "optimum") for r in ks]
     kb = [r for r in _rows("fleet_benchmarks.csv") if int(r["k"]) <= 10]
     kg = [f(r, "gap_pct") for r in kb]
     out["K_GAP"] = (f"Small networks, against the exact optimum: split alone mean {_pct(statistics.mean(sg))}, "
@@ -217,7 +217,8 @@ def ext_stats():
                        f"mean {_pct(statistics.mean(cg))}, worst {_pct(max(cg))}")
     out["CARP_TEXT"] = (
         f"On the {len(cp)} classical CARP instances, this simple method is a median {_pct(statistics.median(cg))} above the best "
-        f"solutions published (mean {_pct(statistics.mean(cg))}; it matches the best known on {sum(c <= 0.005 for c in cg)}). "
+        f"solutions published (mean {_pct(statistics.mean(cg))}; it matches the best known on {sum(c <= 0.005 for c in cg)}), "
+        f"with the number of vehicles left free: 65 instances use more than the file states, and on the other 132 the median is 4.7%. "
         f"The best published solutions come from decades of dedicated metaheuristics and exact methods; the point here is how "
         f"far the 1997 tour already goes when it is simply cut into vehicle loads.")
     return out

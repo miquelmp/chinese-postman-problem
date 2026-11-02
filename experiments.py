@@ -286,7 +286,7 @@ def _rural_row(family, name, G, limit, depot=1):
     return r
 
 
-def rural(limit=300.0):
+def rural(limit=120.0):
     """Rural postman: benchmark networks whose files mark only some streets as required,
     and synthetic towns where a random share of the streets needs service."""
     import random
@@ -362,7 +362,7 @@ def fleet_small(seconds=1.0, seeds=8):
         save("fleet_small", rows)
 
 
-def fleet_benchmarks(seconds=20.0):
+def fleet_benchmarks(seconds=5.0):
     """k postmen on the benchmark networks (k = the vehicles of the file), against the bound."""
     from chinese_postman import fleet
     rows, seen = [], set()

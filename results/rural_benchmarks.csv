@@ -1,58 +1,58 @@
 family,instance,vertices,edges,required,pieces,service,frederickson,heuristic,lp_bound,best,lower_bound,optimal,method,seconds,bound_gap_pct,frederickson_gap_pct,heuristic_gap_pct
-rpp-egl-e,egl-e1-A,77,98,51,3,1468.0,2126.0,2126.0,2126.0,2126.0,2126.0,True,heuristic (proven optimal by bound),0.119,0.0,0.0,0.0
-rpp-egl-e,egl-e2-A,77,98,72,2,1879.0,2702.0,2702.0,2702.0,2702.0,2702.0,True,heuristic (proven optimal by bound),0.14,0.0,0.0,0.0
-rpp-egl-e,egl-e3-A,77,98,87,2,2188.0,3193.0,3193.0,3155.0,3193.0,3193.0,True,heuristic (proven optimal by branch-and-cut),0.242,0.0,0.0,0.0
-rpp-egl-s,egl-s1-A,140,190,75,6,1394.0,2620.0,2538.0,2277.0,2538.0,2538.0,True,heuristic (proven optimal by branch-and-cut),1.621,0.0,3.23,0.0
-rpp-egl-s,egl-s2-A,140,190,147,5,3174.0,4573.0,4539.0,4398.0,4531.0,4531.0,True,branch-and-cut,6.17,0.0,0.93,0.18
-rpp-egl-s,egl-s3-A,140,190,159,4,3379.0,4731.0,4697.0,4567.0,4697.0,4697.0,True,heuristic (proven optimal by branch-and-cut),4.57,0.0,0.72,0.0
-rpp-egl-g,egl-g1-A,255,375,347,1,553696.0,705853.0,705853.0,,705853.0,705853.0,True,"matching (exact, polynomial)",3.091,0.0,0.0,0.0
-rpp-beullens-C,C01,69,98,79,1,2490.0,2990.0,2990.0,,2990.0,2990.0,True,"matching (exact, polynomial)",0.02,0.0,0.0,0.0
+rpp-egl-e,egl-e1-A,77,98,51,3,1468.0,2126.0,2126.0,2126.0,2126.0,2126.0,True,heuristic (proven optimal by bound),0.121,0.0,0.0,0.0
+rpp-egl-e,egl-e2-A,77,98,72,2,1879.0,2702.0,2702.0,2702.0,2702.0,2702.0,True,heuristic (proven optimal by bound),0.129,0.0,0.0,0.0
+rpp-egl-e,egl-e3-A,77,98,87,2,2188.0,3193.0,3193.0,3155.0,3193.0,3193.0,True,heuristic (proven optimal by branch-and-cut),0.257,0.0,0.0,0.0
+rpp-egl-s,egl-s1-A,140,190,75,6,1394.0,2620.0,2538.0,2277.0,2538.0,2538.0,True,heuristic (proven optimal by branch-and-cut),1.701,0.0,3.23,0.0
+rpp-egl-s,egl-s2-A,140,190,147,5,3174.0,4573.0,4539.0,4398.0,4531.0,4531.0,True,branch-and-cut,6.199,0.0,0.93,0.18
+rpp-egl-s,egl-s3-A,140,190,159,4,3379.0,4731.0,4697.0,4567.0,4697.0,4697.0,True,heuristic (proven optimal by branch-and-cut),5.153,0.0,0.72,0.0
+rpp-egl-g,egl-g1-A,255,375,347,1,553696.0,705853.0,705853.0,,705853.0,705853.0,True,"matching (exact, polynomial)",3.691,0.0,0.0,0.0
+rpp-beullens-C,C01,69,98,79,1,2490.0,2990.0,2990.0,,2990.0,2990.0,True,"matching (exact, polynomial)",0.021,0.0,0.0,0.0
 rpp-beullens-C,C02,48,66,53,1,2040.0,2340.0,2340.0,,2340.0,2340.0,True,"matching (exact, polynomial)",0.005,0.0,0.0,0.0
-rpp-beullens-C,C03,46,64,51,1,1650.0,1985.0,1985.0,,1985.0,1985.0,True,"matching (exact, polynomial)",0.007,0.0,0.0,0.0
-rpp-beullens-C,C04,60,84,72,1,2170.0,2655.0,2655.0,,2655.0,2655.0,True,"matching (exact, polynomial)",0.015,0.0,0.0,0.0
+rpp-beullens-C,C03,46,64,51,1,1650.0,1985.0,1985.0,,1985.0,1985.0,True,"matching (exact, polynomial)",0.006,0.0,0.0,0.0
+rpp-beullens-C,C04,60,84,72,1,2170.0,2655.0,2655.0,,2655.0,2655.0,True,"matching (exact, polynomial)",0.017,0.0,0.0,0.0
 rpp-beullens-C,C05,56,79,65,1,2895.0,3455.0,3455.0,,3455.0,3455.0,True,"matching (exact, polynomial)",0.007,0.0,0.0,0.0
-rpp-beullens-C,C06,38,55,51,1,1640.0,2075.0,2075.0,,2075.0,2075.0,True,"matching (exact, polynomial)",0.005,0.0,0.0,0.0
-rpp-beullens-C,C07,54,70,52,1,2280.0,2945.0,2945.0,,2945.0,2945.0,True,"matching (exact, polynomial)",0.009,0.0,0.0,0.0
+rpp-beullens-C,C06,38,55,51,1,1640.0,2075.0,2075.0,,2075.0,2075.0,True,"matching (exact, polynomial)",0.006,0.0,0.0,0.0
+rpp-beullens-C,C07,54,70,52,1,2280.0,2945.0,2945.0,,2945.0,2945.0,True,"matching (exact, polynomial)",0.01,0.0,0.0,0.0
 rpp-beullens-C,C08,66,88,63,1,2360.0,2675.0,2675.0,,2675.0,2675.0,True,"matching (exact, polynomial)",0.005,0.0,0.0,0.0
-rpp-beullens-C,C09,76,117,97,1,3440.0,3855.0,3855.0,,3855.0,3855.0,True,"matching (exact, polynomial)",0.013,0.0,0.0,0.0
-rpp-beullens-C,C10,60,82,55,1,2430.0,2970.0,2970.0,,2970.0,2970.0,True,"matching (exact, polynomial)",0.005,0.0,0.0,0.0
-rpp-beullens-C,C11,83,118,94,1,2825.0,3465.0,3465.0,,3465.0,3465.0,True,"matching (exact, polynomial)",0.026,0.0,0.0,0.0
-rpp-beullens-C,C12,62,88,72,1,2630.0,3100.0,3100.0,,3100.0,3100.0,True,"matching (exact, polynomial)",0.011,0.0,0.0,0.0
+rpp-beullens-C,C09,76,117,97,1,3440.0,3855.0,3855.0,,3855.0,3855.0,True,"matching (exact, polynomial)",0.014,0.0,0.0,0.0
+rpp-beullens-C,C10,60,82,55,1,2430.0,2970.0,2970.0,,2970.0,2970.0,True,"matching (exact, polynomial)",0.006,0.0,0.0,0.0
+rpp-beullens-C,C11,83,118,94,1,2825.0,3465.0,3465.0,,3465.0,3465.0,True,"matching (exact, polynomial)",0.043,0.0,0.0,0.0
+rpp-beullens-C,C12,62,88,72,1,2630.0,3100.0,3100.0,,3100.0,3100.0,True,"matching (exact, polynomial)",0.013,0.0,0.0,0.0
 rpp-beullens-C,C13,40,60,52,1,1845.0,2340.0,2340.0,,2340.0,2340.0,True,"matching (exact, polynomial)",0.004,0.0,0.0,0.0
-rpp-beullens-C,C14,58,79,57,1,2350.0,3020.0,3020.0,,3020.0,3020.0,True,"matching (exact, polynomial)",0.014,0.0,0.0,0.0
-rpp-beullens-C,C15,97,140,107,1,3080.0,3870.0,3870.0,,3870.0,3870.0,True,"matching (exact, polynomial)",0.029,0.0,0.0,0.0
-rpp-beullens-C,C16,32,42,32,1,890.0,1020.0,1020.0,,1020.0,1020.0,True,"matching (exact, polynomial)",0.003,0.0,0.0,0.0
-rpp-beullens-C,C17,43,56,42,1,1945.0,2390.0,2390.0,,2390.0,2390.0,True,"matching (exact, polynomial)",0.009,0.0,0.0,0.0
-rpp-beullens-C,C18,93,133,121,1,3235.0,3735.0,3735.0,,3735.0,3735.0,True,"matching (exact, polynomial)",0.045,0.0,0.0,0.0
+rpp-beullens-C,C14,58,79,57,1,2350.0,3020.0,3020.0,,3020.0,3020.0,True,"matching (exact, polynomial)",0.022,0.0,0.0,0.0
+rpp-beullens-C,C15,97,140,107,1,3080.0,3870.0,3870.0,,3870.0,3870.0,True,"matching (exact, polynomial)",0.042,0.0,0.0,0.0
+rpp-beullens-C,C16,32,42,32,1,890.0,1020.0,1020.0,,1020.0,1020.0,True,"matching (exact, polynomial)",0.004,0.0,0.0,0.0
+rpp-beullens-C,C17,43,56,42,1,1945.0,2390.0,2390.0,,2390.0,2390.0,True,"matching (exact, polynomial)",0.007,0.0,0.0,0.0
+rpp-beullens-C,C18,93,133,121,1,3235.0,3735.0,3735.0,,3735.0,3735.0,True,"matching (exact, polynomial)",0.041,0.0,0.0,0.0
 rpp-beullens-C,C19,62,84,61,1,1720.0,2255.0,2255.0,,2255.0,2255.0,True,"matching (exact, polynomial)",0.013,0.0,0.0,0.0
 rpp-beullens-C,C20,45,64,53,1,1455.0,1860.0,1860.0,,1860.0,1860.0,True,"matching (exact, polynomial)",0.006,0.0,0.0,0.0
-rpp-beullens-C,C21,60,84,76,1,2245.0,2640.0,2640.0,,2640.0,2640.0,True,"matching (exact, polynomial)",0.014,0.0,0.0,0.0
-rpp-beullens-C,C22,56,76,43,1,1175.0,1715.0,1715.0,,1715.0,1715.0,True,"matching (exact, polynomial)",0.013,0.0,0.0,0.0
-rpp-beullens-C,C23,78,109,92,1,2395.0,3030.0,3030.0,,3030.0,3030.0,True,"matching (exact, polynomial)",0.023,0.0,0.0,0.0
-rpp-beullens-C,C24,77,115,84,1,2040.0,2435.0,2435.0,,2435.0,2435.0,True,"matching (exact, polynomial)",0.011,0.0,0.0,0.0
-rpp-beullens-C,C25,37,50,38,1,1405.0,1750.0,1750.0,,1750.0,1750.0,True,"matching (exact, polynomial)",0.004,0.0,0.0,0.0
+rpp-beullens-C,C21,60,84,76,1,2245.0,2640.0,2640.0,,2640.0,2640.0,True,"matching (exact, polynomial)",0.009,0.0,0.0,0.0
+rpp-beullens-C,C22,56,76,43,1,1175.0,1715.0,1715.0,,1715.0,1715.0,True,"matching (exact, polynomial)",0.01,0.0,0.0,0.0
+rpp-beullens-C,C23,78,109,92,1,2395.0,3030.0,3030.0,,3030.0,3030.0,True,"matching (exact, polynomial)",0.021,0.0,0.0,0.0
+rpp-beullens-C,C24,77,115,84,1,2040.0,2435.0,2435.0,,2435.0,2435.0,True,"matching (exact, polynomial)",0.01,0.0,0.0,0.0
+rpp-beullens-C,C25,37,50,38,1,1405.0,1750.0,1750.0,,1750.0,1750.0,True,"matching (exact, polynomial)",0.003,0.0,0.0,0.0
 rpp-beullens-E,E01,73,105,85,1,2975.0,3810.0,3810.0,,3810.0,3810.0,True,"matching (exact, polynomial)",0.039,0.0,0.0,0.0
 rpp-beullens-E,E02,58,81,58,1,2380.0,3155.0,3155.0,,3155.0,3155.0,True,"matching (exact, polynomial)",0.01,0.0,0.0,0.0
-rpp-beullens-E,E03,46,61,47,1,1265.0,1585.0,1585.0,,1585.0,1585.0,True,"matching (exact, polynomial)",0.006,0.0,0.0,0.0
-rpp-beullens-E,E04,70,99,77,1,2545.0,3290.0,3290.0,,3290.0,3290.0,True,"matching (exact, polynomial)",0.031,0.0,0.0,0.0
-rpp-beullens-E,E05,68,94,61,1,2425.0,3215.0,3215.0,,3215.0,3215.0,True,"matching (exact, polynomial)",0.013,0.0,0.0,0.0
-rpp-beullens-E,E06,49,66,43,1,1385.0,1785.0,1785.0,,1785.0,1785.0,True,"matching (exact, polynomial)",0.004,0.0,0.0,0.0
-rpp-beullens-E,E07,73,94,50,1,2255.0,3185.0,3185.0,,3185.0,3185.0,True,"matching (exact, polynomial)",0.013,0.0,0.0,0.0
-rpp-beullens-E,E08,74,98,59,1,2560.0,3345.0,3345.0,,3345.0,3345.0,True,"matching (exact, polynomial)",0.016,0.0,0.0,0.0
-rpp-beullens-E,E09,93,141,103,1,3585.0,4535.0,4535.0,,4535.0,4535.0,True,"matching (exact, polynomial)",0.035,0.0,0.0,0.0
-rpp-beullens-E,E10,56,76,49,1,1915.0,2635.0,2635.0,,2635.0,2635.0,True,"matching (exact, polynomial)",0.011,0.0,0.0,0.0
-rpp-beullens-E,E11,80,113,94,1,2820.0,3575.0,3575.0,,3575.0,3575.0,True,"matching (exact, polynomial)",0.031,0.0,0.0,0.0
-rpp-beullens-E,E12,74,103,67,1,2485.0,3320.0,3320.0,,3320.0,3320.0,True,"matching (exact, polynomial)",0.01,0.0,0.0,0.0
-rpp-beullens-E,E13,49,73,52,1,2020.0,2715.0,2715.0,,2715.0,2715.0,True,"matching (exact, polynomial)",0.006,0.0,0.0,0.0
-rpp-beullens-E,E14,53,72,55,1,2305.0,3130.0,3130.0,,3130.0,3130.0,True,"matching (exact, polynomial)",0.019,0.0,0.0,0.0
+rpp-beullens-E,E03,46,61,47,1,1265.0,1585.0,1585.0,,1585.0,1585.0,True,"matching (exact, polynomial)",0.005,0.0,0.0,0.0
+rpp-beullens-E,E04,70,99,77,1,2545.0,3290.0,3290.0,,3290.0,3290.0,True,"matching (exact, polynomial)",0.032,0.0,0.0,0.0
+rpp-beullens-E,E05,68,94,61,1,2425.0,3215.0,3215.0,,3215.0,3215.0,True,"matching (exact, polynomial)",0.016,0.0,0.0,0.0
+rpp-beullens-E,E06,49,66,43,1,1385.0,1785.0,1785.0,,1785.0,1785.0,True,"matching (exact, polynomial)",0.005,0.0,0.0,0.0
+rpp-beullens-E,E07,73,94,50,1,2255.0,3185.0,3185.0,,3185.0,3185.0,True,"matching (exact, polynomial)",0.018,0.0,0.0,0.0
+rpp-beullens-E,E08,74,98,59,1,2560.0,3345.0,3345.0,,3345.0,3345.0,True,"matching (exact, polynomial)",0.018,0.0,0.0,0.0
+rpp-beullens-E,E09,93,141,103,1,3585.0,4535.0,4535.0,,4535.0,4535.0,True,"matching (exact, polynomial)",0.063,0.0,0.0,0.0
+rpp-beullens-E,E10,56,76,49,1,1915.0,2635.0,2635.0,,2635.0,2635.0,True,"matching (exact, polynomial)",0.017,0.0,0.0,0.0
+rpp-beullens-E,E11,80,113,94,1,2820.0,3575.0,3575.0,,3575.0,3575.0,True,"matching (exact, polynomial)",0.056,0.0,0.0,0.0
+rpp-beullens-E,E12,74,103,67,1,2485.0,3320.0,3320.0,,3320.0,3320.0,True,"matching (exact, polynomial)",0.011,0.0,0.0,0.0
+rpp-beullens-E,E13,49,73,52,1,2020.0,2715.0,2715.0,,2715.0,2715.0,True,"matching (exact, polynomial)",0.007,0.0,0.0,0.0
+rpp-beullens-E,E14,53,72,55,1,2305.0,3130.0,3130.0,,3130.0,3130.0,True,"matching (exact, polynomial)",0.021,0.0,0.0,0.0
 rpp-beullens-E,E15,85,126,107,1,2615.0,3480.0,3480.0,,3480.0,3480.0,True,"matching (exact, polynomial)",0.027,0.0,0.0,0.0
-rpp-beullens-E,E16,60,80,54,1,1950.0,2495.0,2495.0,,2495.0,2495.0,True,"matching (exact, polynomial)",0.013,0.0,0.0,0.0
+rpp-beullens-E,E16,60,80,54,1,1950.0,2495.0,2495.0,,2495.0,2495.0,True,"matching (exact, polynomial)",0.011,0.0,0.0,0.0
 rpp-beullens-E,E17,38,50,36,1,1450.0,1890.0,1890.0,,1890.0,1890.0,True,"matching (exact, polynomial)",0.007,0.0,0.0,0.0
-rpp-beullens-E,E18,78,110,88,1,2225.0,2955.0,2955.0,,2955.0,2955.0,True,"matching (exact, polynomial)",0.032,0.0,0.0,0.0
-rpp-beullens-E,E19,77,103,66,1,1800.0,2335.0,2335.0,,2335.0,2335.0,True,"matching (exact, polynomial)",0.017,0.0,0.0,0.0
-rpp-beullens-E,E20,56,80,63,1,1835.0,2405.0,2405.0,,2405.0,2405.0,True,"matching (exact, polynomial)",0.009,0.0,0.0,0.0
+rpp-beullens-E,E18,78,110,88,1,2225.0,2955.0,2955.0,,2955.0,2955.0,True,"matching (exact, polynomial)",0.03,0.0,0.0,0.0
+rpp-beullens-E,E19,77,103,66,1,1800.0,2335.0,2335.0,,2335.0,2335.0,True,"matching (exact, polynomial)",0.018,0.0,0.0,0.0
+rpp-beullens-E,E20,56,80,63,1,1835.0,2405.0,2405.0,,2405.0,2405.0,True,"matching (exact, polynomial)",0.01,0.0,0.0,0.0
 rpp-beullens-E,E21,57,82,72,1,2025.0,2630.0,2630.0,,2630.0,2630.0,True,"matching (exact, polynomial)",0.014,0.0,0.0,0.0
-rpp-beullens-E,E22,54,73,44,1,1285.0,1890.0,1890.0,,1890.0,1890.0,True,"matching (exact, polynomial)",0.009,0.0,0.0,0.0
-rpp-beullens-E,E23,93,130,89,1,2280.0,2905.0,2905.0,,2905.0,2905.0,True,"matching (exact, polynomial)",0.019,0.0,0.0,0.0
-rpp-beullens-E,E24,97,142,86,1,2235.0,2995.0,2995.0,,2995.0,2995.0,True,"matching (exact, polynomial)",0.024,0.0,0.0,0.0
-rpp-beullens-E,E25,26,35,28,1,960.0,1350.0,1350.0,,1350.0,1350.0,True,"matching (exact, polynomial)",0.002,0.0,0.0,0.0
+rpp-beullens-E,E22,54,73,44,1,1285.0,1890.0,1890.0,,1890.0,1890.0,True,"matching (exact, polynomial)",0.011,0.0,0.0,0.0
+rpp-beullens-E,E23,93,130,89,1,2280.0,2905.0,2905.0,,2905.0,2905.0,True,"matching (exact, polynomial)",0.023,0.0,0.0,0.0
+rpp-beullens-E,E24,97,142,86,1,2235.0,2995.0,2995.0,,2995.0,2995.0,True,"matching (exact, polynomial)",0.028,0.0,0.0,0.0
+rpp-beullens-E,E25,26,35,28,1,960.0,1350.0,1350.0,,1350.0,1350.0,True,"matching (exact, polynomial)",0.003,0.0,0.0,0.0

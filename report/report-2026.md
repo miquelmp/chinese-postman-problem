@@ -43,7 +43,7 @@ Typical applications are any service that must cover streets rather than visit p
 1. A clean, tested reimplementation of the full CPP pipeline.
 2. A computational study on nine families of instances, none taken from the original Vilanova i la Geltrú case studies.
 3. A comparison of the 1997 branch-and-bound with the exact method, and a tightened lower bound for anyone who extends the B&B to harder variants.
-4. The extensions proposed in 1997, implemented and measured: directed and mixed networks, service and travel costs, the rural postman problem, several postmen and capacitated fleets.
+4. The paths left open in 1997, implemented and measured: directed and mixed networks, service and travel costs, the rural postman problem, several postmen and capacitated fleets.
 
 ## 2. Graph-theoretic background
 
@@ -503,25 +503,25 @@ The objective cutoff lets branch-and-cut discard every branch that cannot beat t
 
 This extends the approach of chapter 12 of the 1997 report, a time-limited exact search used as a heuristic: there is now a branch-and-cut solver behind it, and a proven bound on the remaining error.
 
-## 10. The extensions proposed in 1997
+## 10. The paths left open in 1997
 
-The 1997 report closed with a list of extensions that would bring the method closer to practice. Each of them is now implemented, tested and measured. This chapter follows them in turn, and for each problem states how hard it is, whether it is solved exactly or by a heuristic, and how far the heuristic can be from the optimum.
+The 1997 report closed with two proposed extensions, the asymmetric case and a cost that depends on the pass, and with an observation that a working shift limits the work. All three are followed up here, with code, tests and measurements. This chapter follows them in turn, and for each problem states how hard it is, whether it is solved exactly or by a heuristic, and how far the heuristic can be from the optimum.
 
-| Path proposed in 1997 | Where it leads | Chapter |
+| Starting point in 1997 | Where it leads | Chapter |
 | --- | --- | --- |
-| "La resolución del CPP para el caso asimétrico" (the asymmetric case) | Directed and mixed CPP | 6.3, 9 |
-| "Que el valor asociado en cada arista variara en función de que fuera o no la primera vez que se recorre" (a different cost for the first pass) | Service and deadheading costs; the rural postman problem | 10.2, 10.3 |
-| "El trabajo que se puede realizar en media jornada \[...\] es claramente limitado" (a shift limits the work) | Several postmen; capacitated fleets | 10.4, 10.5 |
+| "La resolución de CPP para el caso asimétrico" (the asymmetric case) | Directed and mixed CPP | 6.3, 9 |
+| "\[...\] que el valor asociado en cada arista variara en función de que fuera o no la primera vez que se recorre" (a different cost for the first pass) | Service and deadheading costs; the rural postman problem | 10.2, 10.3 |
+| "\[...\] el trabajo que se puede realizar en media jornada \[...\] es claramente limitado" (a shift limits the work) | Several postmen; capacitated fleets | 10.4, 10.5 |
 
 ### 10.1 Exact, heuristic, bound and guarantee
 
-A problem is polynomial when an algorithm is known whose running time grows like a power of the network size; such problems are solved exactly at any size a city needs. The undirected and directed CPP are polynomial. A problem is NP-hard when no such algorithm is known. For these there are two complementary methods. An exact method, here branch-and-cut, finds the optimum and proves it, but its running time can grow very fast. A heuristic answers quickly and is paired with a lower bound, a value that no solution can beat; the distance between the heuristic and the bound is the most the heuristic can be off. Some heuristics also carry a guarantee: a proof that they are never more than a fixed factor above the optimum, on any network.
+A problem is polynomial when an algorithm is known whose running time grows like a power of the network size; such problems can be solved exactly on city-sized networks. The undirected and directed CPP are polynomial. A problem is NP-hard when it is at least as hard as every problem in NP, the class of problems whose solutions can be checked in polynomial time: a polynomial algorithm for one NP-hard problem would give one for all of them, and none is known. For these there are two complementary methods. An exact method, here branch-and-cut, finds the optimum and proves it, but its running time can grow very fast. A heuristic answers quickly and is paired with a lower bound, a value that no solution can beat; the distance between the heuristic and the bound is the most the heuristic can be off. Some heuristics also carry a guarantee: a proof that they are never more than a fixed factor above the optimum, on any network.
 
 Whether a polynomial algorithm can exist for the NP-hard problems is the P versus NP question, posed formally by Cook (1971) and, independently, by Levin (1973). It is one of the seven Millennium Prize Problems announced by the Clay Mathematics Institute in 2000, each with a prize of one million dollars; of the seven, only the Poincaré conjecture has been solved, and P versus NP remains open.
 
 If P = NP were proved, every NP-hard problem in this chapter, and the mixed CPP of chapter 9, would have an exact polynomial algorithm, and heuristics would no longer be needed in principle. Two caveats apply: the proof might show that such an algorithm exists without showing how to build it, or it might give one whose running time grows with so high a power of the network size that it is useless in practice. Much of today's cryptography, which relies on some problems being hard, would also be at risk. If P ≠ NP, as most researchers expect, there is no shortcut, and the approach proposed in 1997 and followed here is the right one: an exact search as far as it can go, and beyond that a heuristic with a bound.
 
-The postman shows how thin the line is. Edmonds' method solves the Chinese Postman Problem in polynomial time, yet a few one-way streets, a few streets that need no service, or a second postman are enough to cross it.
+The postman shows how thin the line is. Edmonds' method solves the Chinese Postman Problem in polynomial time, yet mixing one-way with two-way streets, leaving some streets without service, or adding a second postman is enough to cross it.
 
 ### 10.2 First and later passes
 
@@ -553,12 +553,12 @@ All three methods work on a reduced graph whose vertices are the endpoints of re
 
 | Networks | Count | Streets to serve | Optimum proved | Frederickson above the optimum (mean, worst) | After local search (mean, worst) | Slowest proof |
 | --- | --- | --- | --- | --- | --- | --- |
-| Benchmark files, required streets in one piece | 51 | 28–347 | 51, by matching | — | — | 3.1 s |
+| Benchmark files, required streets in one piece | 51 | 28–347 | 51, by matching | — | — | 3.7 s |
 | Benchmark files, several pieces | 6 | 51–159 | 6 | 0.81%, 3.23% | 0.03%, 0.18% | 6.2 s |
-| Grid towns 10×10 and 20×20, 20% or 50% to serve | 12 | 30–387 | 10 | 3.73%, 8.33% | 1.04%, 4.75% | 85 s |
-| Grid towns 30×30, 20% or 50% to serve | 6 | 330–870 | 0 in two minutes | — | within 6.45% of the bound | — |
+| Grid towns 10×10 and 20×20, 20% or 50% to serve | 12 | 30–387 | 10 | 3.73%, 8.33% | 1.04%, 4.75% | 74 s |
+| Grid towns 30×30, 20% or 50% to serve | 6 | 330–870 | 0 in two minutes | — | within 6.39% of the bound | — |
 
-The benchmark files are those of chapter 7 whose demands mark only some streets for service (Eglese and Beullens et al.); the towns are grids in which each street needs service with probability 0.2 or 0.5, with a two-minute limit. Frederickson's heuristic stays far inside its 3/2 guarantee: its worst case, on a small town with 15 pieces, is 8.3% above the optimum. The local search removes most of that excess, and branch-and-cut then either proves the route optimal or improves it. On the six largest towns, with 48 to 173 pieces, the optimum is not proved in two minutes, and the bound certifies the route within 1.4% to 6.5%.
+The benchmark files are those of chapter 7 whose demands mark only some streets for service (Eglese and Beullens et al.); the towns are grids in which each street needs service with probability 0.2 or 0.5, with a two-minute limit. Frederickson's heuristic stays far inside its 3/2 guarantee: its worst case, on a small town with 15 pieces, is 8.3% above the optimum. The local search removes most of that excess, and branch-and-cut then either proves the route optimal or improves it. On the six largest towns, with 48 to 173 pieces, the optimum is not proved in two minutes, and the bound certifies the route within 0.8% to 6.4%.
 
 ### 10.4 Several postmen
 
@@ -573,24 +573,24 @@ When a district is too large for one shift, k postmen share it, all starting and
 | --- | --- | --- | --- | --- |
 | Small random networks, 2 or 3 postmen | 62 | Above the exact optimum (mean, worst) | 2.91%, 26.6% | 0.02%, 1.25% |
 | Small random networks | 62 | Optimal | — | 61 of 62 |
-| Benchmark networks, 2 to 10 postmen | 312 runs | Above the lower bound (median, worst) | 12.0%, — | 6.2%, 37.1% |
+| Benchmark networks, 2 to 10 postmen | 312 runs | Above the lower bound (median, worst) | 12.0%, 44.6% | 6.2%, 37.1% |
 
-On the small networks, half of them with every street to serve and half with 60%, the best split of one tour is never more than 27% above the optimum, well inside the guarantee of 50% for two postmen and 67% for three, and the local search reaches the optimum in 61 of the 62 cases. On the benchmark networks the optimum is out of reach and only the lower bound is available. Much of the remaining distance is the bound's: on the small networks, where the optimum is known, the same bound is a mean 3.4% and up to 21% below it. A stronger bound would be the natural next step.
+On the small networks, half of them with every street to serve and half with 60% (two further cases with three postmen are left out, because the exact method did not finish within a minute), the best split of one tour is never more than 27% above the optimum, well inside the guarantee of 50% for two postmen and 67% for three, and the local search reaches the optimum in 61 of the 62 cases. On the benchmark networks the optimum is out of reach and only the lower bound is available, with 5 seconds of local search per run. A further 105 runs with more than 10 postmen are left out: there the farthest street sets the bound, and the longest route is at most 0.7% above it. Much of the remaining distance is the bound's: on the small networks, where the optimum is known, the same bound is a mean 3.0% and up to 17.5% below it. A stronger bound would be the natural next step.
 
 ### 10.5 Vehicles with a capacity
 
-When each street produces a load and each vehicle carries a limited amount, the problem is the capacitated arc routing problem (CARP), the subject of the benchmark files used throughout this report. It is NP-hard. With the same sequence of served streets, Ulusoy's (1985) dynamic programme cuts the route into vehicle loads at least total cost; streets are then moved between routes while the total cost falls and the loads fit (`fleet.solve_carp`).
+When each street produces a load and each vehicle carries a limited amount, the problem is the capacitated arc routing problem (CARP), the subject of the benchmark files used throughout this report. It is NP-hard (Golden and Wong, 1981). With the same sequence of served streets, Ulusoy's (1985) dynamic programme cuts the route into vehicle loads at least total cost; streets are then moved between routes for up to 5 seconds, while the total cost falls and the loads fit (`fleet.solve_carp`). The number of vehicles is left free.
 
-On the 197 classical CARP instances (gdb, val, egl, kshs and the four Beullens families), the routes are a median 5.8% above the best solutions published (mean 5.5%, worst 14.8%), and match them on 16 instances; the split alone is a median 8.8% above. The best published solutions come from decades of dedicated metaheuristics and exact methods; the point here is how far the single tour of 1997 already goes when it is simply cut into vehicle loads.
+On the 197 classical CARP instances (gdb, val, egl, kshs and the four Beullens families), the routes are a median 5.8% above the best solutions published (mean 5.5%, worst 14.8%), and match them on 16 instances; the split alone is a median 8.8% above. On 65 instances the routes use more vehicles than the file states, by up to 4, so those comparisons flatter the method: on the other 132 the median is 4.7%. 31 of the 197 best solutions are not proven optimal. The best published solutions come from decades of dedicated metaheuristics and exact methods; the point here is how far the single tour of 1997 already goes when it is simply cut into vehicle loads.
 
 ### 10.6 Summary
 
 | Problem | Complexity | Exact method here | Heuristic and guarantee | Measured distance from the optimum |
 | --- | --- | --- | --- | --- |
-| Every street, two-way or one-way | Polynomial | Matching or minimum-cost flow, any size | Not needed | 0 |
+| Every street, two-way or one-way | Polynomial | Matching or minimum-cost flow, in polynomial time | Not needed | 0 |
 | Every street, first pass dearer | Polynomial | Matching on the travel costs | Not needed | 0 |
 | Every street, mixed | NP-hard | Branch-and-cut, towns of up to 1,600 junctions | Orientation, balancing and local search | Mean 0.27%, worst 4.8% |
-| Some streets (rural postman) | NP-hard; polynomial with one piece | Branch-and-cut, all 57 benchmark networks and towns of up to 387 streets to serve | Frederickson, at most 3/2; local search | Mean 0.66%, worst 4.8% (16 proved cases) |
+| Some streets (rural postman) | NP-hard; polynomial with one piece | Branch-and-cut, all 57 benchmark networks and 10 of the 12 towns of up to 400 junctions | Frederickson, at most 3/2; local search | Mean 0.66%, worst 4.8% (16 proved cases) |
 | k postmen, min-max | NP-hard | Branch-and-cut, small networks | Best split, at most 2 − 1/k; local search | Mean 0.02%, worst 1.3% (62 small cases) |
 | Capacitated fleet (CARP) | NP-hard | Not attempted | Ulusoy split and relocations | Median 5.8% above the best known |
 
@@ -658,6 +658,7 @@ The natural continuation is a stronger lower bound for several postmen, the wind
 - Lenstra, J. K. and Rinnooy Kan, A. H. G. (1976). On general routing problems. *Networks* 6(3), 273–280.
 - Frederickson, G. N., Hecht, M. S. and Kim, C. E. (1978). Approximation algorithms for some routing problems. *SIAM Journal on Computing* 7(2), 178–193.
 - Benavent, E., Campos, V., Corberán, Á. and Mota, E. (1985). Análisis de heurísticos para el problema del cartero rural. *Trabajos de Estadística y de Investigación Operativa* 36, 27–38.
+- Golden, B. L. and Wong, R. T. (1981). Capacitated arc routing problems. *Networks* 11(3), 305–315.
 - Ulusoy, G. (1985). The fleet size and mix problem for capacitated arc routing. *European Journal of Operational Research* 22(3), 329–337.
 - Ghiani, G. and Laporte, G. (2000). A branch-and-cut algorithm for the undirected rural postman problem. *Mathematical Programming* 87(3), 467–481.
 
