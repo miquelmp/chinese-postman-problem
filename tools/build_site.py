@@ -257,6 +257,48 @@ def build_report(repo):
     return tpl.replace("{{TOC}}", toc).replace("{{BODY}}", body)
 
 
+# ------------------------------------------------------------------ search engines and link previews
+PAGES = ["", "report/", "extensions/", "try/", "1997/"]
+
+
+def site_url(repo):
+    """https://github.com/user/name -> https://user.github.io/name/"""
+    user, name = repo.rstrip("/").split("/")[-2:]
+    return f"https://{user.lower()}.github.io/{name}/"
+
+
+def seo(repo):
+    """Canonical URL and link-preview tags (Open Graph) on every page, and a sitemap.
+    A project site cannot have its own robots.txt (only the domain root can), so the
+    sitemap is submitted through Google Search Console instead."""
+    base = site_url(repo)
+    for page in PAGES:
+        f = DOCS / page / "index.html"
+        html_ = f.read_text(encoding="utf-8")
+        title = html.unescape(re.search(r"<title>(.*?)</title>", html_, re.S).group(1).strip())
+        desc = html.unescape(re.search(r'<meta name="description" content="(.*?)">', html_, re.S).group(1))
+        tags = "\n".join([
+            f'<link rel="canonical" href="{base}{page}">',
+            '<meta property="og:type" content="website">',
+            '<meta property="og:site_name" content="The Chinese Postman">',
+            f'<meta property="og:title" content="{html.escape(title)}">',
+            f'<meta property="og:description" content="{html.escape(desc)}">',
+            f'<meta property="og:url" content="{base}{page}">',
+            f'<meta property="og:image" content="{base}assets/og-image.png">',
+            '<meta property="og:image:width" content="1200">',
+            '<meta property="og:image:height" content="630">',
+            '<meta property="og:image:alt" content="A street network shared among three postmen, each route in its own colour">',
+            '<meta name="twitter:card" content="summary_large_image">',
+            '<meta name="author" content="Miquel Monserrat Pons">',
+        ])
+        f.write_text(html_.replace("</head>", tags + "\n</head>", 1), encoding="utf-8")
+    today = __import__("datetime").date.today().isoformat()
+    urls = "".join(f"  <url><loc>{base}{p}</loc><lastmod>{today}</lastmod></url>\n" for p in PAGES)
+    (DOCS / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n'
+                                      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+                                      f"{urls}</urlset>\n", encoding="utf-8")
+
+
 # ------------------------------------------------------------------ build
 def build(repo):
     from chinese_postman import web
@@ -316,6 +358,7 @@ def build(repo):
     (DOCS / "report").mkdir()
     shutil.copy(PDF_2026, DOCS / "report" / PDF_2026.name)
     (DOCS / "report" / "index.html").write_text(render(build_report(repo), "../", repo), encoding="utf-8")
+    seo(repo)
     if not (DOCS / "pyodide" / "pyodide.js").exists():
         print("Note: docs/pyodide is missing; run tools/fetch_pyodide.sh, or the site will use the CDN.")
     print(f"Built {sum(1 for _ in DOCS.rglob('*') if _.is_file())} files into {DOCS}")
