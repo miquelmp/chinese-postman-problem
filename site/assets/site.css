@@ -110,6 +110,7 @@ p { margin: 0 0 1rem; }
 .key i { display: inline-block; width: 1.4rem; height: 0.3rem; border-radius: 2px; }
 .key .k-route { background: var(--route); }
 .key .k-repeat { background: var(--repeat); }
+.key .k-odd { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--ink); }
 .key .k-street { background: var(--street); }
 .key .k-optional { background: var(--street-faint); }
 .key .k-depot { width: 0.75rem; height: 0.75rem; background: var(--ink); border-radius: 0; }
@@ -235,3 +236,5 @@ blockquote.quote1997 { margin: 1.25rem 0 0.25rem; padding: 0.25rem 0 0.25rem 1.2
 blockquote.quote1997 p { font-family: var(--serif); font-style: italic; font-size: 1.125rem; margin: 0; }
 .reading p.translation { font-family: var(--sans); font-size: var(--step--1); color: var(--ink-soft); margin-top: 0.4rem; }
 .refs li { margin-bottom: 0.5rem; }
+
+.table-note { font-size: var(--step--1); color: var(--ink-soft); margin-top: -0.75rem; }

@@ -15,7 +15,7 @@
     <div>
       <h1>The shortest walk that covers every street</h1>
       <p class="lede">A postman has to walk down every street of a district and return to the office. Some streets must be walked twice; the question is which ones, so that the extra distance is as small as possible.</p>
-      <p>This site revisits a 1997 final-year engineering project on this problem, the Chinese Postman Problem, with thirty years of algorithmic progress. Read both reports, run the solver in your browser, or use the code.</p>
+      <p>This site revisits a 1997 final-year engineering project on this problem, the Chinese Postman Problem, with thirty years of algorithmic progress, and follows the extensions it proposed: streets that need no service, several postmen, vehicles with a capacity. Read both reports, run the solver in your browser, or use the code.</p>
       <div class="actions">
         <a class="button" href="try/">Solve a network</a>
         <a href="report/">Read the 2026 report</a>
@@ -26,6 +26,7 @@
       <figcaption>
         <span class="key"><i class="k-route"></i>walked once</span>
         <span class="key"><i class="k-repeat"></i>walked twice</span>
+        <span class="key"><i class="k-odd"></i>odd junction</span>
         <span id="hero-progress">The 1997 example: 12 streets, optimal tour 63 = 54 + 9.</span>
         <button class="text-button" id="hero-toggle" type="button">Play</button>
       </figcaption>
@@ -41,34 +42,23 @@
   <section>
     <h2>Thirty years later</h2>
     <div class="prose">
-      <p>The 1997 project solved the pairing with a purpose-built branch-and-bound search. The 2026 revision keeps the same method and replaces each stage with what is available today.</p>
+      <p>The method of 1997 is unchanged in outline; each stage now uses what is available today, and the extensions the project proposed are solved too.</p>
     </div>
     <div class="table-scroll">
       <table>
-        <thead><tr><th>Stage</th><th>1997</th><th>2026</th></tr></thead>
+        <thead><tr><th>Problem</th><th>1997</th><th>2026</th></tr></thead>
         <tbody>
-          <tr><td>Pairing odd junctions</td><td>Branch-and-bound with a time limit</td><td>Edmonds' blossom algorithm: proven optimum in polynomial time</td></tr>
-          <tr><td>Shortest paths</td><td>Fulkerson iteration on the full matrix</td><td>Dijkstra from odd junctions only</td></tr>
-          <tr><td>Building the tour</td><td>Cycle splicing</td><td>Hierholzer's algorithm, linear time</td></tr>
-          <tr><td>One-way streets</td><td>Future work</td><td>Solved: minimum-cost flow</td></tr>
-          <tr><td>One-way and two-way together</td><td>Not covered</td><td>Branch-and-cut and a heuristic with a quality certificate</td></tr>
-          <tr><td>Largest network solved exactly</td><td>About 20 odd junctions</td><td>12,066 odd junctions in 102 seconds</td></tr>
+          <tr><td>Every street, two-way</td><td>Exact up to about 20 odd junctions, then a time-limited search</td><td>Exact at any size: 12,000 odd junctions in two minutes</td></tr>
+          <tr><td>One-way streets</td><td>Proposed as future work</td><td>Exact</td></tr>
+          <tr><td>One-way and two-way together</td><td>Not in scope</td><td>Exact for towns of up to 1,600 junctions; beyond that, within 0.3% on average</td></tr>
+          <tr><td>Only some streets to serve</td><td>Proposed: a dearer first pass</td><td>Exact on every benchmark network; the quick method is within 0.7% on average</td></tr>
+          <tr><td>Several postmen</td><td>Noted: a shift limits the work</td><td>Optimal in 61 of 62 cases where the optimum is known</td></tr>
+          <tr><td>Vehicles with a capacity</td><td>—</td><td>Within 6% of the best published solutions (median)</td></tr>
           <tr><td>Platform</td><td>Turbo C on MS-DOS</td><td>Python, open source, also in the browser</td></tr>
         </tbody>
       </table>
     </div>
-  </section>
-
-  <section>
-    <h2>What the experiments show</h2>
-    <figure class="chart">
-      {{CHART_SCALING}}
-      <figcaption>Solve time against the number of odd junctions, both axes logarithmic. Grid cities and organic towns of up to 40,000 junctions, one processor core.</figcaption>
-    </figure>
-    <figure class="chart">
-      {{CHART_CARP}}
-      <figcaption>On 39 classical benchmark networks where every street needs service, one postman's optimal tour costs a median 96.6% of the best known solution with several vehicles. The single-postman problem is a close lower bound for fleet routing.</figcaption>
-    </figure>
+    <p class="table-note">Details, charts and every result file: <a href="report/">2026 report</a>, chapters 7 to 10, and <a href="extensions/">Extensions</a>.</p>
   </section>
 
   <section>
