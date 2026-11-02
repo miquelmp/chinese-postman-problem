@@ -1,0 +1,5 @@
+family,instance,vertices,edges,odd,original,added,total,added_pct,seconds,t_shortest_paths,t_matching,t_euler,backend,repeat
+networkx,manhattan-10x10,100,161,42,28460,5240,33700,18.41,0.0338,0.0087,0.0239,0.0012,networkx,1
+networkx,manhattan-15x15,225,388,82,67900,9000,76900,13.25,0.1497,0.0412,0.1062,0.0023,networkx,1
+networkx,manhattan-20x20,400,672,146,118740,17600,136340,14.82,0.6852,0.0929,0.5881,0.0042,networkx,1
+networkx,manhattan-25x25,625,1071,226,188660,26680,215340,14.14,2.504,0.277,2.1886,0.0383,networkx,1
