@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chinese-postman"
-version = "2026.2.0"
+version = "2026.3.0"
 description = "Chinese Postman Problem solvers: undirected, directed and mixed, with proven optimality"
 readme = "README.md"
 requires-python = ">=3.10"
