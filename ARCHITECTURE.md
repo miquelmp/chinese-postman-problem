@@ -16,8 +16,9 @@
 **NetworkX multigraphs as the common input.** Graphs are simple to build and inspect, and parallel streets are kept. Solvers
 convert to a compact form internally where speed matters. The cost is speed: the default matching is pure Python.
 
-**Blossom V is optional.** Its licence forbids redistribution and commercial use, so NetworkX stays the default, and the
-package works without any compiled code. `tools/certify_matching.py` checks large optima without Blossom V.
+**LEMON is optional.** It needs a C++ compiler, so NetworkX stays the default until `native/build_lemon.sh` has been run, and the
+package works without any compiled code. Every LEMON result is checked by a dual certificate, and `tools/certify_matching.py`
+repeats large optima with the JavaScript blossom code.
 
 **HiGHS through SciPy for integer programs.** It is open source and installs with SciPy, so an exact mixed or rural solve
 needs no commercial solver. A dedicated branch-and-cut would scale further, but would be far more code to verify.

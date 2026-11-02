@@ -13,4 +13,4 @@ Third-party material keeps its own licence:
   papers listed in the report when using them.
 - Street data fetched by the website from OpenStreetMap: © OpenStreetMap contributors,
   Open Database Licence (ODbL).
-- Blossom V (optional fast backend) is NOT included; see `native/build_blossom5.sh`.
+- LEMON (optional fast backend), in `native/lemon_src`: Boost Software License 1.0; see the `LICENSE` file there.

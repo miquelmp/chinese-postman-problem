@@ -82,13 +82,13 @@ def _rows(name):
 
 def chart_scaling():
     nx_rows = [r for r in _rows("scaling.csv")]
-    bv_rows = [r for r in _rows("scaling_blossom5.csv")]
+    bv_rows = [r for r in _rows("scaling_lemon.csv")]
     W, H, x0, x1, y0, y1 = 760, 400, 70, 730, 60, 330
     lx = math.log10
     X = lambda o: x0 + (lx(o) - lx(30)) / (lx(20000) - lx(30)) * (x1 - x0)
     Y = lambda s: y1 - (lx(s) + 2) / (lx(300) + 2) * (y1 - y0)
-    out = [f'<svg viewBox="0 0 {W} {H}" role="img" aria-label="With Blossom V, two minutes covers 12,000 odd junctions instead of 800">',
-           '<text x="0" y="22" font-size="17" font-weight="800" fill="var(--ink)">With Blossom V, two minutes now covers 12,000 odd junctions instead of 800</text>']
+    out = [f'<svg viewBox="0 0 {W} {H}" role="img" aria-label="With LEMON, two minutes covers 12,000 odd junctions instead of 800">',
+           '<text x="0" y="22" font-size="17" font-weight="800" fill="var(--ink)">With LEMON, two minutes now covers 12,000 odd junctions instead of 800</text>']
     for t in (0.01, 0.1, 1, 10, 100):
         out.append(f'<line x1="{x0}" x2="{x1}" y1="{Y(t):.1f}" y2="{Y(t):.1f}" stroke="var(--rule)"/>'
                    f'<text x="{x0 - 8}" y="{Y(t) + 4:.1f}" text-anchor="end" font-size="12" fill="var(--ink-soft)">{t:g} s</text>')
@@ -114,7 +114,7 @@ def chart_scaling():
     series(bv_rows, "delaunay", "var(--ink)", "6 4")
     nxe = max([a, b], key=lambda p: p[0])
     out.append(f'<text x="{X(nxe[0]) - 10:.1f}" y="{Y(nxe[1]) - 12:.1f}" text-anchor="end" font-size="13" fill="var(--ink-soft)">Pure Python: {nxe[0]:,} odd, {nxe[1]:.0f} s</text>')
-    out.append(f'<text x="{X(c[0]) - 10:.1f}" y="{Y(c[1]) - 14:.1f}" text-anchor="end" font-size="13" font-weight="700" fill="var(--ink)">Blossom V: {c[0]:,} odd, {c[1]:.0f} s</text>')
+    out.append(f'<text x="{X(c[0]) - 10:.1f}" y="{Y(c[1]) - 14:.1f}" text-anchor="end" font-size="13" font-weight="700" fill="var(--ink)">LEMON: {c[0]:,} odd, {c[1]:.0f} s</text>')
     out.append(f'<text x="{x1}" y="{y1 - 10}" text-anchor="end" font-size="12" fill="var(--ink-soft)">solid: grid cities; dashed: organic towns</text>')
     out.append("</svg>")
     return "\n".join(out)
