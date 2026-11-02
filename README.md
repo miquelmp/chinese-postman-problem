@@ -53,7 +53,7 @@ building blocks, Eulerian circuits and matchings, which this package uses.
 
 ```bash
 pip install -e ".[test]"
-pytest -q                            # 218 tests (273 with the optional Blossom V library)
+pytest -q                            # 234 tests (289 with the optional Blossom V library)
 ```
 
 ```python
@@ -135,7 +135,8 @@ To try the site locally, serve `docs/` with any static server, for example
 
 `solve_undirected(G, backend="auto")` uses Kolmogorov's Blossom V when it has been built:
 a 40,000-junction network with 12,066 odd junctions solves in 102 seconds, against about 800 odd
-junctions in the same time in pure Python.
+junctions in the same time in pure Python. `python3 tools/certify_matching.py` confirms those optima
+without Blossom V, with a dual certificate that can be checked on its own.
 
 ```bash
 bash native/build_blossom5.sh        # downloads Blossom V and builds native/libblossom5.so
