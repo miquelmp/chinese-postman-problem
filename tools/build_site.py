@@ -28,8 +28,8 @@ PDF_1997 = ROOT / "report" / "monserrat-1997-chinese-postman.pdf"
 PDF_2026 = ROOT / "report" / "chinese-postman-2026.pdf"
 MD_2026 = ROOT / "report" / "report-2026.md"
 
-NAV = [("try", "try/", "Solve a network"), ("extensions", "extensions/", "Extensions"),
-       ("report", "report/", "2026 report"), ("1997", "1997/", "1997 report"), ("code", "{REPO}", "Code")]
+NAV = [("report", "report/", "2026 report"), ("extensions", "extensions/", "Extensions"),
+       ("try", "try/", "Solve a network"), ("1997", "1997/", "1997 report"), ("code", "{REPO}", "Code")]
 
 
 # ------------------------------------------------------------------ page chrome
