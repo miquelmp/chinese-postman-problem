@@ -81,8 +81,15 @@ def _rows(name):
 
 
 def chart_scaling():
-    nx_rows = [r for r in _rows("scaling.csv")]
-    bv_rows = [r for r in _rows("scaling_lemon.csv")]
+    def medians(backend):
+        groups = {}
+        for r in _rows("timing_repeats.csv"):
+            if r["backend"] == backend:
+                groups.setdefault(r["instance"], []).append(r)
+        return [dict(rs[0], family=f"{backend}-{name.split('-')[0]}",
+                     seconds=statistics.median(float(r["seconds"]) for r in rs)) for name, rs in groups.items()]
+
+    nx_rows, bv_rows = medians("networkx"), medians("lemon")
     W, H, x0, x1, y0, y1 = 760, 400, 70, 730, 60, 330
     lx = math.log10
     X = lambda o: x0 + (lx(o) - lx(30)) / (lx(20000) - lx(30)) * (x1 - x0)
@@ -237,7 +244,7 @@ def build_report(repo):
         return f"\n\nMATHBLOCK{len(maths) - 1}\n\n"
     md = re.sub(r"```latex\n(.*?)```", keep_math, md, flags=re.S)
     md = md.replace("\\_", "_")
-    charts = {"results/cpp_bound.csv": chart_carp(), "results/scaling.csv": chart_scaling()}
+    charts = {"results/cpp_bound.csv": chart_carp(), "results/timing_repeats.csv": chart_scaling()}
 
     def keep_chart(m):
         for key, svg in charts.items():

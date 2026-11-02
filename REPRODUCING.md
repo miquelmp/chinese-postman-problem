@@ -11,6 +11,7 @@ Every result file is in `results/`. Run the commands from the repository root, a
 | 7.3 Bound for fleets | `cpp_bound.csv` | `python3 experiments.py cpp_bound` | |
 | 7.4 Scaling, NetworkX | `scaling.csv` | `python3 experiments.py scaling` | |
 | 7.4 Scaling, LEMON | `scaling_lemon.csv` | `bash native/build_lemon.sh`, then `python3 experiments.py scaling_fast` | C++ compiler; 7 GB of RAM |
+| 7.4 Repeated timing | `timing_repeats.csv` | `bash native/build_lemon.sh`, then `python3 experiments.py timing`, alone on the machine | about 75 minutes |
 | 7.4 Certificates | `certificates.csv` | `python3 tools/certify_matching.py` | Node.js; 7 GB of RAM |
 | 7.5 Directed networks | `directed.csv` | `python3 experiments.py directed` | |
 | 8.3 Branch-and-bound | `bnb.csv` | `python3 experiments.py bnb` | |
