@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The report and the website now state that the 2026 revision used AI assistance.
+
 ## 2026.4.0 — 2 November 2026
 
 - `tools/certify_matching.py` confirms every optimum of the fast backend with a dual certificate, without Blossom V, and reaches 19,942 odd vertices.

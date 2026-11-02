@@ -156,8 +156,9 @@ Everything else works without it.
 
 ## Use of generative AI
 
-This project was developed with generative AI assistance (Claude, by Anthropic), in the code, the
-experiments, the documentation and the audit of the report. Commits co-authored by it are marked as such.
+The 2026 revision was prepared with generative AI assistance (Claude, by Anthropic), in the code, the
+experiments, the documentation and the audit of the report. The 1997 project was not. Commits co-authored
+by Claude are marked as such.
 
 ## Licences and citation
 

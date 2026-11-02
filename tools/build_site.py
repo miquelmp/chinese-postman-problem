@@ -59,7 +59,7 @@ def footer(repo):
     return (
         '<footer class="site-footer"><div class="inner">'
         '<p>Miquel Monserrat Pons. Final-year project, ETSEIB (Universitat Politècnica de Catalunya), 1997; '
-        'revised 2026.</p>'
+        'revised 2026 with AI assistance (Claude, by Anthropic).</p>'
         f'<p>Code under the MIT licence; texts and figures under CC BY 4.0. <a href="{repo}">Source on GitHub</a>.</p>'
         '<p>Benchmark instances from the arc-routing literature, as collected in CARPData.jl (MIT). '
         'Street data © OpenStreetMap contributors (ODbL). The in-browser solver is written in JavaScript; the optional '
