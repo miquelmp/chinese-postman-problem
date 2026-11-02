@@ -67,10 +67,13 @@ def delaunay_town(n: int, seed: int = 0, keep: float = 0.75) -> nx.MultiGraph:
     T.add_weighted_edges_from((a, b, L[a, b]) for a, b in E)
     for a, b in nx.minimum_spanning_edges(T, data=False):   # stay connected
         G.add_edge(a, b)
+    m = G.number_of_edges()
     for e in sorted(E, key=L.get):
-        if G.number_of_edges() >= keep * len(E):
+        if m >= keep * len(E):
             break
-        G.add_edge(*e)
+        if not G.has_edge(*e):
+            G.add_edge(*e)
+            m += 1
     M = nx.MultiGraph()
     for a, b in G.edges:
         M.add_edge(a + 1, b + 1, weight=round(L[min(a, b), max(a, b)]))

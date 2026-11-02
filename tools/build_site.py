@@ -121,16 +121,16 @@ def chart_scaling():
 
 
 def chart_carp():
-    rows = [r for r in _rows("benchmarks.csv") if r["all_required"] == "True"]
+    rows = _rows("cpp_bound.csv")
     rows.sort(key=lambda r: float(r["cpp_over_carp_ub_pct"]))
     vals = [float(r["cpp_over_carp_ub_pct"]) for r in rows]
     med = statistics.median(vals)
     W, H, x0, x1, y0, y1 = 760, 360, 60, 730, 60, 310
     X = lambda i: x0 + i * (x1 - x0) / (len(rows) - 1)
-    Y = lambda v: y1 - (v - 60) / 40 * (y1 - y0)
-    out = [f'<svg viewBox="0 0 {W} {H}" role="img" aria-label="A single postman tour costs a median {med:.1f}% of the best known fleet solution">',
-           f'<text x="0" y="22" font-size="17" font-weight="800" fill="var(--ink)">One postman costs a median {med:.1f}% of the best known fleet solution</text>']
-    for t in (60, 70, 80, 90, 100):
+    Y = lambda v: y1 - (v - 40) / 60 * (y1 - y0)
+    out = [f'<svg viewBox="0 0 {W} {H}" role="img" aria-label="A single postman tour costs a median {med:.1f}% of the best known fleet solution, and as little as {vals[0]:.1f}%">',
+           f'<text x="0" y="22" font-size="17" font-weight="800" fill="var(--ink)">One postman costs a median {med:.1f}% of the best known fleet, and as little as {vals[0]:.1f}%</text>']
+    for t in (40, 60, 80, 100):
         out.append(f'<line x1="{x0}" x2="{x1}" y1="{Y(t):.1f}" y2="{Y(t):.1f}" stroke="var(--rule)"/>'
                    f'<text x="{x0 - 8}" y="{Y(t) + 4:.1f}" text-anchor="end" font-size="12" fill="var(--ink-soft)">{t}%</text>')
     out.append(f'<line x1="{x0}" x2="{x1}" y1="{Y(100):.1f}" y2="{Y(100):.1f}" stroke="var(--ink)"/>'
@@ -140,13 +140,13 @@ def chart_carp():
     for i, r in enumerate(rows):
         v = float(r["cpp_over_carp_ub_pct"])
         out.append(f'<circle cx="{X(i):.1f}" cy="{Y(v):.1f}" r="5" fill="var(--route)" stroke="var(--ink)" stroke-width="1">'
-                   f'<title>{html.escape(r["instance"])}: {v}% with {r["vehicles"]} vehicles</title></circle>')
+                   f'<title>{html.escape(r["instance"])}: {v:.1f}% with {r["vehicles"]} vehicles</title></circle>')
     lo = rows[0]
     out.append(f'<text x="{X(0) + 10:.1f}" y="{Y(float(lo["cpp_over_carp_ub_pct"])) + 4:.1f}" font-size="12" fill="var(--ink-soft)">'
-               f'{lo["instance"]}, {lo["vehicles"]} vehicles: {lo["cpp_over_carp_ub_pct"]}%</text>')
+               f'{lo["instance"]}, {lo["vehicles"]} vehicles: {float(lo["cpp_over_carp_ub_pct"]):.1f}%</text>')
     n100 = sum(v >= 100 for v in vals)
-    out.append(f'<text x="{x1}" y="{Y(100) - 8:.1f}" text-anchor="end" font-size="12" fill="var(--ink)">{n100} networks at 100%: capacity adds nothing</text>')
-    out.append(f'<text x="{(x0 + x1) / 2}" y="{H - 8}" text-anchor="middle" font-size="12" fill="var(--ink-soft)">{len(rows)} networks, sorted</text>')
+    out.append(f'<text x="{x1}" y="{Y(100) - 8:.1f}" text-anchor="end" font-size="12" fill="var(--ink)">{n100} instances at 100%: capacity adds nothing</text>')
+    out.append(f'<text x="{(x0 + x1) / 2}" y="{H - 8}" text-anchor="middle" font-size="12" fill="var(--ink-soft)">{len(rows)} instances, sorted</text>')
     out.append("</svg>")
     return "\n".join(out)
 
@@ -236,7 +236,7 @@ def build_report(repo):
         return f"\n\nMATHBLOCK{len(maths) - 1}\n\n"
     md = re.sub(r"```latex\n(.*?)```", keep_math, md, flags=re.S)
     md = md.replace("\\_", "_")
-    charts = {"results/benchmarks.csv": chart_carp(), "results/scaling.csv": chart_scaling()}
+    charts = {"results/cpp_bound.csv": chart_carp(), "results/scaling.csv": chart_scaling()}
 
     def keep_chart(m):
         for key, svg in charts.items():
@@ -282,7 +282,7 @@ def build(repo):
     (T / "py" / "chinese_postman").mkdir(parents=True)
     files = []
     for f in sorted((ROOT / "chinese_postman").glob("*.py")):
-        if f.name == "fast.py":          # native backend: not usable in the browser
+        if f.name in ("fast.py", "bnb.py"):   # native backend; report experiment only
             continue
         shutil.copy(f, T / "py" / "chinese_postman" / f.name)
         files.append(f.name)

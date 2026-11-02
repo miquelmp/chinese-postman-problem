@@ -25,3 +25,4 @@ jobs:
       - run: node tests/js/test_cpp.mjs
       - run: node tests/js/test_networks.mjs
       - run: node tests/js/test_extensions.mjs
+      - run: node tests/js/test_matching.mjs

@@ -2,19 +2,19 @@
 
 *Revised edition of the 1997 final-year project by Miquel Monserrat Pons (supervisor: Ramón Companys Pascual)*
 
-Nov 1, 2026 · @Miquel
+Miquel Monserrat Pons · November 2026
 
 ## Abstract
 
 This report revises a 1997 final-year project on the Chinese Postman Problem: find the cheapest closed route that covers every street of a network at least once. The method is unchanged in outline: pair the odd-degree junctions by shortest paths at minimum total cost, duplicate those paths, and walk the resulting Eulerian circuit. The 1997 branch-and-bound for the pairing step is replaced by Edmonds' blossom algorithm, which is exact and polynomial; shortest paths use Dijkstra, the circuit uses Hierholzer's linear-time algorithm, the directed version is added through minimum-cost flow, and the mixed version, with one-way and two-way streets together and NP-hard, through branch-and-cut and a new heuristic.
 
-The new Python implementation was tested on classic graphs, on 92 benchmark road networks from the arc-routing literature (including real networks in Cumbria and Flanders), and on synthetic towns of up to 40,000 junctions. Every instance within the memory budget was solved to proven optimality. With a second backend that runs Kolmogorov's Blossom V on a sparse candidate graph and adds pairs by dual pricing, a network with 12,066 odd vertices solves in 102 seconds, against about 800 odd vertices in the same time in pure Python. On benchmarks where every street needs service, the single-postman tour comes within a median 3.4% of the best known multi-vehicle solution, making the CPP a tight bound for fleet routing. For mixed networks, branch-and-cut proves the optimum on every benchmark network within 5.2 seconds and on towns of up to 1,600 junctions, and the heuristic averages 0.27% above the optimum. The report closes by following the extensions proposed in 1997: streets whose first pass costs more than the next, streets that need no service (the rural postman problem) and several postmen sharing a district, each with its complexity, an exact method or a heuristic with a proven bound, and the measured distance from the optimum.
+The new Python implementation was tested on classic graphs, on 92 benchmark networks from the arc-routing literature (including real road networks in Lancashire and Flanders), and on synthetic towns of up to 40,000 junctions. Every instance but one, a 40,000-junction town that exceeded the memory limit, was solved to proven optimality. With a second backend that runs Kolmogorov's Blossom V on a sparse candidate graph and adds pairs by dual pricing, a network with 12,066 odd vertices solves in 102 seconds, against about 800 odd vertices in the same time in pure Python. On 63 benchmarks where every street needs service, the single-postman tour costs a median 95.1% of the best known multi-vehicle solution, but as little as 47.5% when capacity is scarce: the CPP is a close bound for fleet routing only while vehicles have capacity to spare. For mixed networks, branch-and-cut proves the optimum on every benchmark network within 5.8 seconds and on towns of up to 1,600 junctions, and the heuristic averages 0.27% above the optimum. The report closes by following the extensions proposed in 1997: streets whose first pass costs more than the next, streets that need no service (the rural postman problem) and several postmen sharing a district, each with its complexity, an exact method or a heuristic with a proven bound, and the measured distance from the optimum.
 
 A JavaScript port of the solver runs in the web browser, so anyone can solve their own street network, from a file or straight from OpenStreetMap, at [miquelmp.github.io/chinese-postman-problem](https://miquelmp.github.io/chinese-postman-problem/).
 
 ## 1. Introduction
 
-The Chinese Postman Problem (CPP) asks for the cheapest closed walk that traverses every edge of a graph at least once. The 1997 project solved it by duplicating edges until every vertex has even degree, choosing those duplicates with a custom branch-and-bound (B&B) search. This revision keeps the same overall method but replaces the B&B with an exact, polynomial-time matching algorithm, and tests the result on a much wider set of instances.
+The Chinese Postman Problem (CPP) asks for the cheapest closed walk that traverses every edge of a graph at least once. The 1997 project solved it by duplicating edges until every vertex has even degree, choosing those duplicates with a custom branch-and-bound (B&B) search. This revision keeps the same overall method but replaces the B&B with an exact, polynomial-time matching algorithm, and tests the result on a much wider set of instances. The polynomial algorithms used here were all published before 1997; that project set out to study a branch-and-bound alternative. What has changed since is the engineering: implementations such as Blossom V, compiled libraries and integer-programming solvers reach far larger networks.
 
 The problem is named after the Chinese mathematician Kwan Mei-Ko (Guan Meigu), who posed it in 1960. Edmonds and Johnson showed in 1973 that the undirected version can be solved in polynomial time by reducing it to a minimum-weight perfect matching.
 
@@ -31,9 +31,9 @@ Typical applications are any service that must cover streets rather than visit p
 | Aspect | 1997 project | 2026 revision |
 | --- | --- | --- |
 | Matching step | Binary B&B over edges, lower bound from row minima | Edmonds' blossom algorithm (exact, polynomial) |
-| Shortest paths | Fulkerson iteration on the full V × V matrix | Dijkstra from each odd vertex only |
-| Eulerian circuit | Cycle splicing with linear scans of adjacency queues | Hierholzer's algorithm, O(m) |
-| Directed graphs | Proposed as future work | Solved by minimum-cost flow |
+| Shortest paths | Bellman-type iteration on the full V × V matrix (the 1997 report's "Fulkerson algorithm") | Dijkstra from each odd vertex only |
+| Eulerian circuit | Hierholzer-style cycle splicing with linear scans of adjacency queues | Hierholzer's algorithm with one pointer per vertex, O(m) |
+| Directed graphs | Proposed as future work | Added, by minimum-cost flow (Edmonds and Johnson, 1973) |
 | Language and platform | Turbo C, MS-DOS, 640 KB memory model | Python 3 with NetworkX, any platform |
 | Practical limit | About 20 odd vertices to proven optimality | About 12,000 odd vertices (40,000 junctions) in under two minutes with Blossom V; about 800 in pure Python |
 | Mixed streets (one-way and two-way) | Not covered | Exact branch-and-cut (HiGHS) and a heuristic with local search |
@@ -41,7 +41,7 @@ Typical applications are any service that must cover streets rather than visit p
 ### Contributions of this revision
 
 1. A clean, tested reimplementation of the full CPP pipeline.
-2. A computational study on six families of instances, none taken from the original Vilanova i la Geltrú case studies.
+2. A computational study on nine families of instances, none taken from the original Vilanova i la Geltrú case studies.
 3. A comparison of the 1997 branch-and-bound with the exact method, and a tightened lower bound for anyone who extends the B&B to harder variants.
 4. The extensions proposed in 1997, implemented and measured: directed and mixed networks, service and travel costs, the rural postman problem, several postmen and capacitated fleets.
 
@@ -53,13 +53,13 @@ Only four ideas are needed: graphs with edge costs, vertex degree, Euler's theor
 
 **Degree.** The degree of a vertex is the number of edge ends that meet it. Because every edge has two ends, the sum of all degrees is 2m, so every graph has an even number of odd-degree vertices. This handshake lemma is why the odd vertices can always be paired up.
 
-**Walks and circuits.** A walk is a sequence of edges in which consecutive edges share an end. A closed walk returns to its start. An Eulerian circuit is a closed walk that uses every edge exactly once.
+**Walks and circuits.** A walk is a sequence of vertices and edges, starting and ending at a vertex, in which each edge joins the vertex before it to the vertex after it. A closed walk returns to its start. An Eulerian circuit is a closed walk that uses every edge exactly once.
 
-**Euler's theorem.** A connected multigraph has an Eulerian circuit if and only if every vertex has even degree. For a strongly connected directed multigraph, the condition is that every vertex has in-degree equal to out-degree.
+**Euler's theorem.** A connected multigraph has an Eulerian circuit if and only if every vertex has even degree. For a strongly connected directed multigraph, the condition is that every vertex has in-degree equal to out-degree. Euler (1741) proved that even degrees are necessary and stated the converse without proof; Hierholzer (1873) published the first proof of it.
 
 **Matchings.** A matching is a set of edges no two of which share a vertex. It is perfect when it covers every vertex. Given edge costs, a minimum-weight perfect matching is a perfect matching of least total cost. On a complete graph with an even number of vertices a perfect matching always exists.
 
-**Shortest paths.** d(u, v) is the cost of a cheapest path from u to v. With non-negative costs it is computed by Dijkstra's algorithm in O(m + n log n) time per source with a binary heap.
+**Shortest paths.** d(u, v) is the cost of a cheapest path from u to v. With non-negative costs it is computed by Dijkstra's algorithm (1959) per source in O((n + m) log n) time with a binary heap, or O(m + n log n) with a Fibonacci heap.
 
 ## 3. The Chinese Postman Problem
 
@@ -83,7 +83,7 @@ An optimal solution never uses more than one extra copy of an edge, so x(e) ∈ 
 4. For each pair (u, v) in M\*, duplicate every edge on a shortest u–v path in G.
 5. The augmented multigraph has all degrees even; find an Eulerian circuit in it. That circuit is an optimal postman tour.
 
-The total cost is c(E) + c(M\*). The method is exact because the shortest paths of an optimal matching never need to share an edge: if two paths did, removing both copies of the shared edge would keep all degrees' parity and lower the cost.
+The total cost is c(E) + c(M\*). The method is exact for the following reason. Any set of duplicated edges that makes all degrees even is a T-join, and every T-join contains edge-disjoint paths that pair up the vertices of T. Each of those paths costs at least the shortest-path distance between its ends, so no T-join costs less than c(M\*). The paths chosen in step 4 reach that value: with positive costs they cannot share an edge, because removing both copies of a shared edge would keep every parity and give a T-join cheaper than c(M\*).
 
 ### 3.3 Worked example from 1997
 
@@ -134,12 +134,12 @@ When every vertex is matched, the matching and the prices satisfy complementary 
 | Implementation | Language | Worst-case time | Notes |
 | --- | --- | --- | --- |
 | Edmonds (1965) | — | O(n⁴) | Original algorithm |
-| Gabow (1974), Lawler (1976) | — | O(n³) | Standard textbook bound |
+| Gabow (1973), Lawler (1976) | — | O(n³) | Standard textbook bound |
 | Galil, Micali and Gabow (1986) | — | O(nm log n) | Better on sparse graphs |
-| Blossom V, Kolmogorov (2009) | C++ | O(n³) worst case, much faster in practice | Fast backend in this revision; non-commercial licence |
+| Blossom V, Kolmogorov (2009) | C++ | Believed O(n³m), no better than Blossom IV; much faster in practice | Fast backend in this revision; non-commercial licence |
 | NetworkX `min_weight_matching` | Python | O(n³) | Default backend in this revision |
 
-Here n is the number of odd vertices and m the number of edges of K, so m = n(n − 1)/2. NetworkX was chosen for readability and portability: the whole solver is under 150 lines of Python. Its pure-Python matching becomes the bottleneck above a few hundred odd vertices (section 7.4), so large networks use a second backend built on Blossom V, described next.
+Here n is the number of odd vertices and m the number of edges of K, so m = n(n − 1)/2. NetworkX was chosen for readability and portability: the undirected and directed solvers take 133 lines of Python, and the Eulerian circuit 42 more. Its pure-Python matching becomes the bottleneck above a few hundred odd vertices (section 7.4), so large networks use a second backend built on Blossom V, described next.
 
 ### 4.4 Large networks: a sparse candidate graph with dual pricing
 
@@ -151,33 +151,34 @@ The complete graph K has about n²/2 edges, yet an optimal matching almost alway
 4. Pricing: scan all pairs (u, v) not in the graph and add those with negative reduced cost, d(u, v) < y(u) + y(v), counting blossom prices. Re-solve and repeat.
 5. When no pair has negative reduced cost, the duals are feasible for the whole complete graph, so the matching is optimal for it too.
 
-This is column generation applied to matching, the same strategy Blossom V uses for its geometric instances. On road networks the first candidate graph is usually already enough: one or two pricing rounds suffice. Related ideas reach even further: the sparse blossom algorithm of Higgott and Gidney (2025), developed for quantum error correction, matches millions of vertices without ever building distances between all pairs.
+This is column generation applied to matching, the same strategy Blossom V uses for its geometric instances. On the test networks the first candidate graph comes very close: at most 26 pairs had to be added, in up to two pricing rounds, followed by a last round that confirms optimality. Related ideas reach even further: the sparse blossom algorithm of Higgott and Gidney (2025), developed for quantum error correction, matches millions of vertices without ever building distances between all pairs.
 
 Blossom V may be used for evaluation and non-commercial research only and may not be redistributed. The package therefore ships only a small C wrapper and a script that downloads and compiles it; NetworkX stays the default backend, and commercial use would need a licence from UCL Business or a free alternative such as LEMON (Boost licence).
 
-### 4.5 Milestones in matching, 1965–2025
+### 4.5 Milestones in matching, 1965–2026
 
 Minimum-weight perfect matching has kept improving since Edmonds' blossom algorithm, both in theory and in working code. The table lists the milestones most relevant to postman problems, dated by publication.
 
 | Year | Authors | Contribution | Relevance here |
 | --- | --- | --- | --- |
 | 1965 | Edmonds | Blossom algorithm and the matching polytope | Foundation of the exact method, O(n⁴) |
-| 1974–1976 | Gabow; Lawler | O(n³) implementations | Textbook bound, used by NetworkX |
+| 1973–1976 | Gabow; Lawler | O(n³) implementations | Textbook bound, also that of NetworkX |
 | 1980 | Micali and Vazirani | O(m√n) maximum-cardinality matching | Fastest bound for the unweighted case |
 | 1986 | Galil, Micali and Gabow | O(nm log n) weighted matching | Faster on sparse graphs |
 | 1990 | Gabow | O(nm + n² log n) | Still the best strongly polynomial bound |
 | 1991 | Gabow and Tarjan | Cost scaling for integer weights | Near O(m√n log(nN)) |
-| 1999 | Cook and Rohe | Blossom IV, with variable ε and pricing | First code to match millions of points |
+| 1999 | Cook and Rohe | Blossom IV, with variable ε and pricing | Solved geometric instances of up to 5 million points |
 | 2002 | Mehlhorn and Schäfer | O(nm log n) implementation in LEDA | Data structures that make the bound practical |
 | 2009 | Kolmogorov | Blossom V | Fast backend of this revision |
 | 2011 | Dezső, Jüttner and Kovács | LEMON graph library | Free alternative with a permissive licence |
-| 2014 | Duan and Pettie | (1 − ε)-approximate weighted matching in linear time | Fast near-optimal pairing |
+| 2014 | Duan and Pettie | (1 − ε)-approximate weighted matching in linear time | For maximum-weight matching; gives no guarantee for a minimum-cost perfect pairing |
 | 2018 | Duan, Pettie and Su | Exact scaling algorithm, O(m√n log(nN)) | Best known bound for integer costs |
-| 2022 | Chen, Kyng, Liu, Peng, Probst Gutenberg and Sachdeva | Minimum-cost flow in almost-linear time | Directed CPP in near-linear time, in theory |
+| 2022 | Chen, Kyng, Liu, Peng, Probst Gutenberg and Sachdeva | Minimum-cost flow in almost-linear time | Directed CPP in almost-linear time, in theory |
 | 2023 | Wu and Zhong | Fusion Blossom, parallel matching | Quantum error correction at scale |
 | 2025 | Higgott and Gidney | Sparse Blossom | Millions of vertices without all-pair distances |
+| 2026 | Arkhipov and Kolmogorov | Blossom VI | Reported faster than Blossom V on the hardest instances tested; not tried here |
 
-Here N is the largest integer cost. Two lessons follow for the CPP. First, the worst-case bounds have improved far more than road networks need: with the sparse pricing of section 4.4, a well-engineered O(n³) code is limited by the memory for distances, not by the matching. Second, the most active work now comes from quantum error correction, where decoders must pair millions of defects per second. Their local, sparse search is the natural next step for very large postman instances.
+Here N is the largest integer cost. Two lessons follow for the CPP. First, the worst-case bounds have improved far more than road networks need: with the sparse pricing of section 4.4, a well-engineered code is limited by the memory for distances, not by the matching. Second, the most active work now comes from quantum error correction, where decoders must pair millions of defects per second. Their local, sparse search is the natural next step for very large postman instances.
 
 ## 5. Eulerian circuits
 
@@ -199,7 +200,7 @@ Fleury's rule, discussed in the 1997 report, also works but must test at each st
 
 ## 6. Implementation
 
-The solver is a small Python 3 package, `chinese_postman`, built on NetworkX and covered by 237 automated tests (182 when the optional Blossom V library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with ten modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).
+The solver is a small Python 3 package, `chinese_postman`, built on NetworkX and covered by 273 automated tests (218 when the optional Blossom V library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with eleven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).
 
 ### 6.1 Modules
 
@@ -209,8 +210,9 @@ The solver is a small Python 3 package, `chinese_postman`, built on NetworkX and
 | `cpp.py` | `MAIN.C`, `FULKER.C`, `ARBOL.C`, `SIMETR.C` | Undirected CPP (Edmonds' method) and directed CPP (minimum-cost flow) |
 | `fast.py` | — (new) | Large networks: SciPy Dijkstra and Blossom V with dual pricing, called through a small C wrapper in native/ |
 | `mixed.py` | — (new) | Mixed CPP: bounds, exact branch-and-cut (HiGHS via SciPy), heuristic with local search, mixed instance generators |
+| `bnb.py` | `ARBOL.C`, `MAIN.C` | The branch-and-bound of section 8.3, kept to measure the search; the solvers do not use it |
 | `euler.py` | `EULERIAN.C` | Hierholzer's algorithm on multigraphs, directed or not |
-| `instances.py` | Annex 2 data | Generators for the test families of chapter 7 |
+| `instances.py` | — (new) | Generators for the test families of chapter 7 |
 | `web.py` | — (new) | Builds networks for the website from examples, .GRA and CARP files and OpenStreetMap; reference for the JavaScript port |
 | `rural.py` | — (new) | Service and travel costs; rural postman: Frederickson's heuristic, lower bounds, branch-and-cut, combined solve\_rural (chapter 10) |
 | `fleet.py` | — (new) | Several postmen (optimal split, local search, bounds, exact model for small networks) and capacitated fleets |
@@ -221,7 +223,7 @@ Graphs are NetworkX multigraphs, so parallel streets between the same two juncti
 ### 6.2 Pipeline
 
 1. Check that the graph is connected and collect the set T of odd-degree vertices.
-2. Run Dijkstra from each vertex of T, keeping distances and paths to the other vertices of T: O(|T| (m + n log n)).
+2. Run Dijkstra from each vertex of T, keeping distances and paths to the other vertices of T: O(|T| (n + m) log n) with NetworkX's binary heap.
 3. Build the complete graph on T and call `min_weight_matching`.
 4. Add one copy of every edge on the shortest path of each matched pair.
 5. Run Hierholzer on the augmented multigraph and return the tour.
@@ -230,7 +232,7 @@ The result object holds the original, added and total costs, the duplicated edge
 
 ### 6.3 Directed graphs
 
-For a directed graph the imbalance of each vertex, out-degree minus in-degree, plays the role of odd degree. Vertices with more arcs in than out must send extra walks to vertices with more arcs out than in. Choosing those walks at least cost is a transportation problem, solved with NetworkX's `min_cost_flow` on the street network itself, with unbounded arc capacities. The flow on each arc is the number of extra copies to add. The graph must be strongly connected.
+For a directed graph the imbalance of each vertex, out-degree minus in-degree, plays the role of odd degree. Vertices with more arcs in than out must send extra walks to vertices with more arcs out than in. Choosing those walks at least cost is a transportation problem, solved with NetworkX's `min_cost_flow` on the street network itself, with unbounded arc capacities. The flow on each arc is the number of extra copies to add. The graph must be strongly connected. This reduction goes back to Edmonds and Johnson (1973).
 
 ### 6.4 Testing
 
@@ -243,6 +245,7 @@ For a directed graph the imbalance of each vertex, out-degree minus in-degree, p
 | Structure | 4 | Parallel edges, generated cities and directed grids give valid closed tours |
 | Blossom V backend | 55 | Same optimum as NetworkX on 51 benchmark files, and on towns where a one-neighbour start forces several pricing rounds |
 | Mixed CPP | 41 | Exact equals brute-force enumeration on 25 random networks; bound ≤ optimum ≤ heuristic; all-two-way and all-one-way cases equal the pure CPPs; the combined strategy proves optimality, including through the cutoff |
+| Branch-and-bound | 36 | Bounds of the 1997 worked example; same optimum as blossom on 30 random cases (10 for each of the three variants); strict node limit |
 | Web builders | 13 | Examples, .GRA, CARP and OpenStreetMap input give the expected networks and solve; bad input gives a clear message |
 | JavaScript solver | 243 networks | The website solver gives the Python optimum on every undirected and directed case, never claims a false optimum on mixed ones, and returns a valid tour |
 | Rural postman | 36 | Exact equals enumeration of every multiset of extra passes on the original network; Frederickson within 3/2 of the optimum; every street served; all-required equals the CPP; first-pass costs, undirected and directed |
@@ -262,7 +265,7 @@ print(sol.summary())
 
 ### 6.6 Web version
 
-The project website, [miquelmp.github.io/chinese-postman-problem](https://miquelmp.github.io/chinese-postman-problem/), lets anyone solve a postman problem in the browser: one of the built-in examples, a `.GRA` or CARP file, or a district chosen on an OpenStreetMap map. For an immediate answer the solver is ported to JavaScript and runs inside the page, with no server and nothing to install.
+The project website, [miquelmp.github.io/chinese-postman-problem](https://miquelmp.github.io/chinese-postman-problem/), lets anyone solve a postman problem in the browser: one of the built-in examples or benchmark networks, a `.GRA` file, or a district chosen on an OpenStreetMap map. For an immediate answer the solver is ported to JavaScript and runs inside the page, with no server and nothing to install.
 
 | Part | File | Content |
 | --- | --- | --- |
@@ -280,7 +283,7 @@ The interactive version accepts files of up to 2,500 junctions and OpenStreetMap
 
 ## 7. Computational experiments
 
-Every instance tested, 92 distinct real and benchmark road networks and synthetic cities with up to 40,000 junctions, was solved to proven optimality, apart from one 40,000-junction town stopped at the memory limit (section 7.4). None comes from the 1997 Vilanova i la Geltrú case studies. All runs used one core of a 2026 cloud Linux container, Python 3 and NetworkX 3.7.
+Every instance tested, 92 distinct benchmark networks (53 of them from real road data) and synthetic cities with up to 40,000 junctions, was solved to proven optimality, apart from one 40,000-junction town that exceeded the memory limit (section 7.4). None comes from the 1997 Vilanova i la Geltrú case studies. All runs used one core of a 2026 cloud Linux container, Python 3 and NetworkX 3.7. The timings come from separate runs, so they are comparable within a table and not across chapters.
 
 ### 7.1 Instance families
 
@@ -290,13 +293,13 @@ Every instance tested, 92 distinct real and benchmark road networks and syntheti
 | gdb | Golden, DeArmon and Baker (1983), random networks | 23 | 7–27 | 11–55 | 0–16 |
 | val | Benavent et al. (1992), generated networks | 10 | 24–50 | 34–97 | 12–28 |
 | kshs | Kiuchi et al. (1995) | 6 | 6–10 | 15 | 4–6 |
-| egl | Li and Eglese (1996), Brandão and Eglese (2008): winter-gritting roads in Cumbria, UK | 3 | 77–255 | 98–375 | 50–190 |
+| egl | Li and Eglese (1996), Brandão and Eglese (2008): winter-gritting roads in Lancashire, UK | 3 | 77–255 | 98–375 | 50–190 |
 | Beullens C, E (D, F share their networks) | Beullens et al. (2003): road network of Flanders, Belgium | 50 | 26–97 | 35–142 | 14–54 |
-| Grid city | Square grid, short blocks and long avenues, 10% of segments closed | 13 | 100–40,000 | 161–71,752 | 42–12,066 |
+| Grid city | Square grid, short blocks and long avenues, 10% of segments closed | 12 | 100–40,000 | 161–71,752 | 42–12,066 |
 | Delaunay town | Random junctions, Delaunay triangulation thinned to 75% | 11 | 100–20,000 | 214–44,974 | 48–10,006 |
 | One-way grid | Directed grid, alternating one-way streets, two-way outer ring | 5 | 48–3,600 | 113–8,142 arcs | 18–204 unbalanced |
 
-Benchmark files that share a road network and differ only in demands (for example val1A, val1B and val1C) were solved once, leaving 92 distinct networks out of 254 files. Families A and B in the same repository, of unknown origin, were left out.
+Benchmark files that share a road network and differ only in demands (for example val1A, val1B and val1C) were solved once, leaving 92 distinct networks out of 254 files. Families A and B in the same repository, of unknown origin, were left out. Delaunay towns are drawn in a 1 km square whatever their size, so the largest have unrealistically short streets, about 6 m on average at 20,000 junctions. Lengths are rounded to whole metres, which gives 152 of those 44,974 streets a cost of 0.
 
 ### 7.2 Classic graphs
 
@@ -307,7 +310,7 @@ Benchmark files that share a road network and differ only in demands (for exampl
 | Petersen graph | 10 | 15 | 5 | 20 | 20 edges |
 | Dodecahedron | 20 | 30 | 10 | 40 | 40 edges |
 
-Euler's citizens of Königsberg could not cross each bridge exactly once, but a postman can cover all seven with nine crossings by repeating two. In the Petersen graph and the dodecahedron every vertex is odd, and both contain a perfect matching of unit edges, so the tour repeats exactly half the edge count.
+Euler's citizens of Königsberg could not cross each bridge exactly once, but a postman can cover all seven with nine crossings by repeating two. In the Petersen graph and the dodecahedron every vertex is odd, and both contain a perfect matching of unit edges, so the tour repeats one edge for every two vertices: a third of the edges.
 
 ### 7.3 Benchmark road networks
 
@@ -322,17 +325,27 @@ Euler's citizens of Königsberg could not cross each bridge exactly once, but a 
 | egl-s | 1 | 24.5% | — | 0.21 s |
 | egl-g | 1 | 24.4% | — | 2.46 s |
 
-On real road networks a postman must repeat about a fifth of the distance; on the sparse Cumbrian network of egl-e, more than a third. The largest benchmark, egl-g, with 255 junctions and 190 odd vertices, takes 2.5 seconds, with optimality proven.
+On real road networks a postman must repeat about a fifth of the distance; on the sparse Lancashire network of egl-e, more than a third. The largest benchmark, egl-g, with 255 junctions and 190 odd vertices, takes 2.5 seconds, with optimality proven.
 
-In 39 of these networks every street needs service, so any multi-vehicle CARP solution is also a postman tour, and the CPP optimum is a lower bound for it. The solver respects that bound on all 39. More usefully, the bound is tight:
+In 39 of these networks every street needs service, so any multi-vehicle CARP solution is also a postman tour, and the CPP optimum is a lower bound for it. Files that share a road network were solved once above, but they differ in capacity and number of vehicles, so the comparison with fleets uses all 63 gdb, val and kshs files in which every street is required. The solver respects the bound on all 63. How close it comes depends on capacity:
 
-&#91;embedded content: results/benchmarks.csv · 39 all-required networks from gdb, val and kshs; best known CARP solutions as published in CARPData.jl\]
+&#91;embedded content: results/cpp_bound.csv · 63 all-required instances from gdb, val and kshs; best known CARP solutions as published in CARPData.jl\]
 
-For most networks, splitting the work among several vehicles of limited capacity costs only a few percent more than one unlimited postman. The gaps appear where many vehicles share a small network (gdb8 and gdb9 with 10 vehicles), because every vehicle must drive out from and back to the depot.
+| Instances | Number | Median | Lowest |
+| --- | --- | --- | --- |
+| gdb | 23 | 96.0% | 71.8% |
+| kshs | 6 | 88.3% | 65.6% |
+| val A (fewest vehicles) | 10 | 99.1% | 95.1% |
+| val B | 10 | 96.0% | 83.8% |
+| val C | 10 | 78.7% | 47.5% |
+| val D (four networks only) | 4 | 76.9% | 71.9% |
+| All | 63 | 95.1% | 47.5% |
+
+The mean is 90.3%; 19 instances fall below 90% and 10 below 80%, while 9 reach 100%, where capacity adds nothing to the postman's tour. On each of the 10 val networks the bound weakens steadily as capacity shrinks and vehicles are added: val2 goes from 95.6% with 2 vehicles to 47.5% with 8, because every vehicle must drive out from and back to the depot. Vehicle count does not explain everything: the lowest kshs and gdb values are kshs1 (65.6%, 4 vehicles) and gdb8 (71.8%, 10 vehicles), while gdb23 stays at 95.7% with 10 vehicles. In all 63 files the published lower and upper bounds coincide, so these fleet costs are proven optima.
 
 ### 7.4 Scaling
 
-With the Blossom V backend, a network with 40,000 junctions and 12,066 odd vertices solves to proven optimality in 102 seconds, against about 800 odd vertices in the same time with NetworkX. Grid cities and Delaunay towns were generated with up to 40,000 and 20,000 junctions respectively; both backends were run, NetworkX until a case passed 90 seconds.
+With the Blossom V backend, a network with 40,000 junctions and 12,066 odd vertices solves to proven optimality in 102 seconds, against about 800 odd vertices in the same time with NetworkX. These two figures come from different families; within one family, Blossom V reaches 12,066 odd vertices in 102 s on grids, against 660 in 57 s with NetworkX, and 10,006 in 56 s on Delaunay towns, against 806 in 115 s. Grid cities and Delaunay towns were generated with up to 40,000 and 20,000 junctions respectively; both backends were run, NetworkX until a case passed 90 seconds.
 
 &#91;embedded content: results/scaling.csv (NetworkX, 15 networks) and results/scaling\_blossom5.csv (Blossom V, 9 networks) · 100–40,000 junctions\]
 
@@ -345,7 +358,7 @@ With the Blossom V backend, a network with 40,000 junctions and 12,066 odd verti
 | Delaunay town | 20,000 | 10,006 | 35.4 s | 2.7 s | 18.0 s | 56 s | 2 | not measured separately |
 | Grid city | 40,000 | 12,066 | 64.7 s | 4.7 s | 33.1 s | 102 s | 3 | 3.4 GB |
 
-On the 660-odd-vertex grid the fast backend is 245 times faster than NetworkX, and the matching itself takes 0.01 s instead of 52 s. Starting from 10 nearest neighbours, one to three pricing rounds were always enough. The matching is no longer the bottleneck: shortest paths take about 60% of the time and building the tour about 30%, both still written in Python around compiled kernels and both easy to speed up further. Memory is dominated by the table of distances between odd vertices, which grows with their square; at 7 GB of RAM this sets the practical ceiling near 20,000 odd vertices, or roughly 50,000–60,000 junctions. A Delaunay town of 40,000 junctions (about 20,000 odd vertices) did not finish within 15 minutes and was stopped. Solving bigger networks would mean never storing that table, as the sparse blossom method does.
+On the 660-odd-vertex grid the fast backend is 245 times faster than NetworkX, and the matching itself takes 0.01 s instead of 52 s. Starting from 10 nearest neighbours, one to three rounds were always enough, the last of them only confirming optimality; seven of the nine networks needed extra pairs, at most 26. The matching is no longer the bottleneck: shortest paths take about 60% of the time and building the tour about 30%, both still written in Python around compiled kernels and both easy to speed up further. Memory is dominated by the table of distances between odd vertices, which grows with their square, and by two temporary matrices of the same shape used to pick the nearest neighbours; at 7 GB of RAM this sets the practical ceiling near 20,000 odd vertices, or roughly 50,000–60,000 junctions. A Delaunay town of 40,000 junctions (19,942 odd vertices) ran out of memory at 7 GB while building the candidate graph, once all its distances had been computed. Solving bigger networks would mean never storing that table, as the sparse blossom method does.
 
 For the NetworkX backend, time grows roughly with the cube of the number of odd vertices, as expected from the O(n³) matching, which takes over 85% of the time above 200 odd vertices.
 
@@ -373,11 +386,11 @@ The 2026 version keeps the structure of the 1997 method and improves each of its
 | --- | --- | --- | --- |
 | Matching | Binary branch-and-bound with a time limit for large cases | Edmonds' blossom algorithm | Proven optimum at every size, polynomial time |
 | B&B lower bound | Row minima divided by half the number of odd vertices | Row minima divided by 2 | Far fewer nodes; useful for B&B on harder variants |
-| Shortest paths | Fulkerson iteration on the full V × V matrix | Dijkstra from odd vertices only | Work proportional to the odd vertices, not to all pairs |
+| Shortest paths | Bellman-type iteration on the full V × V matrix | Dijkstra from odd vertices only | Work proportional to the odd vertices, not to all pairs |
 | Eulerian circuit | Cycle splicing over adjacency queues | Hierholzer with one pointer per vertex | Linear time |
-| Directed streets | Future work | Minimum-cost flow | Polynomial, solved |
+| Directed streets | Future work | Minimum-cost flow | Polynomial (Edmonds and Johnson, 1973) |
 | Platform | Turbo C, 16-bit integers, 640 KB memory model | Python 3, unbounded integers, automatic memory | No size limits on costs or data |
-| Verification | Manual checks | 237 automated tests in Python and 334 networks re-checked in JavaScript, every tour validated | Results checked on each run |
+| Verification | Manual checks | 273 automated tests in Python and 334 networks and 3,000 matchings re-checked in JavaScript, every tour validated | Results checked on each run |
 
 ### 8.2 The 1997 branch-and-bound
 
@@ -393,18 +406,20 @@ c(M) = \tfrac{1}{2} \sum_{v \in T} d\big(v, M(v)\big) \;\ge\; \tfrac{1}{2} \sum_
 
 The 1997 version divided the same sum by half the number of odd vertices, imp/2. The two coincide when there are four odd vertices, as in the worked example; with more odd vertices the divisor 2 gives a higher, tighter bound and prunes much more of the tree.
 
-Both bounds were run on the same synthetic street grids, with a limit of 15 seconds or 200,000 nodes per case:
+Both bounds were measured with a reimplementation of the 1997 search, `chinese_postman/bnb.py`, which follows the Turbo C listings and reproduces the bounds of the 1997 worked example. Only the divisor changes between the two runs. The instances are five grid towns for each number of odd vertices, and the limit is 200,000 explored nodes, so the counts do not depend on the machine:
 
-| Odd vertices | Nodes, 1997 bound | Nodes, tightened bound |
-| --- | --- | --- |
-| 8 | 82 | 12 |
-| 12 | 8,210 | 68 |
-| 16 | 218,940 | 65 |
-| 20 | limit reached | 637 |
-| 24 | limit reached | 3,925 |
-| 30 | limit reached | 7,217 |
+| Odd vertices | 1997 bound: proven | Nodes (median) | Tightened bound: proven | Nodes (median) | Nodes (worst) |
+| --- | --- | --- | --- | --- | --- |
+| 8 | 5 of 5 | 41 | 5 of 5 | 6 | 9 |
+| 12 | 5 of 5 | 1,925 | 5 of 5 | 18 | 55 |
+| 16 | 4 of 5 | 68,058 | 5 of 5 | 54 | 349 |
+| 20 | 0 of 5 | limit reached | 5 of 5 | 53 | 1,569 |
+| 24 | 0 of 5 | limit reached | 5 of 5 | 141 | 1,052 |
+| 30 | 0 of 5 | limit reached | 5 of 5 | 1,656 | 44,740 |
 
-With the tightened bound, branching on the most constrained vertex and a starting solution from a greedy pairing improved by pair swaps, the B&B proves optimality up to about 50 odd vertices within 10 seconds. Blossom solves the same cases in under 0.1 s, which is why the 2026 version uses it for the CPP and keeps the B&B for problems with no polynomial algorithm.
+Even when stopped at the limit, the 1997 search had usually found the optimum: in 14 of its 16 stopped runs, and within 7% in the other two. The counts vary widely between towns of the same size, so they show orders of magnitude and not a precise law.
+
+Two further changes extend the reach: branching on the most constrained vertex, and starting from a greedy pairing improved by pair swaps. With both, the search proves all five towns at 40 and at 50 odd vertices, in under 10 seconds each, and four of five at 60; the tightened bound alone proves four of five at 40 and three of five at 50. They do not help everywhere: at 30 odd vertices the worst case rises from 44,740 to 106,867 nodes. Blossom solves the same cases of up to 50 odd vertices in under 0.1 s, which is why the 2026 version uses it for the CPP and keeps the B&B for problems with no polynomial algorithm.
 
 ### 8.4 Why the B&B still matters
 
@@ -428,7 +443,7 @@ Let x(u→v) be the number of times the tour drives a street from u to v:
 \min \sum c\,x \quad \text{s.t.} \quad \sum_{\text{out of } v} x = \sum_{\text{into } v} x \;\; \forall v, \qquad x(u \to v) \ge 1 \;\text{for a one-way street}, \qquad x(u \to v) + x(v \to u) \ge 1 \;\text{for a two-way street}, \qquad x \in \mathbb{Z}_{\ge 0}
 ```
 
-Any integer solution is a balanced, connected multigraph, so it contains an Eulerian circuit: the tour. The integer program is solved with HiGHS, an open-source solver bundled with SciPy, which runs branch-and-bound with cutting planes: the 1997 idea of separating and bounding, with the bounds supplied by linear programming.
+Any integer solution is a balanced, connected multigraph, so it contains an Eulerian circuit: the tour. The integer program is solved with HiGHS, an open-source solver bundled with SciPy, with its relative gap tolerance set to zero (the default of 0.01% would stop short of a proof). HiGHS runs branch-and-bound with cutting planes: the 1997 idea of separating and bounding, with the bounds supplied by linear programming.
 
 ### 9.3 Bounds and heuristic
 
@@ -441,38 +456,38 @@ The heuristic is polynomial and runs in four steps:
 3. Improve the two best by local search. The flow's dual prices m estimate what reversing a street a→b would change, 2·(m\_b − m\_a); the most promising reversals are tried, each verified by an exact re-solve, and kept only if they lower the cost.
 4. Return the best tour found, with the best lower bound as a certificate of how far it can be from the optimum.
 
-The orientation-then-balance idea goes back to Frederickson (1979). The local search is what makes it accurate: on small towns it cut the worst gap to the optimum from 13.6% to 3%.
+The orientation-then-balance idea goes back to Frederickson (1979). The local search is what makes it accurate: across the 106 instances of section 9.4 with a proven optimum, it improved the best starting orientation on 65 and cut the mean gap to the optimum from 1.61% to 0.27% and the worst from 11.9% to 4.8%. Most of the gain is on the benchmarks (mean 1.58% to 0.12%); on the 14 towns the mean falls only from 1.79% to 1.26%.
 
 ### 9.4 Results
 
 On real-size networks the mixed CPP is solved exactly in seconds; on large towns the heuristic comes within about 1% of the best solution found by branch-and-cut, in a fraction of its time.
 
-**Benchmark road networks.** In each of the 92 distinct networks of chapter 7, 40% of the streets were made one-way in a random direction, keeping the network strongly connected.
+**Benchmark road networks.** In each of the 92 distinct networks of chapter 7, each street was made one-way in a random direction with probability 0.4. Streets that broke strong connectivity went back to two-way, leaving 31% of all streets one-way (24–44% per network).
 
 | Result | Value |
 | --- | --- |
 | Networks solved to proven optimality | 92 of 92 |
-| Slowest exact solve | 5.2 s (egl-g, 255 junctions, 375 streets) |
+| Slowest exact solve | 5.8 s (egl-g, 255 junctions, 375 streets) |
 | Heuristic finds the optimum | 78 of 92 |
 | Heuristic gap to optimum | mean 0.12%, maximum 2.8% |
-| Slowest heuristic run | 3.3 s |
+| Slowest heuristic run | 3.8 s |
 
 **Mixed towns.** Grid towns in which each whole street is one-way with probability 0.6, as in a typical town centre, from 64 to 6,400 junctions; one to three towns per size, a 5-minute limit for the exact method.
 
 | Junctions | Streets (two-way + one-way) | Exact: time | Exact: proven optimal | Heuristic: time | Heuristic: gap to exact |
 | --- | --- | --- | --- | --- | --- |
-| 64 | 112 | 1.2–1.4 s | yes | 0.2–0.4 s | 0–2.6% |
-| 144 | 264 | 3.3–4.4 s | yes | 0.2–0.3 s | 0.2–0.9% |
-| 256 | 480 | 2.0–2.6 s | yes | 0.4–0.7 s | 0.7–2.8% |
-| 400 | 760 | 1.3–4.2 s | yes | 0.5–0.8 s | 0.5–1.8% |
-| 900 | 1,740 | 8 s | yes | 3.9 s | 0.8% |
-| 1,600 | 3,120 | 48 s | yes | 18 s | 4.8% |
-| 3,600 | 7,080 | 5 min limit | no; within 0.65% of its bound | 22 s | 1.0% above the exact incumbent |
-| 6,400 | 12,640 | 5 min limit | no; within 0.69% of its bound | 68 s | 1.0% above the exact incumbent |
+| 64 | 112 | 1.6–1.8 s | yes | 0.2–0.7 s | 0–2.6% |
+| 144 | 264 | 4.4–5.3 s | yes | 0.3–0.4 s | 0.2–0.9% |
+| 256 | 480 | 2.3–2.9 s | yes | 0.4–0.8 s | 0.7–2.8% |
+| 400 | 760 | 1.6–5.1 s | yes | 0.6–1.0 s | 0.5–1.8% |
+| 900 | 1,740 | 10 s | yes | 5.4 s | 0.8% |
+| 1,600 | 3,120 | 79 s | yes | 24 s | 4.8% |
+| 3,600 | 7,080 | 5 min limit | no; within 0.65% of its bound | 26 s | 1.0% above the exact incumbent |
+| 6,400 | 12,640 | 5 min limit | no; within 0.71% of its bound | 80 s | 0.9% above the exact incumbent |
 
 Three conclusions follow.
 
-1. **Exact is practical up to a district.** Branch-and-cut proves the optimum within a minute for towns up to 1,600 junctions and every benchmark network. Above that it still returns a solution within 0.7% of optimal in five minutes, with a certificate.
+1. **Exact is practical up to a district.** Branch-and-cut proves the optimum within a minute and a half for towns up to 1,600 junctions and every benchmark network. Above that it still returns a solution within 0.7% of optimal in five minutes, with a certificate.
 2. **The heuristic is accurate and scales.** Across the 106 instances with a proven optimum it averages 0.27% above it. Its worst cases (2.8% and 4.8%) are towns where single-street reversals get stuck; moves that reverse whole cycles of two-way streets would be the next improvement.
 3. **Bounds matter.** The cheap combined bound averages 94.8% of the optimum on the benchmarks, as low as 83%, so on its own it certifies little. The bound computed by branch-and-cut is far tighter: it is what turns a good solution into a certified one.
 
@@ -484,9 +499,9 @@ In practice the two methods are used together, through a single function, `solve
 2. If the heuristic already matches the bound, or is within a chosen tolerance of it, stop.
 3. Otherwise run branch-and-cut for the remaining time, asking it only for tours cheaper than the heuristic's. If none exists the model is infeasible, which proves the heuristic tour optimal; if one exists, it replaces the heuristic tour.
 
-The objective cutoff lets branch-and-cut discard every branch that cannot beat the heuristic, so the heuristic's quality speeds up the exact search. On the 64-junction town where the heuristic was already optimal, this proves it in under a second. On the 1,600-junction town where the heuristic alone was 4.8% above the optimum, the combination returns the optimum in 66 seconds. With a tolerance of 0.5%, small towns stop in under two seconds with a tour certified within that margin.
+The objective cutoff lets branch-and-cut discard every branch that cannot beat the heuristic, so the heuristic's quality speeds up the exact search. On the 64-junction town where the heuristic was already optimal, this proves it in under a second. On the 1,600-junction town where the heuristic alone was 4.8% above the optimum, the combination returns the optimum in 79 seconds. With a tolerance of 0.5%, towns of up to 256 junctions stop in about three seconds or less with a tour certified within that margin.
 
-This is the approach the 1997 report proposed in its last chapter, a time-limited exact search used as a heuristic with a guarantee, now with a branch-and-cut solver behind it.
+This extends the approach of chapter 12 of the 1997 report, a time-limited exact search used as a heuristic: there is now a branch-and-cut solver behind it, and a proven bound on the remaining error.
 
 ## 10. The extensions proposed in 1997
 
@@ -587,17 +602,17 @@ Some variants remain for future work: the windy postman, where a street costs mo
 
 ## 11. Conclusions
 
-The Chinese Postman Problem can now be solved exactly, in polynomial time, on any network a single service crew would plausibly cover. The 2026 version keeps the method of 1997 (pair the odd vertices by shortest paths, duplicate those paths, walk the Eulerian circuit) and improves every stage of it.
+The Chinese Postman Problem has been solvable in polynomial time since 1973, and today's implementations make that practical on any network a single service crew would plausibly cover. The 2026 version keeps the method of 1997 (pair the odd vertices by shortest paths, duplicate those paths, walk the Eulerian circuit) and improves every stage of it.
 
 1. **Exact matching.** Edmonds' blossom algorithm, through NetworkX, gives the proven optimum on every instance tested: 4 classic graphs, 92 benchmark road networks from the UK, Belgium and the arc-routing literature, and 15 synthetic towns.
 2. **Practical size.** With the Blossom V backend, a 40,000-junction network with 12,066 odd vertices solves in 102 seconds; in pure Python the same time covers about 800 odd vertices. Every benchmark road network solves in under 2.5 seconds. Beyond about 20,000 odd vertices, memory for the distance table becomes the limit.
 3. **Directed streets.** The directed CPP, proposed as future work in 1997, is solved by minimum-cost flow in under half a second on a 3,600-junction one-way grid.
-4. **A strong bound for fleets.** On 39 benchmark networks where every street needs service, the single-postman tour costs a median 96.6% of the best known multi-vehicle solution. The CPP is therefore both a quick estimate and a tight lower bound for capacitated arc routing.
-5. **Mixed streets.** The mixed CPP, NP-hard, is solved exactly by branch-and-cut on every benchmark network (at most 5.2 s) and on towns of up to 1,600 junctions; beyond that a polynomial heuristic with dual-guided local search stays about 1% from the best known solution. Separation and bounding, the core of the 1997 work, is exactly what makes this possible.
+4. **A bound for fleets that depends on capacity.** On 63 benchmark instances where every street needs service, the single-postman tour costs a median 95.1% of the best known multi-vehicle solution, from 100% down to 47.5%. The CPP is a quick estimate and a close lower bound when vehicles have capacity to spare, and a weak one when they do not.
+5. **Mixed streets.** The mixed CPP, NP-hard, is solved exactly by branch-and-cut on every benchmark network (at most 5.8 s) and on towns of up to 1,600 junctions; beyond that a polynomial heuristic with dual-guided local search stays about 1% from the best known solution. Separation and bounding, the core of the 1997 work, is exactly what makes this possible.
 6. **The paths left open in 1997.** A first pass dearer than the next keeps the problem polynomial when every street needs service. When only some streets do (the rural postman problem, NP-hard), branch-and-cut proves the optimum on all 57 benchmark networks that mark them, and the heuristic averages 0.66% above it. Several postmen sharing a district (NP-hard) are planned by the best split of one tour and a local search, optimal in 61 of 62 small cases where the optimum is known; with vehicle capacities, the same idea comes within a median 5.8% of the best published solutions.
-7. **Open to everyone.** The code, the results, this report and the 1997 original are published at github.com/miquelmp/chinese-postman-problem, and the website solves any street network in the browser, from a file or from OpenStreetMap, in seconds for networks of up to 2,500 junctions.
+7. **Open to everyone.** The code, the results, this report and the 1997 original are published at github.com/miquelmp/chinese-postman-problem, and the website solves street networks of up to 2,500 junctions in the browser, from a file or from OpenStreetMap, in seconds.
 
-The two observations of 1997 about practice still hold. Routine services such as refuse collection or mail delivery are bounded by a working shift, so the networks involved stay moderate in size; and for one-off emergencies such as snow clearing, a fast near-optimal answer can be worth more than a slow proven one. What has changed is that, for the CPP itself, a fast answer and a proven one are now the same answer.
+The two observations of 1997 about practice still hold. Routine services such as refuse collection or mail delivery are bounded by a working shift, so the networks involved stay moderate in size; and for one-off emergencies such as snow clearing, a fast near-optimal answer can be worth more than a slow proven one. For the CPP itself, thanks to the matching theory of the 1960s and 1970s and to today's implementations, a fast answer and a proven one are the same answer.
 
 The natural continuation is a stronger lower bound for several postmen, the windy postman and turn penalties for real vehicles, all on the same code base, the same benchmark files and real street networks from OpenStreetMap.
 
@@ -605,6 +620,8 @@ The natural continuation is a stronger lower bound for several postmen, the wind
 
 **Problem and algorithms**
 
+- Euler, L. (1741). Solutio problematis ad geometriam situs pertinentis. *Commentarii academiae scientiarum Petropolitanae* 8, 128–140.
+- Dijkstra, E. W. (1959). A note on two problems in connexion with graphs. *Numerische Mathematik* 1, 269–271.
 - Kwan Mei-Ko (1960). Graphic programming using odd or even points. *Acta Mathematica Sinica* 10, 263–266 (in Chinese). English translation in *Chinese Mathematics* 1 (1962), 273–277.
 - Edmonds, J. (1965). Paths, trees, and flowers. *Canadian Journal of Mathematics* 17, 449–467.
 - Edmonds, J. (1965). Maximum matching and a polyhedron with 0,1-vertices. *Journal of Research of the National Bureau of Standards* 69B, 125–130.
@@ -618,7 +635,7 @@ The natural continuation is a stronger lower bound for several postmen, the wind
 
 **Matching algorithms**
 
-- Gabow, H. N. (1974). *Implementation of algorithms for maximum matching on nonbipartite graphs*. PhD thesis, Stanford University.
+- Gabow, H. N. (1973). *Implementations of algorithms for maximum matching on nonbipartite graphs*. PhD thesis, Stanford University.
 - Lawler, E. L. (1976). *Combinatorial Optimization: Networks and Matroids*. Holt, Rinehart and Winston, New York.
 - Micali, S. and Vazirani, V. V. (1980). An O(√|V|·|E|) algorithm for finding maximum matching in general graphs. *Proceedings of the 21st Annual Symposium on Foundations of Computer Science*, 17–27.
 - Galil, Z., Micali, S. and Gabow, H. (1986). An O(EV log V) algorithm for finding a maximal weighted matching in general graphs. *SIAM Journal on Computing* 15(1), 120–130.
@@ -632,6 +649,7 @@ The natural continuation is a stronger lower bound for several postmen, the wind
 - Chen, L., Kyng, R., Liu, Y. P., Peng, R., Probst Gutenberg, M. and Sachdeva, S. (2022). Maximum flow and minimum-cost flow in almost-linear time. *Proceedings of the 63rd IEEE Symposium on Foundations of Computer Science*, 612–623.
 - Wu, Y. and Zhong, L. (2023). Fusion Blossom: fast MWPM decoders for QEC. *Proceedings of the IEEE International Conference on Quantum Computing and Engineering*. arXiv:2305.08307.
 - Higgott, O. and Gidney, C. (2025). Sparse Blossom: correcting a million errors per core second with minimum-weight matching. *Quantum* 9, 1600.
+- Arkhipov, P. and Kolmogorov, V. (2026). Blossom VI: a practical minimum weight perfect matching algorithm. arXiv:2604.20351.
 
 **Arc routing**
 

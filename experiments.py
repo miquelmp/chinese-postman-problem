@@ -77,6 +77,61 @@ def benchmarks():
     save("benchmarks", rows)
 
 
+def cpp_bound():
+    """CPP optimum against the best known CARP solution on every gdb, val and kshs file in
+    which all streets are required. Files sharing a road network are kept here: they differ in
+    capacity and vehicles, and that difference is what this study measures."""
+    rows = []
+    for prefix in ("gdb", "val", "kshs"):
+        for path in sorted(glob.glob(f"data/carp/{prefix}*.dat")):
+            inst = read_carp(path)
+            if inst.required != inst.graph.number_of_edges():
+                continue
+            sol = solve_undirected(inst.graph, start=1)
+            rows.append(dict(family=prefix, instance=inst.name, vertices=inst.graph.number_of_nodes(),
+                             edges=inst.graph.number_of_edges(), vehicles=inst.vehicles, capacity=inst.capacity,
+                             cpp=sol.total_cost, carp_lb=inst.lower_bound, carp_ub=inst.upper_bound,
+                             cpp_over_carp_ub_pct=round(100 * sol.total_cost / inst.upper_bound, 2)))
+    save("cpp_bound", rows)
+
+
+def bnb(limit=200_000, per_size=5):
+    """Section 8.3: nodes explored by the branch-and-bound on grid towns with a given number of
+    odd vertices. The limit counts explored nodes, so the runs do not depend on machine speed."""
+    import networkx as nx
+    import numpy as np
+    from chinese_postman.bnb import branch_and_bound
+    from chinese_postman.cpp import min_weight_pairing
+    variants = {"1997": dict(bound="1997"), "tightened": dict(bound="tight"),
+                "improved": dict(bound="tight", branch="constrained", start=True)}
+    plans = {"1997": (8, 12, 16, 20, 24, 30), "tightened": (8, 12, 16, 20, 24, 30, 40, 50, 60),
+             "improved": (8, 12, 16, 20, 24, 30, 40, 50, 60)}
+    found = {}
+    for size in range(4, 15):
+        for seed in range(300):
+            G = I.manhattan(size, size, drop=0.1, seed=seed)
+            odd = [v for v in G if G.degree(v) % 2]
+            if len(found.setdefault(len(odd), [])) < per_size:
+                found[len(odd)].append((size, seed, G, odd))
+    rows = []
+    for name, kw in variants.items():
+        for target in plans[name]:
+            for size, seed, G, odd in found[target]:
+                H = nx.Graph()
+                H.add_weighted_edges_from(G.edges(data="weight"))
+                d = dict(nx.all_pairs_dijkstra_path_length(H))
+                D = np.array([[d[u][v] for v in odd] for u in odd])
+                t = time.perf_counter()
+                exact = sum(d[u][v] for u, v in min_weight_pairing(odd, {(u, v): d[u][v] for u in odd for v in odd}))
+                blossom_s = time.perf_counter() - t
+                r = branch_and_bound(D, max_nodes=limit, **kw)
+                rows.append(dict(variant=name, odd=target, size=size, seed=seed, proven=r.proven,
+                                 explored=r.explored, generated=r.generated, cost=r.cost, optimum=exact,
+                                 seconds=round(r.seconds, 3), blossom_seconds=round(blossom_s, 4)))
+                print(rows[-1], flush=True)
+                save("bnb", rows)
+
+
 def scaling(budget=90.0):
     rows = []
     for kind in ("manhattan", "delaunay"):
@@ -129,6 +184,34 @@ def scaling_fast(budget=600.0):
             save("scaling_blossom5", rows)
             if el > budget:
                 break
+
+
+def local_search():
+    """Section 9.3: gap to the proven optimum of the best starting orientation, before and after
+    the local search, on every instance of results/mixed_*.csv with a proven optimum."""
+    from chinese_postman.mixed import city_grid, from_graph, solve_heuristic
+    rows = []
+
+    def add(family, name, M, exact):
+        he = solve_heuristic(M)
+        before = min(he.info["candidates"].values())
+        rows.append(dict(family=family, instance=name, vertices=len(M.nodes), before=before, after=he.total_cost,
+                         exact=exact, flips=he.info["flips"], gap_before_pct=round(100 * (before - exact) / exact, 2),
+                         gap_after_pct=round(100 * (he.total_cost - exact) / exact, 2)))
+        print(rows[-1], flush=True)
+
+    with open(f"{OUT}/mixed_city.csv", newline="", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            if r["exact_optimal"] == "True":
+                size, seed = r["instance"].split("-")[1].split("x")[0], r["instance"].rsplit("s", 1)[1]
+                add("town", r["instance"], city_grid(int(size), int(size), seed=int(seed)), float(r["exact"]))
+    with open(f"{OUT}/mixed_benchmarks.csv", newline="", encoding="utf-8") as f:
+        pub = {r["instance"]: r for r in csv.DictReader(f)}
+    for path in sorted(glob.glob("data/carp/*.dat")):
+        inst = read_carp(path)
+        if inst.name in pub:
+            add("benchmark", inst.name, from_graph(inst.graph, oneway_frac=0.4, seed=1), float(pub[inst.name]["exact"]))
+    save("local_search", rows)
 
 
 def _mixed_row(family, name, M, limit):
@@ -337,6 +420,6 @@ def carp(seconds=5.0):
 
 
 if __name__ == "__main__":
-    todo = sys.argv[1:] or ["classic", "benchmarks", "directed", "scaling"]
+    todo = sys.argv[1:] or ["classic", "benchmarks", "cpp_bound", "bnb", "directed", "scaling"]
     for name in todo:
         globals()[name]()
