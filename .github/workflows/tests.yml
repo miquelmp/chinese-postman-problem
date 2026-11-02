@@ -12,6 +12,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: pip install -e ".[test]"
+      - run: bash native/build_lemon.sh
       - run: pytest -q
   javascript:
     # The website's JavaScript solver must give the same optimum as the Python package:

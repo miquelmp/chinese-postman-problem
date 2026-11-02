@@ -53,7 +53,7 @@ building blocks, Eulerian circuits and matchings, which this package uses.
 
 ```bash
 pip install -e ".[test]"
-pytest -q                            # 234 tests (289 with the optional Blossom V library)
+pytest -q                            # 234 tests (293 once the optional LEMON library is built)
 ```
 
 ```python
@@ -92,18 +92,18 @@ print(team.route_costs, team.lower_bound)
 | `chinese_postman/sequence.py` | Routes as sequences of served streets: cost, best directions, insertion, local search |
 | `chinese_postman/bnb.py` | The 1997 branch-and-bound and the tightened bound of section 8.3, kept for measurement |
 | `chinese_postman/euler.py` | Hierholzer's algorithm for directed and undirected multigraphs |
-| `chinese_postman/fast.py` | Optional fast backend: SciPy Dijkstra + Blossom V with dual pricing |
+| `chinese_postman/fast.py` | Optional fast backend: SciPy Dijkstra + LEMON with dual pricing and a certificate |
 | `chinese_postman/web.py` | JSON entry points used by the website's exact proof (examples, `.GRA`, OpenStreetMap) |
 | `site/assets/cpp.js`, `extensions.js`, `networks.js` | JavaScript port of the solvers and the network builders, used by the website |
 | `chinese_postman/io.py`, `instances.py` | File formats; test-network generators |
 | `experiments.py` | Reproduces the experiments of chapters 7 to 10 of the 2026 report; writes `results/*.csv` |
-| `tools/certify_matching.py`, `tools/match_sparse.mjs` | Independent dual certificate of the large matchings, without Blossom V |
+| `tools/certify_matching.py`, `tools/match_sparse.mjs` | Repeats the large matchings with the JavaScript blossom code |
 | `tools/fetch_mcpp.sh` | Downloads the published mixed instances into `data/mcpp/` (not stored here) |
 | `data/carp/` | Classical CARP benchmark instances (gdb, val, egl, Beullens, kshs) from [CARPData.jl](https://github.com/rafaelmartinelli/CARPData.jl) |
 | `examples/example_1997.gra` | The worked example of the 1997 report |
 | `report/` | 2026 report (Markdown source and PDF) and the 1997 report (PDF) |
 | `site/` | Website sources; `tools/build_site.py` builds them into `docs/` |
-| `native/` | C wrapper and build script for the optional Blossom V backend |
+| `native/` | C wrapper, build script and LEMON sources for the optional fast backend |
 
 ## Website
 
@@ -135,18 +135,17 @@ To try the site locally, serve `docs/` with any static server, for example
 
 ## Fast backend (optional)
 
-`solve_undirected(G, backend="auto")` uses Kolmogorov's Blossom V when it has been built:
-a 40,000-junction network with 12,066 odd junctions solves in 102 seconds, against about 800 odd
-junctions in the same time in pure Python. `python3 tools/certify_matching.py` confirms those optima
-without Blossom V, with a dual certificate that can be checked on its own.
+`solve_undirected(G, backend="auto")` uses LEMON's matching code when it has been built:
+a 40,000-junction network with 12,066 odd junctions solves in 115 seconds, against about 800 odd
+junctions in the same time in pure Python. Every result is checked by a dual certificate, and
+`python3 tools/certify_matching.py` repeats those optima with a second blossom code.
 
 ```bash
-bash native/build_blossom5.sh        # downloads Blossom V and builds native/libblossom5.so
+bash native/build_lemon.sh           # needs a C++ compiler; builds native/liblemon_match.so
 ```
 
-Blossom V may be used for evaluation and non-commercial research only, and may not be
-redistributed; commercial use needs a licence from UCL Business. It is therefore not included here.
-Everything else works without it.
+The LEMON sources in `native/lemon_src` are under the Boost Software License 1.0. Everything else
+works without building them.
 
 ## Documentation and support
 
@@ -156,8 +155,9 @@ Everything else works without it.
 
 ## Use of generative AI
 
-This project was developed with generative AI assistance (Claude, by Anthropic), in the code, the
-experiments, the documentation and the audit of the report. Commits co-authored by it are marked as such.
+The 2026 revision was prepared with generative AI assistance (Claude, by Anthropic), in the code, the
+experiments, the documentation and the audit of the report. The 1997 project was not. Commits co-authored
+by Claude are marked as such.
 
 ## Licences and citation
 

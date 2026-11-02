@@ -10,7 +10,7 @@ Every result file is in `results/`. Run the commands from the repository root, a
 | 7.3 Benchmark networks | `benchmarks.csv` | `python3 experiments.py benchmarks` | |
 | 7.3 Bound for fleets | `cpp_bound.csv` | `python3 experiments.py cpp_bound` | |
 | 7.4 Scaling, NetworkX | `scaling.csv` | `python3 experiments.py scaling` | |
-| 7.4 Scaling, Blossom V | `scaling_blossom5.csv` | `python3 experiments.py scaling_fast` | Blossom V |
+| 7.4 Scaling, LEMON | `scaling_lemon.csv` | `bash native/build_lemon.sh`, then `python3 experiments.py scaling_fast` | C++ compiler; 7 GB of RAM |
 | 7.4 Certificates | `certificates.csv` | `python3 tools/certify_matching.py` | Node.js; 7 GB of RAM |
 | 7.5 Directed networks | `directed.csv` | `python3 experiments.py directed` | |
 | 8.3 Branch-and-bound | `bnb.csv` | `python3 experiments.py bnb` | |
@@ -21,7 +21,6 @@ Every result file is in `results/`. Run the commands from the repository root, a
 | 10.4 Several postmen | `fleet_small.csv`, `fleet_benchmarks.csv` | `python3 experiments.py fleet_small fleet_benchmarks` | hours |
 | 10.5 Capacitated fleets | `carp.csv` | `python3 experiments.py carp` | |
 
-To build Blossom V, run `bash native/build_blossom5.sh`, after checking that its licence allows your use.
 
 `python3 experiments.py` with no argument runs the quick families. `mixed_towns` and `mcpp` resume if
 interrupted: delete their result file to start again.

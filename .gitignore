@@ -4,7 +4,6 @@ __pycache__/
 *.egg-info/
 build/
 dist/
-native/libblossom5.so
-native/blossom5-src/
+native/liblemon_match.so
 results/*.log
 data/mcpp/

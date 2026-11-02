@@ -41,15 +41,19 @@ parity test of the 1997 routine `cota` (an odd number of empty rows).</p>
 <h3><code>class CPPSolution</code></h3><p>A postman tour with its cost breakdown, duplicated edges and time per phase.</p>
 <h3><code>CPPSolution.summary(self)</code></h3><p>Return a readable report of the solution.</p>
 <h3><code>min_weight_pairing(odd, D)</code></h3><p>Minimum-weight perfect matching on the complete graph over `odd` (Edmonds&#x27; blossom).</p>
-<h3><code>solve_undirected(G: nx.MultiGraph, start=None, backend: str=&#x27;networkx&#x27;)</code></h3><p>backend: &quot;networkx&quot; (pure Python, any costs), &quot;blossom5&quot; (needs native/libblossom5.so,
-integer costs) or &quot;auto&quot; (blossom5 when built and costs are integers, else networkx).</p>
+<h3><code>solve_undirected(G: nx.MultiGraph, start=None, backend: str=&#x27;networkx&#x27;)</code></h3><p>backend: &quot;networkx&quot; (pure Python, any costs), &quot;lemon&quot; (needs native/liblemon_match.so,
+integer costs) or &quot;auto&quot; (lemon when built and costs are integers, else networkx).</p>
 <h3><code>solve_directed(G: nx.MultiDiGraph, start=None)</code></h3><p>Directed CPP via minimum-cost flow on the imbalance of each vertex.</p>
 <h2 id="euler">chinese_postman.euler</h2><p>Eulerian circuit in a multigraph (Hierholzer&#x27;s algorithm, O(m)).</p>
 <h3><code>eulerian_circuit(G: nx.MultiGraph | nx.MultiDiGraph, start=None)</code></h3><p>Return the vertex sequence of an Eulerian circuit (first == last).</p>
-<h2 id="fast">chinese_postman.fast</h2><p>Fast undirected CPP: SciPy (C) shortest paths + Blossom V with dual pricing.</p>
-<h3><code>available()</code></h3><p>Return True if the Blossom V library has been built.</p>
-<h3><code>match_pricing(D: np.ndarray, k: int=10, chunk: int=2048)</code></h3><p>Minimum-weight perfect matching on the complete graph with integer costs D (t×t).</p>
-<h3><code>solve_undirected_fast(G: nx.MultiGraph, start=None, k: int=10)</code></h3><p>Solve an undirected CPP with integer costs through Blossom V and dual pricing.</p>
+<h2 id="fast">chinese_postman.fast</h2><p>Fast undirected CPP: SciPy (C) shortest paths + LEMON with dual pricing.</p>
+<h3><code>available()</code></h3><p>Return True if the LEMON library has been built.</p>
+<h3><code>violations(D, C, twice_u, blossoms, chunk=1024)</code></h3><p>All pairs i &lt; j whose dual constraint fails, counting the blossoms that contain both.</p>
+<h3><code>check(D, mate, twice_u, blossoms)</code></h3><p>Return the certified optimal cost, or raise. Uses only D and the numbers given.</p>
+<h3><code>candidates(D, k=10, chunk=1024)</code></h3><p>Each vertex&#x27;s k nearest, plus a greedy pairing so that a perfect matching exists.
+Works row by row, which keeps memory near the size of D.</p>
+<h3><code>match_pricing(D: np.ndarray, k: int=10)</code></h3><p>Certified minimum-weight perfect matching on the complete graph with integer costs D (t×t).</p>
+<h3><code>solve_undirected_fast(G: nx.MultiGraph, start=None, k: int=10)</code></h3><p>Solve an undirected CPP with integer costs through LEMON, dual pricing and a certificate.</p>
 <h2 id="fleet">chinese_postman.fleet</h2><p>Several postmen: dividing the streets among k routes from one depot.</p>
 <h3><code>class FleetSolution</code></h3><p>Routes for several postmen or vehicles, with the best lower bound known.</p>
 <h3><code>FleetSolution.gap_pct(self)</code></h3><p>Percentage by which the objective exceeds the lower bound.</p>
@@ -164,6 +168,6 @@ strongly connected part is kept, so that a postman tour exists.</p>
 <h3><code>solve_json(inst_json: str, time_limit: float=20.0, gap_tol: float=0.0)</code></h3><p>JSON-string wrapper of `solve`, for the in-browser proof.</p>
   </div>
 </main>
-<footer class="site-footer"><div class="inner"><p>Miquel Monserrat Pons. Final-year project, ETSEIB (Universitat Politècnica de Catalunya), 1997; revised 2026.</p><p>Code under the MIT licence; texts and figures under CC BY 4.0. <a href="https://github.com/miquelmp/chinese-postman-problem">Source on GitHub</a>.</p><p>Benchmark instances from the arc-routing literature, as collected in CARPData.jl (MIT). Street data © OpenStreetMap contributors (ODbL). The in-browser solver is written in JavaScript; the optional exact proof runs Python through Pyodide, with NetworkX and SciPy (HiGHS).</p></div></footer>
+<footer class="site-footer"><div class="inner"><p>Miquel Monserrat Pons. Final-year project, ETSEIB (Universitat Politècnica de Catalunya), 1997; revised 2026 with AI assistance (Claude, by Anthropic).</p><p>Code under the MIT licence; texts and figures under CC BY 4.0. <a href="https://github.com/miquelmp/chinese-postman-problem">Source on GitHub</a>.</p><p>Benchmark instances from the arc-routing literature, as collected in CARPData.jl (MIT). Street data © OpenStreetMap contributors (ODbL). The in-browser solver is written in JavaScript; the optional exact proof runs Python through Pyodide, with NetworkX and SciPy (HiGHS).</p></div></footer>
 </body>
 </html>

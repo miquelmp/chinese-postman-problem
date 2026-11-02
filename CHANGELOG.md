@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026.5.0 — 2 November 2026
+
+- LEMON replaces Blossom V in the fast backend. Its sources are included, so anyone can build the backend and run its tests.
+- Every result of the fast backend is checked by a dual certificate. 19,942 odd vertices now solve in 271 s.
+- The largest grid takes 115 s, against the 102 s measured earlier with Blossom V, which was not reproduced. Both give the same optima.
+- The report and the website now state that the 2026 revision used AI assistance.
+
 ## 2026.4.0 — 2 November 2026
 
 - `tools/certify_matching.py` confirms every optimum of the fast backend with a dual certificate, without Blossom V, and reaches 19,942 odd vertices.

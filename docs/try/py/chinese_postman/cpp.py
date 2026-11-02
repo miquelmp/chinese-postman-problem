@@ -59,12 +59,12 @@ def min_weight_pairing(odd, D):
 
 
 def solve_undirected(G: nx.MultiGraph, start=None, backend: str = "networkx") -> CPPSolution:
-    """backend: "networkx" (pure Python, any costs), "blossom5" (needs native/libblossom5.so,
-    integer costs) or "auto" (blossom5 when built and costs are integers, else networkx)."""
-    if backend in ("auto", "blossom5"):
+    """backend: "networkx" (pure Python, any costs), "lemon" (needs native/liblemon_match.so,
+    integer costs) or "auto" (lemon when built and costs are integers, else networkx)."""
+    if backend in ("auto", "lemon"):
         from . import fast
         ints = all(float(w).is_integer() for *_, w in G.edges(data="weight"))
-        if backend == "blossom5" or (fast.available() and ints):
+        if backend == "lemon" or (fast.available() and ints):
             return fast.solve_undirected_fast(G, start=start)
     if G.number_of_edges() == 0:
         raise ValueError("Graph has no edges")

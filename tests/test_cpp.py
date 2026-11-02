@@ -114,28 +114,38 @@ def test_gdb_cpp_below_carp_bound(path):
     assert sol.total_cost <= inst.lower_bound
 
 
-# ---------------------------------------------------------------- Blossom V backend
+# ---------------------------------------------------------------- LEMON backend
 from chinese_postman import fast
 
-needs_blossom5 = pytest.mark.skipif(not fast.available(), reason="native/libblossom5.so not built")
+needs_lemon = pytest.mark.skipif(not fast.available(), reason="native/liblemon_match.so not built")
 
 
-@needs_blossom5
+@needs_lemon
 @pytest.mark.parametrize("path", sorted(glob.glob(str(ROOT / "data" / "carp" / "*.dat")))[::5])
-def test_blossom5_matches_networkx_on_benchmarks(path):
+def test_lemon_matches_networkx_on_benchmarks(path):
     G = read_carp(path).graph
     a = solve_undirected(G, start=1)
-    b = solve_undirected(G, start=1, backend="blossom5")
+    b = solve_undirected(G, start=1, backend="lemon")
     assert a.total_cost == b.total_cost
     check_tour(G, b)
 
 
-@needs_blossom5
+@needs_lemon
 @pytest.mark.parametrize("seed", range(4))
-def test_blossom5_pricing_with_tiny_candidate_set(seed):
+def test_lemon_pricing_with_tiny_candidate_set(seed):
     """k=1 forces many pricing rounds; the result must still be optimal."""
     G = I.delaunay_town(300, seed=seed)
     sol = fast.solve_undirected_fast(G, k=1)
     assert sol.matching_stats["rounds"] >= 2
     assert sol.total_cost == solve_undirected(G).total_cost
     check_tour(G, sol)
+
+
+@needs_lemon
+@pytest.mark.parametrize("seed", range(4))
+def test_lemon_duals_certify_the_matching(seed):
+    """The certificate must hold and give the same cost as an independent complete-graph solve."""
+    G = I.delaunay_town(200, seed=seed)
+    sol = fast.solve_undirected_fast(G)
+    assert sol.matching_stats["certified_cost"] == sol.added_cost
+    assert sol.total_cost == solve_undirected(G).total_cost
