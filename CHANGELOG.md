@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `native/lemon_src` now carries LEMON's own `LICENSE` file, and its notes list the compiler fixes in the rlemon copy.
+
 ## 2026.5.0 — 2 November 2026
 
 - LEMON replaces Blossom V in the fast backend. Its sources are included, so anyone can build the backend and run its tests.

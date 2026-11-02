@@ -31,7 +31,7 @@ Please work on a branch and open a pull request. Continuous integration must pas
 - If you change a result, regenerate its file in `results/` as described in `REPRODUCING.md`, and update the report.
 - `docs/` is generated: edit `site/` and `report/`, then run `tools/build_site.py`.
 
-Files in `native/lemon_src` are unchanged LEMON sources. Do not edit them, and do not add Blossom V, whose licence forbids redistribution.
+Files in `native/lemon_src` are LEMON sources, documented in the `README.md` there. Do not edit them, and do not add Blossom V, whose licence forbids redistribution.
 
 By contributing you agree that your code is released under the MIT licence, and your texts under
 CC BY 4.0. Please follow the [code of conduct](CODE_OF_CONDUCT.md).
