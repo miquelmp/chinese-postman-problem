@@ -132,7 +132,7 @@ def solve_exact(M: MixedGraph, time_limit: float = 300.0, start=None) -> MixedSo
     t0 = time.perf_counter()
     cols, cost, cons = _model(M)
     res = milp(cost, constraints=cons, integrality=np.ones(len(cost)), bounds=Bounds(0, np.inf),
-               options={"time_limit": time_limit, "disp": False})
+               options={"time_limit": time_limit, "mip_rel_gap": 0.0, "disp": False})
     secs = time.perf_counter() - t0
     if res.x is None:
         raise RuntimeError(f"No integer solution within {time_limit} s: {res.message}")

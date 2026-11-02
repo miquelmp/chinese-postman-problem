@@ -2,14 +2,14 @@
 
 The shortest closed walk that covers every street of a network. This repository revisits a 1997
 final-year engineering project (Miquel Monserrat Pons, ETSEIB, supervised by Ramón Companys
-Pascual) with thirty years of algorithmic progress.
+Pascual) with today's implementations.
 
 **Website: https://miquelmp.github.io/chinese-postman-problem/**
 
 
 - **Website** (`docs/`): the story, both reports, and a solver that runs in your browser.
 - **Python package** `chinese_postman`: undirected, directed and mixed Chinese Postman solvers, all with
-  proven optimality or a certified gap, and the extensions proposed in 1997: streets that need service
+  proven optimality or a certified gap, and the paths left open in 1997: streets that need service
   only once (rural postman), several postmen, and capacitated fleets.
 - **Reports** (`report/`): the 2026 revision (Markdown and PDF) and the original 1997 report (PDF, Spanish).
 - **Data and results**: 92 classical benchmark road networks and every result file behind the report.
@@ -30,7 +30,7 @@ Pascual) with thirty years of algorithmic progress.
 
 ```bash
 pip install -e ".[test]"
-pytest -q                            # 182 tests (237 with the optional Blossom V library)
+pytest -q                            # 218 tests (273 with the optional Blossom V library)
 ```
 
 ```python
@@ -67,12 +67,13 @@ print(team.route_costs, team.lower_bound)
 | `chinese_postman/rural.py` | Service and travel costs; rural postman: Frederickson, bounds, branch-and-cut, combined `solve_rural` |
 | `chinese_postman/fleet.py` | Several postmen (min-max k-postmen), exact model for small cases, capacitated fleets (CARP) |
 | `chinese_postman/sequence.py` | Routes as sequences of served streets: cost, best directions, insertion, local search |
+| `chinese_postman/bnb.py` | The 1997 branch-and-bound and the tightened bound of section 8.3, kept for measurement |
 | `chinese_postman/euler.py` | Hierholzer's algorithm for directed and undirected multigraphs |
 | `chinese_postman/fast.py` | Optional fast backend: SciPy Dijkstra + Blossom V with dual pricing |
 | `chinese_postman/web.py` | JSON entry points used by the website's exact proof (examples, `.GRA`, OpenStreetMap) |
 | `site/assets/cpp.js`, `extensions.js`, `networks.js` | JavaScript port of the solvers and the network builders, used by the website |
 | `chinese_postman/io.py`, `instances.py` | File formats; test-network generators |
-| `experiments.py` | Reproduces every experiment in the 2026 report; writes `results/*.csv` |
+| `experiments.py` | Reproduces the experiments of chapters 7 to 10 of the 2026 report; writes `results/*.csv` |
 | `data/carp/` | Classical CARP benchmark instances (gdb, val, egl, Beullens, kshs) from [CARPData.jl](https://github.com/rafaelmartinelli/CARPData.jl) |
 | `examples/example_1997.gra` | The worked example of the 1997 report |
 | `report/` | 2026 report (Markdown source and PDF) and the 1997 report (PDF) |
@@ -91,7 +92,8 @@ The JavaScript solver is checked against the Python package on 243 networks (eve
 two-way and as mixed, plus generated towns): `python3 tests/js/make_cases.py` computes the optima in
 Python, and `node tests/js/test_cpp.mjs` checks that the JavaScript finds the same ones. The extensions
 are checked the same way (`tests/js/make_ext_cases.py`, `node tests/js/test_extensions.mjs`) on 52
-rural-postman and 39 several-postmen networks with optima proved in Python.
+rural-postman and 39 several-postmen networks with optima proved in Python. `tests/js/test_matching.mjs` checks the matching alone on 3,000
+random cost matrices, with optima from NetworkX (`tests/js/make_matchings.py`).
 
 Publish it with GitHub Pages: *Settings → Pages → Build and deployment → Deploy from a branch →
 `main` / `/docs`*.

@@ -404,7 +404,7 @@ def solve_exact(P: Problem, time_limit: float = 60.0, cutoff: float | None = Non
         if cutoff is not None:
             cc.append(LinearConstraint(cost[None, :], -np.inf, cutoff))
         res = milp(cost, constraints=cc, integrality=np.ones(nv), bounds=bnd,
-                   options={"time_limit": left, "disp": False})
+                   options={"time_limit": left, "mip_rel_gap": 0.0, "disp": False})
         rounds += 1
         if res.status == 2:
             return "infeasible", None, bound, rounds

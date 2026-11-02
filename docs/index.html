@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Chinese Postman Problem, 1997 and 2026</title>
-<meta name="description" content="A 1997 final-year project on the Chinese Postman Problem, revisited with thirty years of algorithms: both reports, open-source code, and a solver that runs in your browser.">
+<meta name="description" content="A 1997 final-year project on the Chinese Postman Problem, revisited with today's solvers: both reports, open-source code, and a solver that runs in your browser.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="The Chinese Postman">
 <meta property="og:title" content="The Chinese Postman Problem, 1997 and 2026">
-<meta property="og:description" content="A 1997 final-year project on the Chinese Postman Problem, revisited with thirty years of algorithms: both reports, open-source code, and a solver that runs in your browser.">
+<meta property="og:description" content="A 1997 final-year project on the Chinese Postman Problem, revisited with today&#x27;s solvers: both reports, open-source code, and a solver that runs in your browser.">
 <meta property="og:url" content="https://miquelmp.github.io/chinese-postman-problem/">
 <meta property="og:image" content="https://miquelmp.github.io/chinese-postman-problem/assets/og-image.png">
 <meta property="og:image:width" content="1200">
@@ -31,7 +31,7 @@
     <div>
       <h1>The shortest walk that covers every street</h1>
       <p class="lede">A postman has to walk down every street of a district and return to the office. Some streets must be walked twice; the question is which ones, so that the extra distance is as small as possible.</p>
-      <p>This site revisits a 1997 final-year engineering project on this problem, the Chinese Postman Problem, with thirty years of algorithmic progress, and follows the extensions it proposed: streets that need no service, several postmen, vehicles with a capacity. Read both reports, run the solver in your browser, or use the code.</p>
+      <p>This site revisits a 1997 final-year engineering project on this problem, the Chinese Postman Problem, with today's implementations, and follows the extensions it proposed: streets that need no service, several postmen, vehicles with a capacity. Read both reports, run the solver in your browser, or use the code.</p>
       <div class="actions">
         <a class="button" href="try/">Solve a network</a>
         <a href="report/">Read the 2026 report</a>
@@ -51,22 +51,22 @@
 
   <section class="prose">
     <h2>The problem</h2>
-    <p class="reading-intro">A route that walks every street exactly once and returns to its start exists only when every junction joins an even number of streets: Euler proved this in 1736 for the seven bridges of Königsberg. Real districts have junctions with an odd number of streets, so some streets must be walked again. The Chinese mathematician Kwan Mei-Ko posed the question in 1960: which streets should be repeated so that the extra distance is as small as possible?</p>
-    <p>The answer pairs up the odd junctions so that the total distance between paired junctions is minimal, repeats the streets along those connections, and then walks the result. Mail delivery, refuse collection, snow ploughing and street sweeping all face this problem every day.</p>
+    <p class="reading-intro">A route that walks every street exactly once and returns to its start exists only when every junction joins an even number of streets: Euler proved this for the seven bridges of Königsberg, in a paper written in 1735 and published in 1741. Real districts have junctions with an odd number of streets, so some streets must be walked again. The Chinese mathematician Kwan Mei-Ko posed the question in 1960: which streets should be repeated so that the extra distance is as small as possible?</p>
+    <p>The answer pairs up the odd junctions so that the total distance between paired junctions is minimal, repeats the streets along those connections, and then walks the result. Mail delivery, refuse collection, snow ploughing and street sweeping all build on this problem, usually with added limits such as vehicle capacity or working shifts.</p>
   </section>
 
   <section>
-    <h2>Thirty years later</h2>
+    <h2>Nearly thirty years later</h2>
     <div class="prose">
-      <p>The method of 1997 is unchanged in outline; each stage now uses what is available today, and the extensions the project proposed are solved too.</p>
+      <p>The method of 1997 is unchanged in outline; each stage now uses what is available today (the polynomial algorithms were already published in 1997; their implementations reach much further), and the extensions the project proposed are solved too.</p>
     </div>
     <div class="table-scroll">
       <table>
         <thead><tr><th>Problem</th><th>1997</th><th>2026</th></tr></thead>
         <tbody>
-          <tr><td>Every street, two-way</td><td>Exact up to about 20 odd junctions, then a time-limited search</td><td>Exact at any size: 12,000 odd junctions in two minutes</td></tr>
+          <tr><td>Every street, two-way</td><td>Exact up to about 20 odd junctions on a 150 MHz Pentium, then a time-limited search</td><td>Exact in polynomial time: 12,000 odd junctions in two minutes</td></tr>
           <tr><td>One-way streets</td><td>Proposed as future work</td><td>Exact</td></tr>
-          <tr><td>One-way and two-way together</td><td>Not in scope</td><td>Exact for towns of up to 1,600 junctions; beyond that, within 0.3% on average</td></tr>
+          <tr><td>One-way and two-way together</td><td>Not in scope</td><td>Exact for towns of up to 1,600 junctions; beyond that, within 0.7% of a proven bound</td></tr>
           <tr><td>Only some streets to serve</td><td>Proposed: a dearer first pass</td><td>Exact on every benchmark network; the quick method is within 0.7% on average</td></tr>
           <tr><td>Several postmen</td><td>Noted: a shift limits the work</td><td>Optimal in 61 of 62 cases where the optimum is known</td></tr>
           <tr><td>Vehicles with a capacity</td><td>—</td><td>Within 6% of the best published solutions (median)</td></tr>
@@ -90,7 +90,7 @@
   <section class="prose" id="cite">
     <h2>How to cite</h2>
     <p>If you use the code, the results or the report, please cite:</p>
-    <p class="citation">Monserrat Pons, M. (2026). <em>The Chinese Postman Problem — 2026 revision</em> (version 2026.1.0). Software and report. <a href="https://github.com/miquelmp/chinese-postman-problem">https://github.com/miquelmp/chinese-postman-problem</a></p>
+    <p class="citation">Monserrat Pons, M. (2026). <em>The Chinese Postman Problem — 2026 revision</em> (version 2026.2.0). Software and report. <a href="https://github.com/miquelmp/chinese-postman-problem">https://github.com/miquelmp/chinese-postman-problem</a></p>
     <p>The original project:</p>
     <p class="citation">Monserrat Pons, M. (1997). <em>Resolución del problema del cartero chino (CPP) mediante la aplicación de un proceso de branch and bound</em>. Final-year project, ETSEIB, Universitat Politècnica de Catalunya. Supervisor: R. Companys Pascual.</p>
     <p>GitHub shows the same reference in APA and BibTeX under “Cite this repository”, from the file <a href="https://github.com/miquelmp/chinese-postman-problem/blob/main/CITATION.cff">CITATION.cff</a>.</p>
