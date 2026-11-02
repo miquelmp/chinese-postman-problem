@@ -1,5 +1,5 @@
 #!/bin/sh
-# Download the mixed Chinese postman instances of Corberan et al. (sets MA and MB), as
+# Download the mixed Chinese postman instances of Corberan et al. (2012, sets MA and MB), as
 # distributed with OAR Lib (Lum, Golden and Wasil, 2019), into data/mcpp. Not stored here.
 set -e
 COMMIT=db407dfa776977fd0ecede430c9d8f57efdf78cf

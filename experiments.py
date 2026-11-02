@@ -274,7 +274,7 @@ def mixed_towns(limit=300.0, seeds=5):
 
 
 def mcpp(limit=120.0, step=4):
-    """Published mixed instances of Corberan et al. (run tools/fetch_mcpp.sh first): every
+    """Published mixed instances of Corberan et al., 2012 (run tools/fetch_mcpp.sh first): every
     `step`-th file, balanced across the sets, smallest networks first so that an interrupted run
     still covers both sets evenly. Resumes from results/mixed_published.csv."""
     from chinese_postman.mixed import read_mcpp

@@ -10,7 +10,7 @@ Miquel Monserrat Pons · November 2026
 
 This report revises a 1997 final-year project on the Chinese Postman Problem: find the cheapest closed route that covers every street of a network at least once. The method is unchanged in outline: pair the odd-degree junctions by shortest paths at minimum total cost, duplicate those paths, and walk the resulting Eulerian circuit. The 1997 branch-and-bound for the pairing step is replaced by Edmonds' blossom algorithm, which is exact and polynomial; shortest paths use Dijkstra, the circuit uses Hierholzer's linear-time algorithm, the directed version is added through minimum-cost flow, and the mixed version, with one-way and two-way streets together and NP-hard, through branch-and-cut and a new heuristic.
 
-The new Python implementation was tested on classic graphs, on 92 benchmark networks from the arc-routing literature (including real road networks in Lancashire and Flanders), and on synthetic towns of up to 40,000 junctions. Every instance was solved to proven optimality. With a second backend that runs the LEMON library on a sparse candidate graph, adds pairs by dual pricing and checks a dual certificate, a network with 12,066 odd vertices solves in 115 seconds, against about 800 odd vertices in the same time in pure Python, and one with 19,942 in 271 seconds. On 63 benchmarks where every street needs service, the single-postman tour costs a median 95.1% of the best known multi-vehicle solution, but as little as 47.5% when capacity is scarce: the CPP is a close bound for fleet routing only while vehicles have capacity to spare. For mixed networks, branch-and-cut proves the optimum on every benchmark network within 5.8 seconds, on all 20 towns of up to 400 junctions and on 8 of the 10 towns of 900 and 1,600 junctions, and on 15 of 25 published instances of 500 to 3,000 junctions within two minutes. The heuristic averages 0.12% above the optimum on the benchmarks, 1.35% on the towns and 1.50% on those 15 published instances, with a worst case of 5.3% where few streets are one-way. The report closes by following the paths left open in 1997: streets whose first pass costs more than the next, streets that need no service (the rural postman problem) and several postmen sharing a district, each with its complexity, an exact method or a heuristic with a proven bound, and the measured distance from the optimum.
+The new Python implementation was tested on classic graphs, on 92 benchmark networks from the arc-routing literature (including real road networks in Lancashire and Flanders), and on synthetic towns of up to 40,000 junctions. Every instance was solved to proven optimality. With a second backend that runs the LEMON library on a sparse candidate graph, adds pairs by dual pricing and checks a dual certificate, a network with 12,066 odd vertices solves in 115 seconds, against about 800 odd vertices in the same time in pure Python, and one with 19,942 in 271 seconds. On 63 benchmarks where every street needs service, the single-postman tour costs a median 95.1% of the best known multi-vehicle solution, but as little as 47.5% when capacity is scarce: the CPP is a close bound for fleet routing only while vehicles have capacity to spare. For mixed networks, branch-and-cut proves the optimum on every benchmark network within 5.8 seconds, on all 20 towns of up to 400 junctions and on 8 of the 10 towns of 900 and 1,600 junctions, and on 17 of a sample of 30 published instances of 500 to 3,000 junctions within two minutes. All 39 optima proved on published instances equal the published values. The heuristic averages 0.12% above the optimum on the benchmarks, 1.35% on the towns and 2.09% on that sample, with a worst case of 5.8% where few streets are one-way. The report closes by following the paths left open in 1997: streets whose first pass costs more than the next, streets that need no service (the rural postman problem) and several postmen sharing a district, each with its complexity, an exact method or a heuristic with a proven bound, and the measured distance from the optimum.
 
 A JavaScript port of the solver runs in the web browser, so anyone can solve their own street network, from a file or straight from OpenStreetMap, at [miquelmp.github.io/chinese-postman-problem](https://miquelmp.github.io/chinese-postman-problem/).
 
@@ -217,7 +217,7 @@ Fleury's rule, discussed in the 1997 report, also works but must test at each st
 
 ## 6. Implementation
 
-The solver is a small Python 3 package, `chinese_postman`, built on NetworkX and covered by 293 automated tests (234 when the optional LEMON library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with eleven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).
+The solver is a small Python 3 package, `chinese_postman`, built on NetworkX and covered by 294 automated tests (235 when the optional LEMON library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with eleven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).
 
 ### 6.1 Modules
 
@@ -263,7 +263,7 @@ For a directed graph the imbalance of each vertex, out-degree minus in-degree, p
 | LEMON backend | 59 | Same optimum as NetworkX on 51 benchmark files, on towns where a one-neighbour start forces several pricing rounds, and with the certificate checked |
 | Mixed CPP | 41 | Exact equals brute-force enumeration on 25 random networks; bound ≤ optimum ≤ heuristic; all-two-way and all-one-way cases equal the pure CPPs; the combined strategy proves optimality, including through the cutoff |
 | Branch-and-bound | 36 | Bounds of the 1997 worked example; same optimum as blossom on 30 random cases (10 for each of the three variants); strict node limit |
-| Certificates and instance reader | 16 | The dual certificate accepts optima, rejects worse matchings, low duals and imperfect matchings, and equals blossom on 10 random cases; published mixed files are read correctly |
+| Certificates and instance reader | 17 | The dual certificate accepts optima, rejects worse matchings, low duals and imperfect matchings, and equals blossom on 10 random cases; published mixed files are read correctly |
 | Web builders | 13 | Examples, .GRA, CARP and OpenStreetMap input give the expected networks and solve; bad input gives a clear message |
 | JavaScript solver | 243 networks | The website solver gives the Python optimum on every undirected and directed case, never claims a false optimum on mixed ones, and returns a valid tour |
 | Rural postman | 36 | Exact equals enumeration of every multiset of extra passes on the original network; Frederickson within 3/2 of the optimum; every street served; all-required equals the CPP; first-pass costs, undirected and directed |
@@ -495,7 +495,7 @@ The orientation-then-balance idea goes back to Frederickson (1979). The local se
 
 ### 9.4 Results
 
-On the benchmark networks and on towns of up to 400 junctions the mixed CPP is solved exactly in seconds. Above that, size alone does not decide: some towns are proved in under a minute and others of the same size are not proved in five. The heuristic is 1% to 3.6% above the best tour of branch-and-cut on the towns left unproved, in a fraction of its time; its worst gap to a proven optimum is 4.8%. On a published test set of 500 to 3,000 junctions the heuristic is weaker where few streets are one-way, up to 5.3% above a proven optimum, and much slower.
+On the benchmark networks and on towns of up to 400 junctions the mixed CPP is solved exactly in seconds. Above that, size alone does not decide: some towns are proved in under a minute and others of the same size are not proved in five. The heuristic is 1% to 3.6% above the best tour of branch-and-cut on the towns left unproved, in a fraction of its time; its worst gap to a proven optimum is 4.8%. On a published test set of 500 to 3,000 junctions the heuristic is weaker where few streets are one-way, up to 5.8% above the published optimum, and much slower.
 
 **Benchmark networks.** In each of the 92 distinct networks of chapter 7, each street was made one-way in a random direction with probability 0.4. Streets that broke strong connectivity went back to two-way, leaving 31% of all streets one-way (24–44% per network).
 
@@ -520,30 +520,38 @@ On the benchmark networks and on towns of up to 400 junctions the mixed CPP is s
 | 3,600 | 7,080 | 1 of 5 | 38 s | 25–51 s | 2.3% | 0.48–1.01% | 1.0–2.4% |
 | 6,400 | 12,640 | 0 of 5 | — | 64–98 s | — | 0.25–0.97% | 1.0–2.0% |
 
-**Published instances.** The benchmark networks and towns above were made mixed by this project, so they may favour its heuristic. As an outside test, the random mixed instances MA and MB distributed with OAR Lib (Lum, Golden and Wasil, 2019), in its folder of Corberán instances, were read unchanged. Of the 120 files, every fourth was taken, 30 in all, with a 2-minute limit for the exact method. They were run smallest first. All 24 instances of 500 to 2,000 junctions finished, and one of the six of 3,000 junctions; the run reached its 90-minute limit before the other five, so nothing is reported for those.
+**Published instances.** The benchmark networks and towns above were made mixed by this project, so they may favour its heuristic. As an outside test, the 120 mixed instances of Corberán, Oswald, Plana, Reinelt and Sanchis (2012) were read unchanged, in the copy distributed with OAR Lib (Lum, Golden and Wasil, 2019). They have 500 to 3,000 junctions; half are random graphs (MA) and half imitate street networks (MB). The authors proved 108 of them with a dedicated branch-and-cut and a 10-hour limit, and their instance page now lists 109 optima, with lower and upper bounds for the other 11.
 
-| Junctions | Instances | Proved in 2 min | Heuristic: time | Unproved: exact to its bound |
+Two sets were run, each with a 2-minute limit for the exact method. A sample of 30, every fourth file, covers all sizes. In that sample, however, street density and the one-way share change together, so all 48 instances of 500 and 1,000 junctions were also run. Twelve instances are in both sets, which makes 66 distinct instances. The two sets shared a two-core machine for much of the run, so times may be high and some proofs may have missed the limit.
+
+| Junctions | Instances in the sample | Proved in 2 min | Heuristic: time | Unproved: exact to its bound |
 | --- | --- | --- | --- | --- |
 | 500 | 6 | 6 of 6 | 8–13 s | — |
 | 1,000 | 6 | 4 of 6 | 28–70 s | 0.18–0.21% |
 | 1,500 | 6 | 4 of 6 | 63–213 s | 0.10–0.39% |
 | 2,000 | 6 | 1 of 6 | 154–483 s | 0.03–0.90% |
-| 3,000 | 1 | 0 of 1 | 1,528 s | 0.72% |
+| 3,000 | 6 | 2 of 6 | 443–1,528 s | 0.15–0.72% |
 
-| Streets one-way | Instances | Proved in 2 min | Heuristic above the exact tour (mean, range) |
-| --- | --- | --- | --- |
-| 21–24% | 9 | 4 | 4.26%, 2.99–5.33% |
-| 45–50% | 8 | 4 | 1.43%, 0.75–2.09% |
-| 71–76% | 8 | 7 | 0.30%, 0.01–0.59% |
+**Agreement with the published values.** The 39 distinct instances proved here all have the published optimum (`results/mcpp_published_values.csv`). On all 66, no tour falls below the best published value, no bound exceeds it, and the exact tour is at most 0.72% above it. This is an external check of the model, of the file reader and of the solver. The times are not comparable with the published ones, which come from another solver and a 2007 machine.
 
-The exact tour is the proven optimum on the 15 proved instances and the best tour found on the other 10. On the 15 proved instances the heuristic averages 1.50% above the optimum, with a worst case of 5.33%. No published optima were compared here: the optima and bounds are this project's own.
+**Heuristic against the published optima.** On the 29 sample instances with a published optimum, the heuristic averages 2.09% above it, with a worst case of 5.79%. Across all 48 instances of the full set the mean is 2.03% and the worst case 5.33%. Each cell below is the mean of four instances, one for each combination of size and family.
+
+| Street density (middle digit of the name) | About 25% one-way | About 50% one-way | About 75% one-way | Mean |
+| --- | --- | --- | --- | --- |
+| 3 | 4.29% | 1.42% | 0.27% | 1.99% |
+| 4 | 4.43% | 1.38% | 0.27% | 2.02% |
+| 5 | 4.25% | 1.85% | 0.15% | 2.08% |
+| 6 | 3.60% | 2.17% | 0.29% | 2.02% |
+| Mean | 4.14% | 1.70% | 0.25% | 2.03% |
+
+The three columns have 21–26%, 42–51% and 57–76% of streets one-way. In this set the exact method proved 32 of the 48 in two minutes.
 
 Four conclusions follow.
 
 1. **Exact is practical up to a district, but not always.** Branch-and-cut proves every benchmark network and all 20 towns of up to 400 junctions within 8 seconds, 8 of the 10 towns of 900 and 1,600 junctions, one of five at 3,600 and none at 6,400. Every unproved town still ends within about 1% of its proven bound in five minutes, with a certificate.
 2. **The heuristic is fast, and more accurate on the benchmarks than on towns.** With a proven optimum it averages 0.12% above it on the 92 benchmarks (worst 2.8%) and 1.35% on the 29 towns (worst 4.8%). Its worst cases are towns where single-street reversals get stuck; moves that reverse whole cycles of two-way streets would be the next improvement.
 3. **Bounds matter.** The cheap combined bound averages 94.8% of the optimum on the benchmarks, as low as 83%, so on its own it certifies little. The bound computed by branch-and-cut is far tighter: it is what turns a good solution into a certified one.
-4. **The heuristic's accuracy depends on the instance.** On the published set its gap grows as one-way streets become fewer, from 0.3% to 4.3% on average. Its running time also grows much faster than on the towns: 25 minutes at 3,000 junctions, against under 100 seconds at 6,400 in a town. From 1,500 junctions upwards, branch-and-cut gave a better tour than the heuristic on all 13 instances, in less time on 12. The cause of the slowdown was not isolated.
+4. **The heuristic's accuracy depends on the one-way share.** On the published set its mean gap falls from 4.14% with about a quarter of streets one-way to 0.25% with about three quarters, while street density makes almost no difference (1.99–2.08%). Its running time also grows much faster than on the towns: 7 to 25 minutes at 3,000 junctions, against under 100 seconds at 6,400 in a town. From 1,500 junctions upwards, branch-and-cut gave a better tour than the heuristic on all 18 sample instances, in less time on 17. The cause of the slowdown was not isolated.
 
 ### 9.5 Combined strategy
 
@@ -643,7 +651,7 @@ On the 197 classical CARP instances (gdb, val, egl, kshs and the four Beullens f
 | --- | --- | --- | --- | --- |
 | Every street, two-way or one-way | Polynomial | Matching or minimum-cost flow, in polynomial time | Not needed | 0 |
 | Every street, first pass dearer | Polynomial | Matching on the travel costs | Not needed | 0 |
-| Every street, mixed | NP-hard | Branch-and-cut, all benchmark networks and towns of up to 400 junctions; most up to 1,600 | Orientation, balancing and local search | Mean 0.41%, worst 4.8% (121 benchmarks and towns); mean 1.50%, worst 5.3% (15 published instances) |
+| Every street, mixed | NP-hard | Branch-and-cut, all benchmark networks and towns of up to 400 junctions; most up to 1,600 | Orientation, balancing and local search | Mean 0.41%, worst 4.8% (121 benchmarks and towns); mean 2.09%, worst 5.8% (29 published instances) |
 | Some streets (rural postman) | NP-hard; polynomial with one piece | Branch-and-cut, all 57 benchmark networks and 10 of the 12 towns of up to 400 junctions | Frederickson, at most 3/2; local search | Mean 0.66%, worst 4.8% (16 proved cases) |
 | k postmen, min-max | NP-hard | Branch-and-cut, small networks | Best split, at most 2 − 1/k; local search | Mean 0.02%, worst 1.3% (62 small cases) |
 | Capacitated fleet (CARP) | NP-hard | Not attempted | Ulusoy split and relocations | Median 5.8% above the best known |
@@ -662,7 +670,7 @@ The Chinese Postman Problem has been solvable in polynomial time since 1973, and
 2. **Practical size.** With the LEMON backend, a 40,000-junction network with 12,066 odd vertices solves in 115 seconds, and one with 19,942 in 271 seconds; in pure Python the first time covers about 800 odd vertices. Every benchmark network solves in under 2.5 seconds. Every optimum of the fast backend carries a checked dual certificate, and a second blossom code gives the same ten optima.
 3. **Directed streets.** The directed CPP, proposed as future work in 1997, is solved by minimum-cost flow in under half a second on a 3,600-junction one-way grid.
 4. **A bound for fleets that depends on capacity.** On 63 benchmark instances where every street needs service, the single-postman tour costs a median 95.1% of the best known multi-vehicle solution, from 100% down to 47.5%. The CPP is a quick estimate and a close lower bound when vehicles have capacity to spare, and a weak one when they do not.
-5. **Mixed streets.** The mixed CPP, NP-hard, is solved exactly by branch-and-cut on every benchmark network (at most 5.8 s), on all 20 towns of up to 400 junctions and on 8 of the 10 of 900 and 1,600 junctions. Beyond that, five minutes of branch-and-cut end within about 1% of a proven bound, and a polynomial heuristic with dual-guided local search gives a tour 1% to 2.4% above that result in about a minute. On a published test set the picture is less favourable: 15 of 25 instances of 500 to 3,000 junctions are proved in two minutes, and the heuristic is up to 5.3% above the optimum where few streets are one-way, and slower. Separation and bounding, the core of the 1997 work, is exactly what makes this possible.
+5. **Mixed streets.** The mixed CPP, NP-hard, is solved exactly by branch-and-cut on every benchmark network (at most 5.8 s), on all 20 towns of up to 400 junctions and on 8 of the 10 of 900 and 1,600 junctions. Beyond that, five minutes of branch-and-cut end within about 1% of a proven bound, and a polynomial heuristic with dual-guided local search gives a tour 1% to 2.4% above that result in about a minute. On a published test set the optima proved here all equal the published ones, but the picture for the heuristic is less favourable: it is up to 5.8% above the optimum where few streets are one-way, and slower. Separation and bounding, the core of the 1997 work, is exactly what makes this possible.
 6. **The paths left open in 1997.** A first pass dearer than the next keeps the problem polynomial when every street needs service. When only some streets do (the rural postman problem, NP-hard), branch-and-cut proves the optimum on all 57 benchmark networks that mark them, and the heuristic averages 0.66% above it. Several postmen sharing a district (NP-hard) are planned by the best split of one tour and a local search, optimal in 61 of 62 small cases where the optimum is known; with vehicle capacities, the same idea comes within a median 5.8% of the best published solutions.
 7. **Open to everyone.** The code, the results, this report and the 1997 original are published at github.com/miquelmp/chinese-postman-problem, and the website solves street networks of up to 2,500 junctions in the browser, from a file or from OpenStreetMap, in seconds.
 
@@ -718,6 +726,8 @@ The natural continuation is a stronger lower bound for several postmen, the wind
 
 **Benchmark instances**
 
+- Corberán, Á., Oswald, M., Plana, I., Reinelt, G. and Sanchis, J. M. (2012). New results on the Windy Postman Problem. *Mathematical Programming* 132(1), 309–332. Source of the MA and MB instances of section 9.4.
+- Corberán, Á., Plana, I. and Sanchis, J. M. Arc routing problems: data instances, [uv.es/corberan/instancias.htm](https://www.uv.es/corberan/instancias.htm). Source of the published values of section 9.4.
 - Golden, B. L., DeArmon, J. S. and Baker, E. K. (1983). Computational experiments with algorithms for a class of routing problems. *Computers & Operations Research* 10, 47–59. (gdb)
 - Benavent, E., Campos, V., Corberán, Á. and Mota, E. (1992). The capacitated arc routing problem: lower bounds. *Networks* 22, 669–690. (val)
 - Li, L. Y. O. and Eglese, R. W. (1996). An interactive algorithm for vehicle routeing for winter-gritting. *Journal of the Operational Research Society* 47, 217–228. (egl)
@@ -728,7 +738,7 @@ The natural continuation is a stronger lower bound for several postmen, the wind
 
 **Software**
 
-- Lum, O., Golden, B. and Wasil, E. (2019). OAR Lib: an open source arc routing library. *Mathematical Programming Computation* 11(3), 587–629. Source of the MA and MB instances of section 9.4.
+- Lum, O., Golden, B. and Wasil, E. (2019). OAR Lib: an open source arc routing library. *Mathematical Programming Computation* 11(3), 587–629. Distributes the mixed instances of section 9.4.
 - Brooks, A. W. postman_problems: solutions to the Chinese postman problem and the rural postman problem, github.com/brooksandrew/postman_problems.
 - Hagberg, A., Schult, D. and Swart, P. (2008). Exploring network structure, dynamics, and function using NetworkX. *Proceedings of SciPy 2008*, 11–15.
 - Virtanen, P. et al. (2020). SciPy 1.0: fundamental algorithms for scientific computing in Python. *Nature Methods* 17, 261–272.
