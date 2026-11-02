@@ -218,7 +218,7 @@ def ext_stats():
     out["CARP_TEXT"] = (
         f"On the {len(cp)} classical CARP instances, this simple method is a median {_pct(statistics.median(cg))} above the best "
         f"solutions published (mean {_pct(statistics.mean(cg))}; it matches the best known on {sum(c <= 0.005 for c in cg)}), "
-        f"with the number of vehicles left free: 65 instances use more than the file states, and on the other 132 the median is 4.7%. "
+        f"with the number of vehicles left free: 65 of the 97 instances with a tight fleet use more than the file states, by up to 4. "
         f"The best published solutions come from decades of dedicated metaheuristics and exact methods; the point here is how "
         f"far the 1997 tour already goes when it is simply cut into vehicle loads.")
     return out

@@ -643,7 +643,17 @@ On the small networks, half of them with every street to serve and half with 60%
 
 When each street produces a load and each vehicle carries a limited amount, the problem is the capacitated arc routing problem (CARP), the subject of the benchmark files used throughout this report. It is NP-hard (Golden and Wong, 1981). With the same sequence of served streets, Ulusoy's (1985) dynamic programme cuts the route into vehicle loads at least total cost; streets are then moved between routes for up to 5 seconds, while the total cost falls and the loads fit (`fleet.solve_carp`). The number of vehicles is left free.
 
-On the 197 classical CARP instances (gdb, val, egl, kshs and the four Beullens families), the routes are a median 5.8% above the best solutions published (mean 5.5%, worst 14.8%), and match them on 16 instances; the split alone is a median 8.8% above. On 65 instances the routes use more vehicles than the file states, by up to 4. Those costs are only comparable with a published solution that uses as many vehicles, which was not checked instance by instance; on the other 132 the median is 4.7%. 31 of the 197 best solutions are not proven optimal. The best published solutions come from decades of dedicated metaheuristics and exact methods; the point here is how far the single tour of 1997 already goes when it is simply cut into vehicle loads.
+On the 197 classical CARP instances (gdb, val, egl, kshs and the four Beullens families), the routes are a median 5.8% above the best solutions published (mean 5.5%, worst 14.8%), and match them on 16 instances; the split alone is a median 8.8% above. 31 of the 197 best solutions are not proven optimal.
+
+The number of vehicles needs care, because the literature has two conventions. Some authors fix the fleet at the number in the file, and others treat that number only as a lower bound (Bode and Irnich, 2012), while metaheuristics usually let the number of routes vary (Chen, Hao and Glover, 2016). This study also leaves it free. The published tables examined do not list the vehicles of each best solution, so the comparison below could not be made solution by solution.
+
+| Instances | Count | File's vehicles | Routes against the file | Above the best published (median, mean) |
+| --- | --- | --- | --- | --- |
+| gdb, val, egl, kshs | 32 | Tight: demand fills 90% of the fleet on average | Within it | 3.2%, 3.3% |
+| gdb, val, egl, kshs | 65 | Tight: demand fills 95% | Up to 4 more | 6.7%, 7.0% |
+| Beullens et al. | 100 | Nominal: 100 in every file | Within it, 2 to 14 routes | 5.8%, 5.2% |
+
+On 96 of the 97 instances in the first two rows the file gives the fewest vehicles the total demand allows. The 65 extra-vehicle costs compare fairly only with solutions that may also use extra vehicles, and they would need a further check against a fixed fleet. Extra vehicles do not appear to help the method: the instances that need them are the ones where it is furthest from the best published cost, probably because they are also the tightest. The best published solutions come from decades of dedicated metaheuristics and exact methods; the point here is how far the single tour of 1997 already goes when it is simply cut into vehicle loads.
 
 ### 10.6 Summary
 
@@ -721,6 +731,8 @@ The natural continuation is a stronger lower bound for several postmen, the wind
 - Frederickson, G. N., Hecht, M. S. and Kim, C. E. (1978). Approximation algorithms for some routing problems. *SIAM Journal on Computing* 7(2), 178–193.
 - Benavent, E., Campos, V., Corberán, Á. and Mota, E. (1985). Análisis de heurísticos para el problema del cartero rural. *Trabajos de Estadística y de Investigación Operativa* 36, 27–38.
 - Golden, B. L. and Wong, R. T. (1981). Capacitated arc routing problems. *Networks* 11(3), 305–315.
+- Bode, C. and Irnich, S. (2012). Cut-first branch-and-price-second for the capacitated arc-routing problem. *Operations Research* 60(5), 1167–1182.
+- Chen, Y., Hao, J.-K. and Glover, F. (2016). A hybrid metaheuristic approach for the capacitated arc routing problem. *European Journal of Operational Research* 253(1), 25–39.
 - Ulusoy, G. (1985). The fleet size and mix problem for capacitated arc routing. *European Journal of Operational Research* 22(3), 329–337.
 - Ghiani, G. and Laporte, G. (2000). A branch-and-cut algorithm for the undirected rural postman problem. *Mathematical Programming* 87(3), 467–481.
 
