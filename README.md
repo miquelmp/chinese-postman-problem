@@ -136,7 +136,7 @@ To try the site locally, serve `docs/` with any static server, for example
 ## Fast backend (optional)
 
 `solve_undirected(G, backend="auto")` uses LEMON's matching code when it has been built:
-a 40,000-junction network with 12,066 odd junctions solves in 115 seconds, against about 800 odd
+a 40,000-junction network with 12,066 odd junctions solves in a median 110 seconds, against about 800 odd
 junctions in the same time in pure Python. Every result is checked by a dual certificate, and
 `python3 tools/certify_matching.py` repeats those optima with a second blossom code.
 

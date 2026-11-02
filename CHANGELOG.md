@@ -1,7 +1,8 @@
 # Changelog
 
-## Unreleased
+## 2026.7.0 — 2 November 2026
 
+- Run times are the median of five repeats (`results/timing_repeats.csv`), with their range: 110 s for 12,066 odd vertices and 266 s for 19,942.
 - The CARP comparison now separates tight fleets from the nominal 100 vehicles of the Beullens files, and states the two conventions on fleet size. It no longer gives the 4.7% median, which mixed the two.
 
 ## 2026.6.0 — 2 November 2026
