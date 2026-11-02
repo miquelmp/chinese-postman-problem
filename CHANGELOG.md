@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The CARP comparison now separates tight fleets from the nominal 100 vehicles of the Beullens files, and states the two conventions on fleet size. It no longer gives the 4.7% median, which mixed the two.
+
 ## 2026.6.0 — 2 November 2026
 
 - Results on the mixed instances of Corberán et al. (2012) are compared with the published values. All 39 optima proved here equal them.

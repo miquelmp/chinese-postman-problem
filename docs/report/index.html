@@ -1716,7 +1716,43 @@ print(sol.summary())
 <p>On the small networks, half of them with every street to serve and half with 60% (two further cases with three postmen are left out, because the exact method did not finish within a minute), the best split of one tour is never more than 27% above the optimum, well inside the guarantee of 50% for two postmen and 67% for three, and the local search reaches the optimum in 61 of the 62 cases. On the benchmark networks the optimum is out of reach and only the lower bound is available, with 5 seconds of local search per run. A further 105 runs with more than 10 postmen are left out: there the farthest street sets the bound, and the longest route is at most 0.7% above it. Much of the remaining distance is the bound's: on the small networks, where the optimum is known, the same bound is a mean 3.0% and up to 17.5% below it. A stronger bound would be the natural next step.</p>
 <h3 id="105-vehicles-with-a-capacity">10.5 Vehicles with a capacity</h3>
 <p>When each street produces a load and each vehicle carries a limited amount, the problem is the capacitated arc routing problem (CARP), the subject of the benchmark files used throughout this report. It is NP-hard (Golden and Wong, 1981). With the same sequence of served streets, Ulusoy's (1985) dynamic programme cuts the route into vehicle loads at least total cost; streets are then moved between routes for up to 5 seconds, while the total cost falls and the loads fit (<code>fleet.solve_carp</code>). The number of vehicles is left free.</p>
-<p>On the 197 classical CARP instances (gdb, val, egl, kshs and the four Beullens families), the routes are a median 5.8% above the best solutions published (mean 5.5%, worst 14.8%), and match them on 16 instances; the split alone is a median 8.8% above. On 65 instances the routes use more vehicles than the file states, by up to 4. Those costs are only comparable with a published solution that uses as many vehicles, which was not checked instance by instance; on the other 132 the median is 4.7%. 31 of the 197 best solutions are not proven optimal. The best published solutions come from decades of dedicated metaheuristics and exact methods; the point here is how far the single tour of 1997 already goes when it is simply cut into vehicle loads.</p>
+<p>On the 197 classical CARP instances (gdb, val, egl, kshs and the four Beullens families), the routes are a median 5.8% above the best solutions published (mean 5.5%, worst 14.8%), and match them on 16 instances; the split alone is a median 8.8% above. 31 of the 197 best solutions are not proven optimal.</p>
+<p>The number of vehicles needs care, because the literature has two conventions. Some authors fix the fleet at the number in the file, and others treat that number only as a lower bound (Bode and Irnich, 2012), while metaheuristics usually let the number of routes vary (Chen, Hao and Glover, 2016). This study also leaves it free. The published tables examined do not list the vehicles of each best solution, so the comparison below could not be made solution by solution.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Instances</th>
+<th>Count</th>
+<th>File's vehicles</th>
+<th>Routes against the file</th>
+<th>Above the best published (median, mean)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gdb, val, egl, kshs</td>
+<td>32</td>
+<td>Tight: demand fills 90% of the fleet on average</td>
+<td>Within it</td>
+<td>3.2%, 3.3%</td>
+</tr>
+<tr>
+<td>gdb, val, egl, kshs</td>
+<td>65</td>
+<td>Tight: demand fills 95%</td>
+<td>Up to 4 more</td>
+<td>6.7%, 7.0%</td>
+</tr>
+<tr>
+<td>Beullens et al.</td>
+<td>100</td>
+<td>Nominal: 100 in every file</td>
+<td>Within it, 2 to 14 routes</td>
+<td>5.8%, 5.2%</td>
+</tr>
+</tbody>
+</table></div>
+<p>On 96 of the 97 instances in the first two rows the file gives the fewest vehicles the total demand allows. The 65 extra-vehicle costs compare fairly only with solutions that may also use extra vehicles, and they would need a further check against a fixed fleet. Extra vehicles do not appear to help the method: the instances that need them are the ones where it is furthest from the best published cost, probably because they are also the tightest. The best published solutions come from decades of dedicated metaheuristics and exact methods; the point here is how far the single tour of 1997 already goes when it is simply cut into vehicle loads.</p>
 <h3 id="106-summary">10.6 Summary</h3>
 <div class="table-scroll"><table>
 <thead>
@@ -1831,6 +1867,8 @@ print(sol.summary())
 <li>Frederickson, G. N., Hecht, M. S. and Kim, C. E. (1978). Approximation algorithms for some routing problems. <em>SIAM Journal on Computing</em> 7(2), 178–193.</li>
 <li>Benavent, E., Campos, V., Corberán, Á. and Mota, E. (1985). Análisis de heurísticos para el problema del cartero rural. <em>Trabajos de Estadística y de Investigación Operativa</em> 36, 27–38.</li>
 <li>Golden, B. L. and Wong, R. T. (1981). Capacitated arc routing problems. <em>Networks</em> 11(3), 305–315.</li>
+<li>Bode, C. and Irnich, S. (2012). Cut-first branch-and-price-second for the capacitated arc-routing problem. <em>Operations Research</em> 60(5), 1167–1182.</li>
+<li>Chen, Y., Hao, J.-K. and Glover, F. (2016). A hybrid metaheuristic approach for the capacitated arc routing problem. <em>European Journal of Operational Research</em> 253(1), 25–39.</li>
 <li>Ulusoy, G. (1985). The fleet size and mix problem for capacitated arc routing. <em>European Journal of Operational Research</em> 22(3), 329–337.</li>
 <li>Ghiani, G. and Laporte, G. (2000). A branch-and-cut algorithm for the undirected rural postman problem. <em>Mathematical Programming</em> 87(3), 467–481.</li>
 </ul>
