@@ -14,6 +14,29 @@ Pascual) with today's implementations.
 - **Reports** (`report/`): the 2026 revision (Markdown and PDF) and the original 1997 report (PDF, Spanish).
 - **Data and results**: 92 classical benchmark networks and every result file behind the report.
 
+## Statement of need
+
+Street services must cover streets rather than visit points, and researchers in arc routing need solvers
+they can run, check and extend. The classical problems are well understood, but open tools with proofs
+of optimality are scarce: a practitioner usually needs a commercial solver, or a heuristic with no
+measure of its quality. This package targets researchers and students in operations research, and
+engineers planning street services. It solves the Chinese, mixed and rural postman problems exactly where
+it can, and otherwise returns a heuristic tour with a proven lower bound, using open-source solvers only.
+
+## Related software
+
+| Tool | Language | Scope | Exact methods | Last activity |
+| --- | --- | --- | --- | --- |
+| This package | Python, JavaScript | Undirected, directed, mixed, rural, several postmen, CARP | Matching, minimum-cost flow, branch-and-cut (HiGHS) | 2026 |
+| [OAR Lib](https://github.com/Olibear/ArcRoutingLibrary) (Lum, Golden and Wasil, 2019) | Java | Undirected, directed, mixed, windy rural, directed rural, several vehicles | Undirected and directed only; heuristics elsewhere | 2019 |
+| [postman_problems](https://github.com/brooksandrew/postman_problems) (Brooks) | Python | Undirected, and rural when the required streets form one component | Not stated | 2018 |
+
+OAR Lib is the closest project, and is broader in some ways: it covers windy and directed rural problems,
+which this package does not. A new package rather than a contribution to it was chosen because it is
+written in Java and has been inactive since 2019, while this work needed exact mixed and rural methods
+on open-source solvers, a Python interface and a version that runs in the browser. NetworkX provides
+building blocks, Eulerian circuits and matchings, which this package uses.
+
 ## What the solver does
 
 | Network | Method | Guarantee |
@@ -30,7 +53,7 @@ Pascual) with today's implementations.
 
 ```bash
 pip install -e ".[test]"
-pytest -q                            # 218 tests (273 with the optional Blossom V library)
+pytest -q                            # 234 tests (289 with the optional Blossom V library)
 ```
 
 ```python
@@ -74,6 +97,8 @@ print(team.route_costs, team.lower_bound)
 | `site/assets/cpp.js`, `extensions.js`, `networks.js` | JavaScript port of the solvers and the network builders, used by the website |
 | `chinese_postman/io.py`, `instances.py` | File formats; test-network generators |
 | `experiments.py` | Reproduces the experiments of chapters 7 to 10 of the 2026 report; writes `results/*.csv` |
+| `tools/certify_matching.py`, `tools/match_sparse.mjs` | Independent dual certificate of the large matchings, without Blossom V |
+| `tools/fetch_mcpp.sh` | Downloads the published mixed instances into `data/mcpp/` (not stored here) |
 | `data/carp/` | Classical CARP benchmark instances (gdb, val, egl, Beullens, kshs) from [CARPData.jl](https://github.com/rafaelmartinelli/CARPData.jl) |
 | `examples/example_1997.gra` | The worked example of the 1997 report |
 | `report/` | 2026 report (Markdown source and PDF) and the 1997 report (PDF) |
@@ -112,7 +137,8 @@ To try the site locally, serve `docs/` with any static server, for example
 
 `solve_undirected(G, backend="auto")` uses Kolmogorov's Blossom V when it has been built:
 a 40,000-junction network with 12,066 odd junctions solves in 102 seconds, against about 800 odd
-junctions in the same time in pure Python.
+junctions in the same time in pure Python. `python3 tools/certify_matching.py` confirms those optima
+without Blossom V, with a dual certificate that can be checked on its own.
 
 ```bash
 bash native/build_blossom5.sh        # downloads Blossom V and builds native/libblossom5.so
@@ -121,6 +147,17 @@ bash native/build_blossom5.sh        # downloads Blossom V and builds native/lib
 Blossom V may be used for evaluation and non-commercial research only, and may not be
 redistributed; commercial use needs a licence from UCL Business. It is therefore not included here.
 Everything else works without it.
+
+## Documentation and support
+
+- [API reference](https://miquelmp.github.io/chinese-postman-problem/api/), [`ARCHITECTURE.md`](ARCHITECTURE.md) for the design decisions, and the [2026 report](https://miquelmp.github.io/chinese-postman-problem/report/) for the methods.
+- [`REPRODUCING.md`](REPRODUCING.md) maps every table of the report to the command that produces it.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) explains how to report problems, ask for help and contribute. See also the [code of conduct](CODE_OF_CONDUCT.md) and the [changelog](CHANGELOG.md).
+
+## Use of generative AI
+
+This project was developed with generative AI assistance (Claude, by Anthropic), in the code, the
+experiments, the documentation and the audit of the report. Commits co-authored by it are marked as such.
 
 ## Licences and citation
 

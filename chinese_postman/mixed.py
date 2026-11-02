@@ -37,13 +37,16 @@ from .euler import eulerian_circuit
 
 @dataclass
 class MixedGraph:
+    """A street network whose links may be one-way or two-way."""
     links: list                      # (u, v, cost, oneway)
 
     @property
     def nodes(self):
+        """All vertices, sorted."""
         return sorted({x for u, v, *_ in self.links for x in (u, v)}, key=str)
 
     def counts(self):
+        """Return (vertices, two-way links, one-way links)."""
         one = sum(1 for *_, o in self.links if o)
         return len(self.nodes), len(self.links) - one, one
 
@@ -58,12 +61,14 @@ class MixedGraph:
         return D
 
     def is_feasible(self):
+        """Return True if a tour exists: the network is strongly connected."""
         D = self.digraph()
         return D.number_of_nodes() > 0 and nx.is_strongly_connected(D)
 
 
 @dataclass
 class MixedSolution:
+    """A mixed tour with its cost, lower bound and whether it is proven optimal."""
     method: str
     total_cost: float
     original_cost: float
@@ -76,6 +81,7 @@ class MixedSolution:
 
     @property
     def gap_to_bound_pct(self):
+        """Percentage by which the tour exceeds the lower bound, or None without a bound."""
         if self.lower_bound in (None, 0):
             return None
         return 100 * (self.total_cost - self.lower_bound) / self.lower_bound
@@ -119,6 +125,7 @@ def _tour(M, cols, x, start):
 
 
 def lower_bound(M: MixedGraph):
+    """Solve the linear relaxation; return (value, columns, solution)."""
     cols, cost, cons = _model(M)
     res = milp(cost, constraints=cons, integrality=np.zeros(len(cost)), bounds=Bounds(0, np.inf))
     if res.status != 0:
@@ -127,6 +134,7 @@ def lower_bound(M: MixedGraph):
 
 
 def solve_exact(M: MixedGraph, time_limit: float = 300.0, start=None) -> MixedSolution:
+    """Solve the integer program with HiGHS, with zero relative gap, within `time_limit`."""
     if not M.is_feasible():
         raise ValueError("Mixed graph must be strongly connected")
     t0 = time.perf_counter()
@@ -388,6 +396,29 @@ def solve_brute_force(M: MixedGraph) -> float:
 
 
 # ------------------------------------------------------------------ instances
+def read_mcpp(path: str) -> MixedGraph:
+    """Read a mixed instance in the format of Corberan et al. (the MA and MB sets):
+    `(i, j) coste c_ij c_ji`, where 99999999 forbids that direction."""
+    import re
+    forbidden = 99999999
+    with open(path, encoding="latin-1") as f:
+        text = f.read()
+    links = []
+    for i, j, a, b in re.findall(r"\(\s*(\d+),\s*(\d+)\)\s+coste\s+(\d+)\s+(\d+)", text):
+        i, j, a, b = int(i), int(j), int(a), int(b)
+        if a == forbidden:
+            links.append((j, i, b, True))
+        elif b == forbidden:
+            links.append((i, j, a, True))
+        elif a == b:
+            links.append((i, j, a, False))
+        else:
+            raise ValueError(f"Street ({i}, {j}) has different costs in each direction")
+    if not links:
+        raise ValueError(f"{path}: no streets found")
+    return MixedGraph(links)
+
+
 def from_graph(G: nx.MultiGraph, oneway_frac: float, seed: int = 0) -> MixedGraph:
     """Make a fraction of the links one-way (random direction), keeping strong connectivity:
     any one-way link that breaks it is turned back into a two-way street."""

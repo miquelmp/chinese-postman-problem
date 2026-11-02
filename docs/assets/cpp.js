@@ -135,7 +135,7 @@
   /** Maximum-weight matching in a general graph (Edmonds' blossom algorithm).
       Port of Joris van Rantwijk's mwmatching.py (the code inside NetworkX).
       edges: [[i, j, w], ...] with integer weights; returns mate[] (-1 = unmatched). */
-  function maxWeightMatching(edges, maxcardinality) {
+  function maxWeightMatching(edges, maxcardinality, dual) {
     const nedge = edges.length;
     let nvertex = 0, maxweight = 0;
     for (const [i, j, w] of edges) { nvertex = Math.max(nvertex, i + 1, j + 1); if (w > maxweight) maxweight = w; }
@@ -385,6 +385,13 @@
     }
     const out = new Int32Array(n);
     for (let v = 0; v < n; v++) out[v] = mate[v] >= 0 ? endpoint[mate[v]] : -1;
+    if (dual) {                          // optimal duals, for tools/certify_matching.py
+      dual.vertex = Array.from(dualvar.subarray(0, n));
+      dual.blossoms = [];
+      for (let b = n; b < 2 * n; b++) {
+        if (blossombase[b] >= 0 && dualvar[b] > 0) dual.blossoms.push({ z: dualvar[b], members: leaves(b, []) });
+      }
+    }
     return out;
   }
 

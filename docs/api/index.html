@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>API reference — The Chinese Postman Problem</title>
+<meta name="description" content="Reference of the chinese_postman Python package: functions and classes for the Chinese, mixed and rural postman problems, several postmen and capacitated fleets.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://miquelmp.github.io/chinese-postman-problem/api/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="The Chinese Postman">
+<meta property="og:title" content="API reference — The Chinese Postman Problem">
+<meta property="og:description" content="Reference of the chinese_postman Python package: functions and classes for the Chinese, mixed and rural postman problems, several postmen and capacitated fleets.">
+<meta property="og:url" content="https://miquelmp.github.io/chinese-postman-problem/api/">
+<meta property="og:image" content="https://miquelmp.github.io/chinese-postman-problem/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A street network shared among three postmen, each route in its own colour">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="author" content="Miquel Monserrat Pons">
+</head>
+<body>
+<header class="site-header"><div class="inner"><a class="brand" href="../">The Chinese Postman</a><nav class="site-nav" aria-label="Main"><a href="../report/">2026 report</a><a href="../extensions/">Extensions</a><a href="../try/">Solve a network</a><a href="../1997/">1997 report</a><a href="https://github.com/miquelmp/chinese-postman-problem">Code</a></nav></div></header>
+<main class="wrap">
+  <div class="prose reading" style="margin-top:2.5rem">
+    <h1 style="font-size:var(--step-4)">API reference</h1>
+    <p class="lede">The public functions and classes of the <code>chinese_postman</code> package. For the methods behind them, see the <a href="../report/">2026 report</a>.</p>
+<h2 id="bnb">chinese_postman.bnb</h2><p>Branch-and-bound for the pairing step: the 1997 method, the tightened bound of section 8.3
+of the 2026 report, and an improved variant. The CPP itself uses Edmonds&#x27; blossom algorithm
+(cpp.py); this module exists to measure the search that the 2026 version replaced.</p>
+<h3><code>class BnBResult</code></h3><p>Outcome of a branch-and-bound run; costs and pairs refer to the matrix given.</p>
+<h3><code>bound_of(D, avail, taken_cost, divisor)</code></h3><p>The 1997 bound; returns None for a node whose free vertices cannot all be paired by the
+parity test of the 1997 routine `cota` (an odd number of empty rows).</p>
+<h3><code>greedy_pairing(D)</code></h3><p>Cheapest pair first, then swaps between two pairs until none improves.</p>
+<h3><code>branch_and_bound(D, bound: str=&#x27;1997&#x27;, branch: str=&#x27;list&#x27;, start: bool=False, max_nodes: int | None=None)</code></h3><p>Minimum-cost perfect pairing of the t×t symmetric integer matrix D.</p>
+<h2 id="cpp">chinese_postman.cpp</h2><p>Chinese Postman Problem: undirected (Edmonds&#x27; method) and directed (min-cost flow).</p>
+<h3><code>class CPPSolution</code></h3><p>A postman tour with its cost breakdown, duplicated edges and time per phase.</p>
+<h3><code>CPPSolution.summary(self)</code></h3><p>Return a readable report of the solution.</p>
+<h3><code>min_weight_pairing(odd, D)</code></h3><p>Minimum-weight perfect matching on the complete graph over `odd` (Edmonds&#x27; blossom).</p>
+<h3><code>solve_undirected(G: nx.MultiGraph, start=None, backend: str=&#x27;networkx&#x27;)</code></h3><p>backend: &quot;networkx&quot; (pure Python, any costs), &quot;blossom5&quot; (needs native/libblossom5.so,
+integer costs) or &quot;auto&quot; (blossom5 when built and costs are integers, else networkx).</p>
+<h3><code>solve_directed(G: nx.MultiDiGraph, start=None)</code></h3><p>Directed CPP via minimum-cost flow on the imbalance of each vertex.</p>
+<h2 id="euler">chinese_postman.euler</h2><p>Eulerian circuit in a multigraph (Hierholzer&#x27;s algorithm, O(m)).</p>
+<h3><code>eulerian_circuit(G: nx.MultiGraph | nx.MultiDiGraph, start=None)</code></h3><p>Return the vertex sequence of an Eulerian circuit (first == last).</p>
+<h2 id="fast">chinese_postman.fast</h2><p>Fast undirected CPP: SciPy (C) shortest paths + Blossom V with dual pricing.</p>
+<h3><code>available()</code></h3><p>Return True if the Blossom V library has been built.</p>
+<h3><code>match_pricing(D: np.ndarray, k: int=10, chunk: int=2048)</code></h3><p>Minimum-weight perfect matching on the complete graph with integer costs D (t×t).</p>
+<h3><code>solve_undirected_fast(G: nx.MultiGraph, start=None, k: int=10)</code></h3><p>Solve an undirected CPP with integer costs through Blossom V and dual pricing.</p>
+<h2 id="fleet">chinese_postman.fleet</h2><p>Several postmen: dividing the streets among k routes from one depot.</p>
+<h3><code>class FleetSolution</code></h3><p>Routes for several postmen or vehicles, with the best lower bound known.</p>
+<h3><code>FleetSolution.gap_pct(self)</code></h3><p>Percentage by which the objective exceeds the lower bound.</p>
+<h3><code>split_minmax(P, seq, k)</code></h3><p>Split a sequence into at most k consecutive routes, minimising the longest (exact DP).</p>
+<h3><code>split_capacity(P, seq, Q)</code></h3><p>Ulusoy&#x27;s split: consecutive routes with load &lt;= Q, least total cost (exact DP).</p>
+<h3><code>replan(P, seq)</code></h3><p>Re-plan one route as a small rural postman problem (Frederickson on the reduced graph).</p>
+<h3><code>improve_minmax(P, routes, seconds=5.0, seed=0)</code></h3><p>Descent, then iterated perturbation (a few streets moved at random) while time is left.</p>
+<h3><code>tour_variants(P, circuit, count, seed=0)</code></h3><p>The same closed walk written out from different Euler circuits (different street orders).</p>
+<h3><code>improve_capacity(P, routes, Q, seconds=5.0)</code></h3><p>Relocate single streets between routes when the total cost falls and loads stay &lt;= Q.</p>
+<h3><code>lower_bound(P, k, single_bound)</code></h3><p>Return (bound, far): max(far, single_bound / k), where far is the dearest single street.</p>
+<h3><code>solve_k_postmen(G: nx.MultiGraph, k: int, depot=None, time_limit: float=30.0, local_seconds: float=10.0)</code></h3><p>Min-max k postmen on the required streets (all streets if none is marked).</p>
+<h3><code>solve_k_exact(G: nx.MultiGraph, k: int, depot=None, time_limit: float=120.0)</code></h3><p>Exact min-max k postmen by branch-and-cut (tiny networks). Returns (value, optimal, bound).</p>
+<h3><code>solve_carp(G: nx.MultiGraph, capacity: float, depot=None, local_seconds: float=10.0)</code></h3><p>Capacitated fleet: route-first (one rural postman tour), cluster-second (Ulusoy split),
+then relocations between routes. Edge attribute &#x27;demand&#x27; (&gt; 0 means required).</p>
+<h2 id="instances">chinese_postman.instances</h2><p>Test instances that are not taken from the 1997 Vilanova case studies.</p>
+<h3><code>konigsberg()</code></h3><p>Euler&#x27;s seven bridges (1736): A = Kneiphof island, B/C = river banks, D = east.
+Costs are 1 per bridge, so the answer counts bridge crossings.</p>
+<h3><code>unit(G: nx.Graph)</code></h3><p>Copy a simple graph as a multigraph with every cost equal to 1.</p>
+<h3><code>petersen()</code></h3><p>The Petersen graph with unit costs.</p>
+<h3><code>dodecahedron()</code></h3><p>The dodecahedral graph with unit costs.</p>
+<h3><code>manhattan(rows: int, cols: int, block: int=80, avenue: int=270, drop: float=0.0, seed: int=0)</code></h3><p>Grid street plan: short blocks along streets, long ones along avenues (metres).
+`drop` removes a fraction of segments (parks, closed streets), keeping connectivity.</p>
+<h3><code>delaunay_town(n: int, seed: int=0, keep: float=0.75)</code></h3><p>Organic street network: Delaunay triangulation of random points in a 1 km square,
+thinned to `keep` of its edges (shortest first kept), Euclidean lengths in metres.</p>
+<h3><code>one_way_grid(rows: int, cols: int, block: int=80, seed: int=0)</code></h3><p>Directed grid: inner streets and avenues are one-way with alternating directions
+(like Manhattan); the outer ring and every fourth street are two-way.</p>
+<h2 id="io">chinese_postman.io</h2><p>Graph file formats.</p>
+<h3><code>read_gra(path: str, directed: bool=False)</code></h3><p>Read a .GRA file into a NetworkX multigraph (a directed one if `directed`).</p>
+<h3><code>write_gra(G, path: str)</code></h3><p>Write a multigraph in the .GRA format.</p>
+<h3><code>class CARPInstance</code></h3><p>A CARP benchmark: its road graph, vehicles, capacity and published bounds.</p>
+<h3><code>read_carp(path: str)</code></h3><p>Read a CARP .dat file, keeping each street&#x27;s demand as an edge attribute.</p>
+<h2 id="mixed">chinese_postman.mixed</h2><p>Mixed Chinese Postman Problem: two-way streets (edges) and one-way streets (arcs).</p>
+<h3><code>class MixedGraph</code></h3><p>A street network whose links may be one-way or two-way.</p>
+<h3><code>MixedGraph.nodes(self)</code></h3><p>All vertices, sorted.</p>
+<h3><code>MixedGraph.counts(self)</code></h3><p>Return (vertices, two-way links, one-way links).</p>
+<h3><code>MixedGraph.digraph(self)</code></h3><p>Every allowed direction of travel, keeping the cheapest parallel link.</p>
+<h3><code>MixedGraph.is_feasible(self)</code></h3><p>Return True if a tour exists: the network is strongly connected.</p>
+<h3><code>class MixedSolution</code></h3><p>A mixed tour with its cost, lower bound and whether it is proven optimal.</p>
+<h3><code>MixedSolution.gap_to_bound_pct(self)</code></h3><p>Percentage by which the tour exceeds the lower bound, or None without a bound.</p>
+<h3><code>lower_bound(M: MixedGraph)</code></h3><p>Solve the linear relaxation; return (value, columns, solution).</p>
+<h3><code>solve_exact(M: MixedGraph, time_limit: float=300.0, start=None)</code></h3><p>Solve the integer program with HiGHS, with zero relative gap, within `time_limit`.</p>
+<h3><code>bounds(M: MixedGraph)</code></h3><p>Two valid lower bounds: the LP relaxation (ignores parity) and the undirected CPP of the
+underlying graph (ignores directions). Returns (best, lp, undirected, lp_data, cpp_solution).</p>
+<h3><code>solve_heuristic(M: MixedGraph, start=None, pre=None, local_seconds: float=60.0)</code></h3><p>Four starting orientations — LP rounding (two tie rules) and the Euler-circuit
+orientation of the parity-fixed underlying graph (both directions) — each completed by an
+exact min-cost rebalance; the two best are improved by dual-guided flips (local search).</p>
+<h3><code>solve_mixed(M: MixedGraph, time_limit: float=300.0, gap_tol: float=0.0, start=None)</code></h3><p>Combined strategy: heuristic first, exact branch-and-cut only while it can still pay off.
+
+1. Bounds + heuristic (seconds): a good tour and a certified gap.
+2. If that gap is already within `gap_tol`, stop.
+3. Otherwise run branch-and-cut for the remaining time, told to look only for tours cheaper
+   than the heuristic (an objective cutoff) and to stop at `gap_tol`. If no cheaper tour
+   exists the model is infeasible, which proves the heuristic tour optimal.
+The result always carries the best tour found and the best proven lower bound.
+
+gap_tol = 0 (default): prove the optimum unless the time limit runs out.
+gap_tol = 0.005: accept any tour certified within 0.5% of the optimum (much faster on
+large networks).</p>
+<h3><code>solve_brute_force(M: MixedGraph)</code></h3><p>Exact optimum by enumerating the direction of every two-way link (tiny cases only).</p>
+<h3><code>read_mcpp(path: str)</code></h3><p>Read a mixed instance in the format of Corberan et al. (the MA and MB sets):
+`(i, j) coste c_ij c_ji`, where 99999999 forbids that direction.</p>
+<h3><code>from_graph(G: nx.MultiGraph, oneway_frac: float, seed: int=0)</code></h3><p>Make a fraction of the links one-way (random direction), keeping strong connectivity:
+any one-way link that breaks it is turned back into a two-way street.</p>
+<h3><code>city_grid(rows: int, cols: int, oneway_street_frac: float=0.6, block: int=80, avenue: int=270, seed: int=0)</code></h3><p>Grid town where whole streets are one-way (as in most city centres): each row or column
+street is one-way with the given probability, in a random direction.</p>
+<h2 id="rural">chinese_postman.rural</h2><p>Rural Postman Problem: serve only some streets, travel along any.</p>
+<h3><code>class RuralSolution</code></h3><p>A rural postman tour with its costs, lower bound and proof status.</p>
+<h3><code>RuralSolution.gap_pct(self)</code></h3><p>Percentage by which the tour exceeds the lower bound.</p>
+<h3><code>class Problem</code></h3><p>Shortest paths between the required vertices and the pieces of the required streets.</p>
+<h3><code>Problem.path(self, i, j)</code></h3><p>Shortest path between required vertices i and j (indices into V) as graph nodes.</p>
+<h3><code>Problem.deadhead_edges(self)</code></h3><p>Edges of the reduced graph: pairs of required vertices whose shortest path does not
+pass through a third required vertex (the others are never needed).</p>
+<h3><code>heuristic(P: Problem, local_seconds: float=10.0)</code></h3><p>Frederickson&#x27;s method plus a local search on the links that join the pieces.
+Returns (deadhead links, cost of deadheading, info).</p>
+<h3><code>lower_bound(P: Problem, rounds: int=30, seconds: float=20.0)</code></h3><p>Best of two bounds on the cost of any tour:
+* parity: every odd vertex of the required streets must be paired, so the deadheading
+  costs at least a minimum matching of them (the CPP argument of chapter 3);
+* connectivity: the linear relaxation of the model, with the cut around every piece and
+  further cuts x(delta(S)) &gt;= 2 found by minimum cuts of the fractional solution.</p>
+<h3><code>solve_exact(P: Problem, time_limit: float=60.0, cutoff: float | None=None)</code></h3><p>Branch-and-cut: HiGHS solves the integer program; whenever its solution is disconnected,
+the cut around each component is added and the program solved again.
+Returns (status, deadhead links or None, best lower bound on deadheading, rounds).</p>
+<h3><code>solve_rural(G: nx.MultiGraph, depot=None, time_limit: float=60.0, local_seconds: float=10.0)</code></h3><p>Serve every required street at least cost.
+
+One piece of required streets: exact, polynomial (matching), always.
+Several pieces: Frederickson&#x27;s heuristic, a local search on the resulting route, then
+branch-and-cut told to beat it within `time_limit`. The result carries the best tour found
+and the best proven lower bound.</p>
+<h3><code>solve_brute_force(G: nx.MultiGraph, depot=None)</code></h3><p>Optimum by enumerating multiplicities 0..2 of every reduced edge (tiny graphs only).</p>
+<h3><code>solve_two_costs(G, start=None)</code></h3><p>Every street required, first pass at `service`, later passes at `weight`:
+exact and polynomial, undirected (matching) or directed (min-cost flow).</p>
+<h2 id="sequence">chinese_postman.sequence</h2><p>Routes as sequences of served streets, joined by shortest paths.</p>
+<h3><code>route_cost(P, seq)</code></h3><p>Cost of a route: its service plus the shortest paths that join its streets to the depot.</p>
+<h3><code>orient(P, seq)</code></h3><p>Best direction for every street, keeping the order (dynamic programme, linear time).</p>
+<h3><code>insertion(P, seq, e)</code></h3><p>Cheapest place and direction to add street e; returns (extra cost, new sequence).</p>
+<h3><code>improve(P, seq, seconds=5.0)</code></h3><p>Local search on one route: move a street elsewhere (drop and re-add), and reverse a
+stretch of the route (2-opt), while the route gets shorter.</p>
+<h3><code>from_circuit(P, circuit, demand=None)</code></h3><p>Order in which a closed walk serves the required streets (the first pass serves).</p>
+<h3><code>expand(P, seq)</code></h3><p>Vertex sequence of a route through the original network, depot to depot.</p>
+<h2 id="web">chinese_postman.web</h2><p>JSON-friendly entry points used by the website (run in the browser through Pyodide).</p>
+<h3><code>example(name: str, size: int=10, oneway: float=0.6, seed: int=0)</code></h3><p>Ready-made instances. `size` is the grid side or the number of junctions.</p>
+<h3><code>from_gra(text: str, name: str=&#x27;uploaded graph&#x27;)</code></h3><p>The 1997 .GRA format: n, m, then one &#x27;u v cost&#x27; line per street (all two-way).</p>
+<h3><code>from_carp_text(text: str, name: str)</code></h3><p>Classical CARP benchmark file (0-based vertices, cost and demand per edge).</p>
+<h3><code>overpass_query(south, west, north, east)</code></h3><p>Return the Overpass API query for the streets inside a bounding box.</p>
+<h3><code>from_osm(data, name: str=&#x27;OpenStreetMap area&#x27;, max_nodes: int=1500)</code></h3><p>Street network from an Overpass API JSON answer.
+
+Ways become links between junctions (OSM nodes shared by several ways, or way ends);
+intermediate points only add length. oneway=yes/1/-1 make one-way links. Only the largest
+strongly connected part is kept, so that a postman tour exists.</p>
+<h3><code>kind_of(inst)</code></h3><p>Classify an instance as undirected, directed or mixed.</p>
+<h3><code>solve(inst, time_limit: float=20.0, gap_tol: float=0.0)</code></h3><p>Solve a website instance and return the result as a JSON-ready dictionary.</p>
+<h3><code>solve_json(inst_json: str, time_limit: float=20.0, gap_tol: float=0.0)</code></h3><p>JSON-string wrapper of `solve`, for the in-browser proof.</p>
+  </div>
+</main>
+<footer class="site-footer"><div class="inner"><p>Miquel Monserrat Pons. Final-year project, ETSEIB (Universitat Politècnica de Catalunya), 1997; revised 2026.</p><p>Code under the MIT licence; texts and figures under CC BY 4.0. <a href="https://github.com/miquelmp/chinese-postman-problem">Source on GitHub</a>.</p><p>Benchmark instances from the arc-routing literature, as collected in CARPData.jl (MIT). Street data © OpenStreetMap contributors (ODbL). The in-browser solver is written in JavaScript; the optional exact proof runs Python through Pyodide, with NetworkX and SciPy (HiGHS).</p></div></footer>
+</body>
+</html>

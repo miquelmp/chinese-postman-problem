@@ -16,6 +16,7 @@ from .euler import eulerian_circuit
 
 @dataclass
 class CPPSolution:
+    """A postman tour with its cost breakdown, duplicated edges and time per phase."""
     original_cost: float
     added_cost: float
     total_cost: float
@@ -26,6 +27,7 @@ class CPPSolution:
     seconds: dict = field(default_factory=dict)   # time per phase
 
     def summary(self) -> str:
+        """Return a readable report of the solution."""
         t = ", ".join(f"{k} {v:.3f} s" for k, v in self.seconds.items())
         return "\n".join([
             f"Original cost:   {self.original_cost}",

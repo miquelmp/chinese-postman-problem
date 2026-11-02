@@ -4,17 +4,23 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chinese-postman"
-version = "2026.3.0"
-description = "Chinese Postman Problem solvers: undirected, directed and mixed, with proven optimality"
+version = "2026.4.0"
+description = "Arc routing solvers: Chinese, mixed and rural postman, several postmen and capacitated fleets, with proofs of optimality or lower bounds"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Miquel Monserrat Pons" }]
-keywords = ["chinese postman", "arc routing", "matching", "eulerian circuit", "operations research"]
+keywords = ["chinese postman", "rural postman", "mixed postman", "arc routing", "matching", "branch-and-cut", "operations research"]
 dependencies = ["networkx>=3.0", "scipy>=1.11", "numpy>=1.24"]
 classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Topic :: Scientific/Engineering :: Mathematics",
 ]
 
@@ -23,7 +29,9 @@ test = ["pytest>=7"]
 site = ["markdown>=3.4"]
 
 [project.urls]
-Homepage = "https://github.com/miquelmp/chinese-postman-problem"
+Homepage = "https://miquelmp.github.io/chinese-postman-problem/"
+Repository = "https://github.com/miquelmp/chinese-postman-problem"
+Issues = "https://github.com/miquelmp/chinese-postman-problem/issues"
 
 [tool.setuptools]
 packages = ["chinese_postman"]

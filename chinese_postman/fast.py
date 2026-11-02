@@ -29,6 +29,7 @@ _lib = None
 
 
 def available() -> bool:
+    """Return True if the Blossom V library has been built."""
     return _load() is not None
 
 
@@ -120,6 +121,7 @@ def match_pricing(D: np.ndarray, k: int = 10, chunk: int = 2048):
 
 
 def solve_undirected_fast(G: nx.MultiGraph, start=None, k: int = 10) -> CPPSolution:
+    """Solve an undirected CPP with integer costs through Blossom V and dual pricing."""
     if G.number_of_edges() == 0:
         raise ValueError("Graph has no edges")
     core = G.subgraph([v for v in G if G.degree(v) > 0])

@@ -131,6 +131,7 @@ DRIVABLE = {"motorway", "trunk", "primary", "secondary", "tertiary", "unclassifi
 
 
 def overpass_query(south, west, north, east) -> str:
+    """Return the Overpass API query for the streets inside a bounding box."""
     hw = "|".join(sorted(DRIVABLE - {"service"}))
     return (f'[out:json][timeout:25];way["highway"~"^({hw})$"]["area"!="yes"]'
             f'({south},{west},{north},{east});(._;>;);out body;')
@@ -199,11 +200,13 @@ def from_osm(data, name: str = "OpenStreetMap area", max_nodes: int = 1500) -> d
 
 # ------------------------------------------------------------------ solving
 def kind_of(inst) -> str:
+    """Classify an instance as undirected, directed or mixed."""
     ow = [bool(l.get("oneway")) for l in inst["links"]]
     return "directed" if all(ow) else "mixed" if any(ow) else "undirected"
 
 
 def solve(inst, time_limit: float = 20.0, gap_tol: float = 0.0) -> dict:
+    """Solve a website instance and return the result as a JSON-ready dictionary."""
     t0 = time.perf_counter()
     if len(inst["nodes"]) > MAX_NODES:
         raise ValueError(f"Too large for the browser version ({MAX_NODES} junctions at most)")
@@ -265,6 +268,7 @@ def solve(inst, time_limit: float = 20.0, gap_tol: float = 0.0) -> dict:
 
 
 def solve_json(inst_json: str, time_limit: float = 20.0, gap_tol: float = 0.0) -> str:
+    """JSON-string wrapper of `solve`, for the in-browser proof."""
     try:
         return json.dumps({"ok": True, **solve(json.loads(inst_json), time_limit, gap_tol)})
     except Exception as e:  # report to the page instead of failing silently

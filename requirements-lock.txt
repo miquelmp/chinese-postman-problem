@@ -1,0 +1,4 @@
+# Versions behind the latest results (see results/environment.json). Python 3.13.
+networkx==3.7
+numpy==2.5.3
+scipy==1.18.1

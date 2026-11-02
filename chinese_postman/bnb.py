@@ -30,6 +30,7 @@ SWITCH = 100                     # open nodes at which exploration changes crite
 
 @dataclass
 class BnBResult:
+    """Outcome of a branch-and-bound run; costs and pairs refer to the matrix given."""
     cost: float | None           # best pairing found (None if none was found)
     pairs: list
     proven: bool                 # False if the node limit stopped the search

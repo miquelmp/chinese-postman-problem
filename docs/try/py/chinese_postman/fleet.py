@@ -38,6 +38,7 @@ from .sequence import expand as _expand
 
 @dataclass
 class FleetSolution:
+    """Routes for several postmen or vehicles, with the best lower bound known."""
     method: str
     routes: list                 # one vertex sequence per route, depot to depot
     route_costs: list
@@ -50,6 +51,7 @@ class FleetSolution:
 
     @property
     def gap_pct(self) -> float:
+        """Percentage by which the objective exceeds the lower bound."""
         obj = self.info.get("objective_value", self.max_cost)
         lb = self.lower_bound
         return 100.0 * max(obj - lb, 0.0) / lb if lb else 0.0
@@ -302,6 +304,7 @@ def improve_capacity(P, routes, Q, seconds=5.0):
 # ---------------------------------------------------------------------------- bounds
 
 def lower_bound(P, k, single_bound):
+    """Return (bound, far): max(far, single_bound / k), where far is the dearest single street."""
     d = P.vi[P.depot]
     far = max(P.D[d, P.vi[u]] + s + P.D[P.vi[v], d] for u, v, s in P.R)
     return max(far, single_bound / k), far

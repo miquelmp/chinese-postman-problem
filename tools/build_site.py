@@ -259,7 +259,7 @@ def build_report(repo):
 
 
 # ------------------------------------------------------------------ search engines and link previews
-PAGES = ["", "report/", "extensions/", "try/", "1997/"]
+PAGES = ["", "report/", "extensions/", "try/", "1997/", "api/"]
 
 
 def site_url(repo):
@@ -298,6 +298,37 @@ def seo(repo):
     (DOCS / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n'
                                       '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
                                       f"{urls}</urlset>\n", encoding="utf-8")
+
+
+# ------------------------------------------------------------------ API reference
+def build_api():
+    """Public functions and classes of the package, read from the source with `ast`."""
+    import ast
+    out = []
+    for path in sorted((ROOT / "chinese_postman").glob("*.py")):
+        if path.name == "__init__.py":
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        name = path.stem
+        doc = (ast.get_docstring(tree) or "").split("\n\n")[0]
+        out.append(f'<h2 id="{name}">chinese_postman.{name}</h2><p>{html.escape(doc)}</p>')
+
+        def item(n, prefix=""):
+            if isinstance(n, ast.ClassDef):
+                sig = f"class {prefix}{n.name}"
+            else:
+                sig = f"{prefix}{n.name}({html.escape(ast.unparse(n.args))})"
+            text = html.escape(ast.get_docstring(n) or "")
+            out.append(f'<h3><code>{sig}</code></h3><p>{text}</p>')
+
+        for n in tree.body:
+            if isinstance(n, (ast.FunctionDef, ast.ClassDef)) and not n.name.startswith("_"):
+                item(n)
+                if isinstance(n, ast.ClassDef):
+                    for m in n.body:
+                        if isinstance(m, ast.FunctionDef) and not m.name.startswith("_"):
+                            item(m, n.name + ".")
+    return "\n".join(out)
 
 
 # ------------------------------------------------------------------ build
@@ -359,6 +390,10 @@ def build(repo):
     (DOCS / "report").mkdir()
     shutil.copy(PDF_2026, DOCS / "report" / PDF_2026.name)
     (DOCS / "report" / "index.html").write_text(render(build_report(repo), "../", repo), encoding="utf-8")
+    (DOCS / "api").mkdir()
+    (DOCS / "api" / "index.html").write_text(
+        render((SITE / "api" / "index.html").read_text(encoding="utf-8").replace("{{API}}", build_api()), "../", repo),
+        encoding="utf-8")
     seo(repo)
     for f in SITE.glob("google*.html"):     # Google Search Console ownership file
         shutil.copy(f, DOCS / f.name)

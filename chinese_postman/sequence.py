@@ -14,6 +14,7 @@ import numpy as np
 
 
 def route_cost(P, seq):
+    """Cost of a route: its service plus the shortest paths that join its streets to the depot."""
     if not seq:
         return 0.0
     d, D = P.vi[P.depot], P.D

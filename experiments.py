@@ -244,11 +244,13 @@ def record_environment():
     import networkx
     import numpy
     import scipy
-    cpu = next((line.split(":", 1)[1].strip() for line in open("/proc/cpuinfo", encoding="utf-8")
-                if line.startswith("model name")), platform.processor())
-    pages = os.sysconf("SC_PHYS_PAGES") * os.sysconf("SC_PAGE_SIZE")
+    cpu, ram = platform.processor(), None
+    if os.path.exists("/proc/cpuinfo"):                # Linux; elsewhere the fields stay generic
+        with open("/proc/cpuinfo", encoding="utf-8") as f:
+            cpu = next((line.split(":", 1)[1].strip() for line in f if line.startswith("model name")), cpu)
+        ram = round(os.sysconf("SC_PHYS_PAGES") * os.sysconf("SC_PAGE_SIZE") / 1024 ** 3, 1)
     with open(f"{OUT}/environment.json", "w", encoding="utf-8") as f:
-        json.dump(dict(cpu=cpu, cores=os.cpu_count(), ram_gb=round(pages / 1024 ** 3, 1),
+        json.dump(dict(cpu=cpu, cores=os.cpu_count(), ram_gb=ram,
                        system=platform.platform(), python=platform.python_version(),
                        numpy=numpy.__version__, scipy=scipy.__version__,
                        networkx=networkx.__version__, date=time.strftime("%Y-%m-%d")), f, indent=2)
@@ -269,6 +271,24 @@ def mixed_towns(limit=300.0, seeds=5):
             if name not in done:
                 rows.append(_mixed_row("mixed-city", name, city_grid(size, size, seed=seed), limit))
                 save("mixed_city", rows)
+
+
+def mcpp(limit=120.0, step=4):
+    """Published mixed instances of Corberan et al. (run tools/fetch_mcpp.sh first): every
+    `step`-th file, balanced across the sets, smallest networks first so that an interrupted run
+    still covers both sets evenly. Resumes from results/mixed_published.csv."""
+    from chinese_postman.mixed import read_mcpp
+    record_environment()
+    rows = []
+    if os.path.exists(f"{OUT}/mixed_published.csv"):
+        with open(f"{OUT}/mixed_published.csv", newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+    done = {r["instance"] for r in rows}
+    for path in sorted(sorted(glob.glob("data/mcpp/M*"))[::step], key=lambda p: os.path.basename(p)[2:4]):
+        name = os.path.basename(path)
+        if name not in done:
+            rows.append(_mixed_row("mcpp-" + name[:2], name, read_mcpp(path), limit))
+            save("mixed_published", rows)
 
 
 def mixed(limit=300.0):
