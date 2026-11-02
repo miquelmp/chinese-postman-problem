@@ -199,7 +199,7 @@ def from_osm(data, name: str = "OpenStreetMap area", max_nodes: int = 1500) -> d
 
 # ------------------------------------------------------------------ solving
 def kind_of(inst) -> str:
-    ow = [l["oneway"] for l in inst["links"]]
+    ow = [bool(l.get("oneway")) for l in inst["links"]]
     return "directed" if all(ow) else "mixed" if any(ow) else "undirected"
 
 
@@ -208,9 +208,19 @@ def solve(inst, time_limit: float = 20.0, gap_tol: float = 0.0) -> dict:
     if len(inst["nodes"]) > MAX_NODES:
         raise ValueError(f"Too large for the browser version ({MAX_NODES} junctions at most)")
     kind = kind_of(inst)
-    links = [(l["u"], l["v"], l["w"], l["oneway"]) for l in inst["links"]]
+    links = [(l["u"], l["v"], l["w"], bool(l.get("oneway"))) for l in inst["links"]]
     out = {"kind": kind, "original": sum(w for _, _, w, _ in links)}
-    if kind == "undirected":
+    if kind == "undirected" and any(l.get("req") is False for l in inst["links"]):
+        from . import rural
+        G = nx.MultiGraph()
+        for l in inst["links"]:
+            G.add_edge(l["u"], l["v"], weight=l["w"], required=l.get("req") is not False)
+        s = rural.solve_rural(G, depot=inst.get("depot"), time_limit=time_limit)
+        out.update(kind="rural", original=s.service_cost, total=s.total_cost, circuit=s.circuit,
+                   optimal=bool(s.optimal), gap_pct=round(s.gap_pct, 3), lower_bound=s.lower_bound,
+                   method=s.method, heuristic=s.info.get("heuristic_cost"), served=s.service_cost,
+                   deadhead=s.deadhead_cost, pieces=s.info.get("pieces", 1))
+    elif kind == "undirected":
         G = nx.MultiGraph()
         for u, v, w, _ in links:
             G.add_edge(u, v, weight=w)

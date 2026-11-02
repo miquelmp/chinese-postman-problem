@@ -24,3 +24,4 @@ jobs:
           node-version: "22"
       - run: node tests/js/test_cpp.mjs
       - run: node tests/js/test_networks.mjs
+      - run: node tests/js/test_extensions.mjs

@@ -9,7 +9,8 @@ Pascual) with thirty years of algorithmic progress.
 
 - **Website** (`docs/`): the story, both reports, and a solver that runs in your browser.
 - **Python package** `chinese_postman`: undirected, directed and mixed Chinese Postman solvers, all with
-  proven optimality or a certified gap.
+  proven optimality or a certified gap, and the extensions proposed in 1997: streets that need service
+  only once (rural postman), several postmen, and capacitated fleets.
 - **Reports** (`report/`): the 2026 revision (Markdown and PDF) and the original 1997 report (PDF, Spanish).
 - **Data and results**: 92 classical benchmark road networks and every result file behind the report.
 
@@ -20,12 +21,16 @@ Pascual) with thirty years of algorithmic progress.
 | Two-way streets | Shortest paths + minimum-weight perfect matching (Edmonds' blossom) + Hierholzer | Optimal, polynomial time |
 | One-way streets | Minimum-cost flow + Hierholzer | Optimal, polynomial time |
 | One-way and two-way mixed (NP-hard) | Heuristic, then branch-and-cut (HiGHS) | Optimal, or within a certified gap at the time limit |
+| First pass dearer than later ones, every street | Matching on the cost of later passes | Optimal, polynomial time |
+| Only some streets need service (rural postman, NP-hard) | Frederickson + local search, then branch-and-cut | Optimal, or within a certified gap; heuristic never above 3/2 of the optimum |
+| k postmen, longest route as short as possible (NP-hard) | One tour split optimally into k routes + local search | Within a certified gap; split never above 2 − 1/k of the optimum |
+| Vehicles with a capacity (CARP, NP-hard) | One tour split by capacity (Ulusoy) + moves between routes | Compared with the best known solutions |
 
 ## Install and use
 
 ```bash
 pip install -e ".[test]"
-pytest -q                            # 115 tests (170 with the optional Blossom V library)
+pytest -q                            # 182 tests (237 with the optional Blossom V library)
 ```
 
 ```python
@@ -42,16 +47,30 @@ print(sol.total_cost, sol.optimal, sol.info["gap_pct"])
 `solve_mixed` returns the best tour found together with a proven lower bound. Pass `gap_tol=0.005`
 to stop as soon as the tour is certified within 0.5% of the optimum.
 
+The extensions work on any NetworkX multigraph whose edges carry `weight` (the cost of travelling
+along a street), and optionally `service` (the cost of the pass that serves it) and `required`:
+
+```python
+from chinese_postman import rural, fleet
+sol = rural.solve_rural(G, depot=1, time_limit=60)   # serve the streets marked required=True
+print(sol.total_cost, sol.lower_bound, sol.optimal)
+team = fleet.solve_k_postmen(G, k=3, depot=1)        # three routes, longest as short as possible
+print(team.route_costs, team.lower_bound)
+```
+
 ## Layout
 
 | Path | Contents |
 |---|---|
 | `chinese_postman/cpp.py` | Undirected CPP (Edmonds' method) and directed CPP (minimum-cost flow) |
 | `chinese_postman/mixed.py` | Mixed CPP: bounds, exact branch-and-cut, heuristic with local search, combined `solve_mixed` |
+| `chinese_postman/rural.py` | Service and travel costs; rural postman: Frederickson, bounds, branch-and-cut, combined `solve_rural` |
+| `chinese_postman/fleet.py` | Several postmen (min-max k-postmen), exact model for small cases, capacitated fleets (CARP) |
+| `chinese_postman/sequence.py` | Routes as sequences of served streets: cost, best directions, insertion, local search |
 | `chinese_postman/euler.py` | Hierholzer's algorithm for directed and undirected multigraphs |
 | `chinese_postman/fast.py` | Optional fast backend: SciPy Dijkstra + Blossom V with dual pricing |
 | `chinese_postman/web.py` | JSON entry points used by the website's exact proof (examples, `.GRA`, OpenStreetMap) |
-| `site/assets/cpp.js`, `networks.js` | JavaScript port of the solver and the network builders, used by the website |
+| `site/assets/cpp.js`, `extensions.js`, `networks.js` | JavaScript port of the solvers and the network builders, used by the website |
 | `chinese_postman/io.py`, `instances.py` | File formats; test-network generators |
 | `experiments.py` | Reproduces every experiment in the 2026 report; writes `results/*.csv` |
 | `data/carp/` | Classical CARP benchmark instances (gdb, val, egl, Beullens, kshs) from [CARPData.jl](https://github.com/rafaelmartinelli/CARPData.jl) |
@@ -70,7 +89,9 @@ the exact branch-and-cut.
 
 The JavaScript solver is checked against the Python package on 243 networks (every benchmark, as
 two-way and as mixed, plus generated towns): `python3 tests/js/make_cases.py` computes the optima in
-Python, and `node tests/js/test_cpp.mjs` checks that the JavaScript finds the same ones.
+Python, and `node tests/js/test_cpp.mjs` checks that the JavaScript finds the same ones. The extensions
+are checked the same way (`tests/js/make_ext_cases.py`, `node tests/js/test_extensions.mjs`) on 52
+rural-postman and 39 several-postmen networks with optima proved in Python.
 
 Publish it with GitHub Pages: *Settings → Pages → Build and deployment → Deploy from a branch →
 `main` / `/docs`*.

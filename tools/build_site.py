@@ -28,8 +28,8 @@ PDF_1997 = ROOT / "report" / "monserrat-1997-chinese-postman.pdf"
 PDF_2026 = ROOT / "report" / "chinese-postman-2026.pdf"
 MD_2026 = ROOT / "report" / "report-2026.md"
 
-NAV = [("try", "try/", "Solve a network"), ("report", "report/", "2026 report"),
-       ("1997", "1997/", "1997 report"), ("code", "{REPO}", "Code")]
+NAV = [("try", "try/", "Solve a network"), ("extensions", "extensions/", "Extensions"),
+       ("report", "report/", "2026 report"), ("1997", "1997/", "1997 report"), ("code", "{REPO}", "Code")]
 
 
 # ------------------------------------------------------------------ page chrome
@@ -151,6 +151,78 @@ def chart_carp():
     return "\n".join(out)
 
 
+# ------------------------------------------------------------------ extensions page
+def _pct(x):
+    return f"{x:.2f}%".replace(".00%", "%") if x >= 0.005 else "0%"
+
+
+def ext_stats():
+    """Numbers quoted on the extensions page, from the result files."""
+    f = lambda r, k: float(r[k])
+    out = {}
+    mixed = _rows("mixed_city.csv") + _rows("mixed_benchmarks.csv")
+    g = [f(r, "heur_gap_pct") for r in mixed if r["exact_optimal"] == "True"]
+    out["MIXED_MEAN"] = _pct(statistics.mean(g))
+    out["MIXED_GAP"] = f"Heuristic: mean {_pct(statistics.mean(g))}, worst {_pct(max(g))} ({len(g)} networks solved exactly)"
+    rb, rt = _rows("rural_benchmarks.csv"), _rows("rural_towns.csv")
+    one = sum(r["pieces"] == "1" for r in rb)
+    proved = [r for r in rb + rt if r["optimal"] == "True"]
+    multi = [r for r in proved if r["pieces"] != "1"]
+    fg = [100 * (f(r, "frederickson") - f(r, "best")) / f(r, "best") for r in multi]
+    hg = [100 * (f(r, "heuristic") - f(r, "best")) / f(r, "best") for r in multi]
+    open_ = [r for r in rt if r["optimal"] != "True"]
+    bg = [f(r, "bound_gap_pct") for r in open_]
+    tmax = max(f(r, "seconds") for r in proved if r["pieces"] != "1")
+    out["RURAL_EXACT"] = (f"proved on all {len(rb)} benchmark networks and {sum(r['optimal'] == 'True' for r in rt)} "
+                          f"of {len(rt)} synthetic towns within two minutes")
+    out["RURAL_GAP"] = (f"Frederickson: mean {_pct(statistics.mean(fg))}, worst {_pct(max(fg))}; "
+                        f"after local search: mean {_pct(statistics.mean(hg))}, worst {_pct(max(hg))}")
+    out["RURAL_TEXT"] = (
+        f"Of the {len(rb)} benchmark networks whose files mark only some streets for service, {one} have their "
+        f"streets to serve in a single piece and are solved exactly by matching, in at most "
+        f"{max(f(r, 'seconds') for r in rb if r['pieces'] == '1'):.0f} seconds; branch-and-cut "
+        f"proves the other {len(rb) - one} in at most {max(f(r, 'seconds') for r in rb):.0f} seconds. On {len(rt)} synthetic "
+        f"grid towns with 20% or 50% of the streets to serve, branch-and-cut proves {sum(r['optimal'] == 'True' for r in rt)} "
+        f"within two minutes, the largest with {max(int(r['required']) for r in rt if r['optimal'] == 'True')} streets to serve. "
+        f"Over the {len(multi)} networks with several pieces and a proven optimum, Frederickson's heuristic alone is a mean "
+        f"{_pct(statistics.mean(fg))} above the optimum (worst {_pct(max(fg))}, well inside its guarantee of 50%), and the local "
+        f"search brings this to {_pct(statistics.mean(hg))} (worst {_pct(max(hg))}). "
+        + (f"On the {len(open_)} largest towns, with up to {max(int(r['required']) for r in open_)} streets to serve, the "
+           f"optimum is not proved in two minutes, but the best route is within {_pct(max(bg))} of the lower bound."
+           if open_ else ""))
+    if not all((ROOT / "results" / n).exists() for n in ("fleet_small.csv", "fleet_benchmarks.csv", "carp.csv")):
+        for k in ("K_GAP", "K_TEXT", "CARP_GAP", "CARP_TEXT"):
+            out[k] = "(results pending)"
+        return out
+    ks = _rows("fleet_small.csv")
+    sg = [f(r, "split_gap_pct") for r in ks]
+    hk = [f(r, "heuristic_gap_pct") for r in ks]
+    ratio = max(f(r, "split_ratio") for r in ks)
+    bgap = [100 * (f(r, "optimum") - f(r, "lower_bound")) / f(r, "lower_bound") for r in ks]
+    kb = [r for r in _rows("fleet_benchmarks.csv") if int(r["k"]) <= 10]
+    kg = [f(r, "gap_pct") for r in kb]
+    out["K_GAP"] = (f"Small networks, against the exact optimum: split alone mean {_pct(statistics.mean(sg))}, "
+                    f"after local search mean {_pct(statistics.mean(hk))}, worst {_pct(max(hk))}")
+    out["K_TEXT"] = (
+        f"On {len(ks)} small networks where branch-and-cut finds the exact optimum (two or three postmen), the best cut of "
+        f"one tour is a mean {_pct(statistics.mean(sg))} above it, and never more than {100 * (ratio - 1):.0f}% (the guarantee "
+        f"allows 50% to 67%); after the local search the routes are optimal in {sum(h < 0.005 for h in hk)} cases, and a mean "
+        f"{_pct(statistics.mean(hk))} above the optimum (worst {_pct(max(hk))}). On {len(set(r['instance'] for r in kb))} benchmark networks "
+        f"with 2 to 10 postmen the exact optimum is out of reach, and only the bound is available: the longest route is within a "
+        f"median {_pct(statistics.median(kg))} of it (worst {_pct(max(kg))}). Much of that distance is the bound's: on the small "
+        f"networks, where the optimum is known, the same bound is up to {max(bgap):.0f}% below it.")
+    cp = _rows("carp.csv")
+    cg = [f(r, "gap_to_best_known_pct") for r in cp]
+    out["CARP_GAP"] = (f"Against the best known solutions: median {_pct(statistics.median(cg))}, "
+                       f"mean {_pct(statistics.mean(cg))}, worst {_pct(max(cg))}")
+    out["CARP_TEXT"] = (
+        f"On the {len(cp)} classical CARP instances, this simple method is a median {_pct(statistics.median(cg))} above the best "
+        f"solutions published (mean {_pct(statistics.mean(cg))}; it matches the best known on {sum(c <= 0.005 for c in cg)}). "
+        f"The best published solutions come from decades of dedicated metaheuristics and exact methods; the point here is how "
+        f"far the 1997 tour already goes when it is simply cut into vehicle loads.")
+    return out
+
+
 # ------------------------------------------------------------------ 2026 report
 def build_report(repo):
     import markdown
@@ -226,6 +298,15 @@ def build(repo):
         bench.append({"name": r["instance"], "vertices": int(r["vertices"]), "edges": int(r["edges"])})
     bench.sort(key=lambda b: (re.sub(r"\d.*", "", b["name"]), b["vertices"]))
     (T / "data" / "benchmarks.json").write_text(json.dumps(bench))
+
+    # extensions
+    (DOCS / "extensions").mkdir()
+    page = (SITE / "extensions" / "index.html").read_text(encoding="utf-8")
+    for k, v in ext_stats().items():
+        page = page.replace("{{" + k + "}}", v)
+    (DOCS / "extensions" / "index.html").write_text(render(page, "../", repo), encoding="utf-8")
+    for k, v in ext_stats().items():
+        print(f"{k}: {v}")
 
     # reports
     (DOCS / "1997").mkdir()

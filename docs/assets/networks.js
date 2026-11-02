@@ -238,9 +238,14 @@
 
   /** Classical CARP benchmark file: 0-based vertices, 'from to cost demand' per edge. */
   function fromCarp(text, name) {
-    const v = text.trim().split(/\s+/).map(Number), m = v[1], list = [];
-    for (let k = 0; k < m; k++) list.push([v[2 + 4 * k] + 1, v[3 + 4 * k] + 1, v[4 + 4 * k]]);
-    return fromEdgeList(name, v[0], list);
+    const v = text.trim().split(/\s+/).map(Number), m = v[1], list = [], req = [];
+    for (let k = 0; k < m; k++) { list.push([v[2 + 4 * k] + 1, v[3 + 4 * k] + 1, v[4 + 4 * k]]); req.push(v[5 + 4 * k] > 0); }
+    const inst = fromEdgeList(name, v[0], list);
+    if (req.some(r => !r)) {                  // the file marks which streets need service
+      inst.links.forEach((l, k) => { l.marked = req[k]; });
+      inst.marked = req.filter(Boolean).length;
+    }
+    return inst;
   }
 
   // ---------------------------------------------------------------- OpenStreetMap
@@ -252,6 +257,9 @@
     return `[out:json][timeout:25];way["highway"~"^(${DRIVABLE.slice().sort().join("|")})$"]["area"!="yes"]` +
            `(${s},${w},${n},${e});(._;>;);out body;`;
   }
+
+  const MAIN = new Set(["motorway", "trunk", "primary", "secondary", "tertiary", "motorway_link", "trunk_link",
+                        "primary_link", "secondary_link", "tertiary_link"]);
 
   /** Street network from an Overpass answer: junctions are shared OSM nodes or way ends,
       shape points only add length; oneway=yes/1/-1 and roundabouts make one-way links.
@@ -285,7 +293,7 @@
         const [ax, ay] = xy(seq[i - 1]), [bx, by] = xy(seq[i]);
         len += Math.hypot(bx - ax, by - ay);
         if (junction.has(seq[i]) || i === seq.length - 1) {
-          if (start !== seq[i] && len > 0) raw.push([start, seq[i], Math.max(1, Math.round(len)), one]);
+          if (start !== seq[i] && len > 0) raw.push([start, seq[i], Math.max(1, Math.round(len)), one, MAIN.has(tags.highway)]);
           start = seq[i]; len = 0;
         }
       }
@@ -299,8 +307,10 @@
     const keep = new Set(keepIds), local = new Map(keepIds.map((v, i) => [v, i]));
     const pts = keepIds.map(xy), x0 = Math.min(...pts.map(p => p[0])), y0 = Math.min(...pts.map(p => p[1]));
     const pos = new Map(keepIds.map((v, i) => [i, [pts[i][0] - x0, pts[i][1] - y0]]));
-    const links = raw.filter(l => keep.has(l[0]) && keep.has(l[1])).map(([a, b, w, o]) => [local.get(a), local.get(b), w, o]);
+    const kept = raw.filter(l => keep.has(l[0]) && keep.has(l[1]));
+    const links = kept.map(([a, b, w, o]) => [local.get(a), local.get(b), w, o]);
     const inst = make(name, pos, links, { units: "m", note: "Street data © OpenStreetMap contributors (ODbL)." });
+    inst.links.forEach((l, k) => { l.main = kept[k][4]; });
     inst.nodes.forEach((nd, i) => { [nd.lat, nd.lon] = nodes.get(keepIds[i]); });
     return inst;
   }

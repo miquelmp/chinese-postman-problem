@@ -28,7 +28,7 @@
   let py = null;                       // created on demand
 
   // ---------------------------------------------------------------- state
-  let busy = false, inst = null, result = null, view = null, seed = 0, map = null;
+  let busy = false, inst = null, base = null, result = null, view = null, seed = 0, shareSeed = 1, map = null;
   const speeds = [0.5, 1, 2, 4, 8, 16];
   const status = (text, error) => { $("status").textContent = text; $("status").classList.toggle("error", !!error); };
   const kindOf = I => { const o = I.links.map(l => l.oneway); return o.every(Boolean) ? "directed" : o.some(Boolean) ? "mixed" : "undirected"; };
@@ -41,6 +41,55 @@
 
   function setBusy(b) { busy = b; $("solve").disabled = b || !inst; $("fetch-osm").disabled = b; }
 
+  // ---------------------------------------------------------------- service settings
+  function pickDepot(I) {               // the junction nearest the middle of the drawing
+    const xs = I.nodes.map(n => n.x), ys = I.nodes.map(n => n.y);
+    const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+    let best = I.nodes[0];
+    for (const n of I.nodes) if (Math.hypot(n.x - cx, n.y - cy) < Math.hypot(best.x - cx, best.y - cy)) best = n;
+    return best.id;
+  }
+  function rng(seed) {
+    let a = (seed >>> 0) + 0x9e3779b9;
+    return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a);
+                   t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  }
+  function derive() {                   // the network as it will be solved: who serves what
+    const mode = $("serve").value, onFoot = $("source").value === "osm" && $("on-foot").checked;
+    const r = rng(shareSeed), share = +$("serve-share").value;
+    const links = base.links.map(l => {
+      const c = Object.assign({}, l);
+      if (onFoot) c.oneway = false;
+      delete c.req;
+      if (mode === "share") c.req = r() < share;
+      else if (mode === "main") c.req = !!l.main;
+      else if (mode === "marked") c.req = l.marked !== false;
+      return c;
+    });
+    if (links.length && !links.some(l => l.req !== false)) links[0].req = true;
+    return Object.assign({}, base, { links, depot: pickDepot(base) });
+  }
+  function serveOptions() {
+    const has = { all: true, share: true, main: base && base.links.some(l => l.main) && base.links.some(l => !l.main),
+                  marked: base && !!base.marked };
+    for (const o of $("serve").options) o.hidden = o.disabled = !has[o.value];
+    if (!has[$("serve").value]) $("serve").value = "all";
+    $("share-field").hidden = $("serve").value !== "share";
+  }
+  function serviceHint() {
+    if (!inst) return "";
+    const k = +$("postmen").value, partial = inst.links.some(l => l.req === false);
+    if (kindOf(inst) !== "undirected" && (k > 1 || partial))
+      return "Serving only some streets, or sharing them among several postmen, works on two-way networks." +
+             ($("source").value === "osm" ? " Tick “On foot” to let the postmen walk one-way streets both ways." : " Choose a network without one-way streets.");
+    return "";
+  }
+  function applyService() {
+    if (!base) return;
+    serveOptions();
+    showInst(derive());
+  }
+
   function showFields() {
     const src = $("source").value;
     document.querySelectorAll("[data-for]").forEach(f => f.classList.toggle("hidden", !f.dataset.for.split(" ").includes(src)));
@@ -49,12 +98,30 @@
   }
 
   // ---------------------------------------------------------------- drawing
+  function legend(mode) {
+    const k = (cls, text) => `<span class="key"><i class="${cls}"></i>${text}</span>`;
+    const parts = [];
+    if (mode === "postmen") parts.push("Each colour: the streets one postman serves.", k("k-street", "walked through or not yet served"));
+    else parts.push(k("k-street", "street"), k("k-route", "served"), k("k-repeat", "walked again, or only walked through"));
+    if (inst.links.some(l => l.req === false)) parts.push(k("k-optional", "no service needed"));
+    if (inst.depot !== undefined && (mode === "postmen" || inst.links.some(l => l.req === false))) parts.push(k("k-depot", "depot"));
+    if (kindOf(inst) === "undirected" && inst.nodes.length <= 400 && mode !== "postmen" && !inst.links.some(l => l.req === false))
+      parts.push("Dark dots: junctions with an odd number of streets.");
+    if (inst.links.some(l => l.oneway)) parts.push("Arrows: one-way streets.");
+    $("legend").innerHTML = parts.join("&nbsp;&nbsp; ");
+  }
+
   function showInst(newInst) {
     inst = newInst; result = null;
     $("empty").classList.add("hidden");
-    const twoWay = kindOf(inst) === "undirected";
-    view = Postman.draw($("net"), inst, { labels: "auto", weights: inst.links.length <= 30, odd: twoWay && inst.nodes.length <= 400 });
-    $("odd-key").hidden = !twoWay;
+    const twoWay = kindOf(inst) === "undirected", partial = inst.links.some(l => l.req === false);
+    const showDepot = partial || +$("postmen").value > 1;
+    view = Postman.draw($("net"), inst, { labels: "auto", weights: inst.links.length <= 30,
+                                          odd: twoWay && !partial && inst.nodes.length <= 400,
+                                          depot: showDepot ? inst.depot : undefined });
+    legend(+$("postmen").value > 1 ? "postmen" : "single");
+    $("routes").hidden = true;
+    $("service-hint").textContent = serviceHint();
     $("speed").value = inst.links.length > 1000 ? 5 : inst.links.length > 200 ? 3 : 1;
     view.setSpeed(speeds[+$("speed").value]);
     view.onProgress((i, n) => { $("progress").textContent = n ? `${i} of ${n} streets walked` : ""; });
@@ -62,7 +129,9 @@
     $("player").hidden = $("stats").hidden = $("downloads").hidden = $("proof").hidden = true;
     $("method").textContent = "";
     const total = inst.links.reduce((s, l) => s + l.w, 0);
-    $("note").textContent = `${inst.name}: ${inst.nodes.length.toLocaleString("en")} junctions, ${inst.links.length.toLocaleString("en")} streets (${kindName(kindOf(inst))}), total ${fmtLen(total)}. ${inst.note || ""}`;
+    const req = inst.links.filter(l => l.req !== false), serve = req.reduce((s, l) => s + l.w, 0);
+    const part = partial ? ` ${req.length.toLocaleString("en")} of them need service (${fmtLen(serve)}).` : "";
+    $("note").textContent = `${inst.name}: ${inst.nodes.length.toLocaleString("en")} junctions, ${inst.links.length.toLocaleString("en")} streets (${kindName(kindOf(inst))}), total ${fmtLen(total)}.${part} ${inst.note || ""}`;
     setBusy(false);
     status("Ready. Press “Find the route”.");
   }
@@ -70,7 +139,7 @@
   let loadToken = 0;
   async function load() {
     const src = $("source").value, token = ++loadToken;
-    const show = I => { if (token === loadToken) showInst(I); };
+    const show = I => { if (token === loadToken) { base = I; applyService(); } };
     try {
       if (["example1997", "konigsberg", "petersen", "grid", "delaunay", "oneway-grid", "mixed-town"].includes(src)) {
         setBusy(true); status("Building the network…");
@@ -97,10 +166,15 @@
   async function solve() {
     if (!inst || busy) return;
     setBusy(true);
-    const target = inst;
-    status(kindOf(inst) === "mixed" ? "Solving (one-way and two-way streets: a few seconds)…" : "Solving…");
+    const target = inst, k = Math.max(1, Math.min(8, Math.round(+$("postmen").value || 1)));
+    const hint = serviceHint();
+    if (hint) { setBusy(false); status(hint, true); return; }
+    const partial = inst.links.some(l => l.req === false);
+    status(k > 1 ? `Sharing the streets among ${k} postmen (a few seconds)…` :
+           partial ? "Planning the route (a few seconds when the streets to serve are scattered)…" :
+           kindOf(inst) === "mixed" ? "Solving (one-way and two-way streets: a few seconds)…" : "Solving…");
     try {
-      const res = await js.call("solve", { inst, maxSeconds: 4 });
+      const res = await js.call("solve", { inst, maxSeconds: 4, k });
       if (target !== inst) return;
       showResult(res);
       status("Done.");
@@ -115,22 +189,64 @@
     $("player").hidden = $("downloads").hidden = false;
     $("play").textContent = "Play the tour";
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) view.finish();
-    const needProof = res.kind === "mixed" && !res.optimal;
+    legend(res.kind === "postmen" ? "postmen" : "single");
+    renderRoutes(res);
+    const needProof = (res.kind === "mixed" || res.kind === "rural") && !res.optimal;
     $("proof").hidden = !needProof;
     $("proof-status").textContent = "";
     $("proof-status").classList.remove("error");
     $("proof-controls").hidden = false;
     if (needProof) {
+      const why = res.kind === "rural"
+        ? `The streets to serve lie in ${res.pieces} separate pieces, and choosing how to join them is what makes the exact problem hard`
+        : "Streets that mix one-way and two-way traffic make the exact problem hard";
       $("proof-text").textContent =
         `This tour is at most ${res.gap_pct.toFixed(2)}% longer than the best possible one, and usually much closer. ` +
-        `Streets that mix one-way and two-way traffic make the exact problem hard, so proving the optimum needs a ` +
-        `branch-and-cut solver: the page can download Python with it (about 37 MB the first time) and search for a shorter tour.`;
+        `${why}, so proving the optimum needs a branch-and-cut solver: the page can download Python with it ` +
+        `(about 37 MB the first time) and search for a shorter tour.`;
     }
   }
 
+  function renderRoutes(r) {
+    const ul = $("routes");
+    if (r.kind !== "postmen") { ul.hidden = true; return; }
+    ul.innerHTML = r.routes.map((rt, k) =>
+      `<li><i style="background:${view.colorOf(k)}"></i>Postman ${k + 1}: ${fmtLen(rt.cost)}, ${rt.streets} streets</li>`).join("");
+    ul.hidden = false;
+  }
+
   function renderStats(r) {
-    const extraWalks = r.steps - inst.links.length;
     const quality = r.optimal ? "Proven optimal" : `Within ${r.gap_pct.toFixed(2)}%`;
+    if (r.kind === "postmen") {
+      const items = [
+        ["Postmen", String(r.k)],
+        ["Longest route", fmtLen(r.longest)],
+        ["All routes together", fmtLen(r.total)],
+        ["Lower bound, longest route", fmtLen(r.lower_bound)],
+        ["Quality", quality],
+        ["Time", `${r.seconds.toFixed(2)} s`],
+      ];
+      $("stats").innerHTML = items.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
+      $("stats").hidden = false;
+      $("method").textContent = `Method: ${r.method}. One postman alone would walk ${fmtLen(r.single)}; ` +
+        `the best split of that tour gave a longest route of ${fmtLen(r.split_longest)} before streets were moved between routes.`;
+      return;
+    }
+    if (r.kind === "rural") {
+      const items = [
+        ["Streets to serve", fmtLen(r.served)],
+        ["Postman's route", fmtLen(r.total)],
+        ["Walked without serving", `${fmtLen(r.deadhead)} (${(100 * r.deadhead / r.served).toFixed(1)}%)`],
+        ["Pieces to join", String(r.pieces)],
+        ["Quality", quality],
+        ["Time", `${r.seconds.toFixed(2)} s`],
+      ];
+      $("stats").innerHTML = items.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
+      $("stats").hidden = false;
+      $("method").textContent = `Method: ${r.method}.` + (r.optimal ? "" : ` Proven lower bound: ${fmtLen(r.lower_bound)}.`);
+      return;
+    }
+    const extraWalks = r.steps - inst.links.length;
     const items = [
       ["Streets, once each", fmtLen(r.original)],
       ["Postman's tour", fmtLen(r.total)],
@@ -223,7 +339,7 @@
       const text = await resp.text();
       status("Building the street network…");
       const I = await js.call("osm", { text, name: `OpenStreetMap area around ${((s + n) / 2).toFixed(4)}, ${((w + e) / 2).toFixed(4)}` });
-      if (token === loadToken) showInst(I);
+      if (token === loadToken) { base = I; applyService(); }
     } catch (err) { setBusy(false); status(err.message, true); }
   }
 
@@ -237,14 +353,21 @@
   $("dl-tour").addEventListener("click", () => {
     if (!result) return;
     const lab = new Map(inst.nodes.map(n => [n.id, n.label]));
-    const c = result.circuit, rows = ["step,from,to"];
-    for (let k = 0; k + 1 < c.length; k++) rows.push(`${k + 1},${lab.get(c[k])},${lab.get(c[k + 1])}`);
+    const routes = result.routes ? result.routes.map(r => r.circuit) : [result.circuit];
+    const rows = ["postman,step,from,to"];
+    routes.forEach((c, p) => { for (let k = 0; k + 1 < c.length; k++) rows.push(`${p + 1},${k + 1},${lab.get(c[k])},${lab.get(c[k + 1])}`); });
     download("postman-tour.csv", rows.join("\n"), "text/csv");
   });
   $("dl-net").addEventListener("click", () => inst && download("network.json", JSON.stringify(inst, null, 1), "application/json"));
 
   // ---------------------------------------------------------------- wiring
   $("source").addEventListener("change", () => { showFields(); load(); });
+  $("serve").addEventListener("change", applyService);
+  $("serve-share").addEventListener("input", () => { $("serve-out").textContent = Math.round($("serve-share").value * 100) + "%"; });
+  $("serve-share").addEventListener("change", applyService);
+  $("reshare").addEventListener("click", () => { shareSeed++; applyService(); });
+  $("postmen").addEventListener("change", applyService);
+  $("on-foot").addEventListener("change", applyService);
   ["side", "junctions", "bench", "file"].forEach(id => $(id).addEventListener("change", load));
   $("oneway").addEventListener("input", () => { $("oneway-out").textContent = Math.round($("oneway").value * 100) + "%"; });
   $("oneway").addEventListener("change", load);

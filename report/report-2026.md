@@ -8,7 +8,7 @@ Nov 1, 2026 · @Miquel
 
 This report revises a 1997 final-year project on the Chinese Postman Problem: find the cheapest closed route that covers every street of a network at least once. The method is unchanged in outline: pair the odd-degree junctions by shortest paths at minimum total cost, duplicate those paths, and walk the resulting Eulerian circuit. The 1997 branch-and-bound for the pairing step is replaced by Edmonds' blossom algorithm, which is exact and polynomial; shortest paths use Dijkstra, the circuit uses Hierholzer's linear-time algorithm, the directed version is added through minimum-cost flow, and the mixed version, with one-way and two-way streets together and NP-hard, through branch-and-cut and a new heuristic.
 
-The new Python implementation was tested on classic graphs, on 92 benchmark road networks from the arc-routing literature (including real networks in Cumbria and Flanders), and on synthetic towns of up to 40,000 junctions. Every instance within the memory budget was solved to proven optimality. With a second backend that runs Kolmogorov's Blossom V on a sparse candidate graph and adds pairs by dual pricing, a network with 12,066 odd vertices solves in 102 seconds, against about 800 odd vertices in the same time in pure Python. On benchmarks where every street needs service, the single-postman tour comes within a median 3.4% of the best known multi-vehicle solution, making the CPP a tight bound for fleet routing. For mixed networks, branch-and-cut proves the optimum on every benchmark network within 5.2 seconds and on towns of up to 1,600 junctions, and the heuristic averages 0.27% above the optimum. The report closes with a map of the harder arc-routing variants where the branch-and-bound ideas of 1997 remain useful.
+The new Python implementation was tested on classic graphs, on 92 benchmark road networks from the arc-routing literature (including real networks in Cumbria and Flanders), and on synthetic towns of up to 40,000 junctions. Every instance within the memory budget was solved to proven optimality. With a second backend that runs Kolmogorov's Blossom V on a sparse candidate graph and adds pairs by dual pricing, a network with 12,066 odd vertices solves in 102 seconds, against about 800 odd vertices in the same time in pure Python. On benchmarks where every street needs service, the single-postman tour comes within a median 3.4% of the best known multi-vehicle solution, making the CPP a tight bound for fleet routing. For mixed networks, branch-and-cut proves the optimum on every benchmark network within 5.2 seconds and on towns of up to 1,600 junctions, and the heuristic averages 0.27% above the optimum. The report closes by following the extensions proposed in 1997: streets whose first pass costs more than the next, streets that need no service (the rural postman problem) and several postmen sharing a district, each with its complexity, an exact method or a heuristic with a proven bound, and the measured distance from the optimum.
 
 A JavaScript port of the solver runs in the web browser, so anyone can solve their own street network, from a file or straight from OpenStreetMap, at [miquelmp.github.io/chinese-postman-problem](https://miquelmp.github.io/chinese-postman-problem/).
 
@@ -43,7 +43,7 @@ Typical applications are any service that must cover streets rather than visit p
 1. A clean, tested reimplementation of the full CPP pipeline.
 2. A computational study on six families of instances, none taken from the original Vilanova i la Geltrú case studies.
 3. A comparison of the 1997 branch-and-bound with the exact method, and a tightened lower bound for anyone who extends the B&B to harder variants.
-4. Extensions to directed and mixed networks and a map of the wider arc-routing field for future work.
+4. The extensions proposed in 1997, implemented and measured: directed and mixed networks, service and travel costs, the rural postman problem, several postmen and capacitated fleets.
 
 ## 2. Graph-theoretic background
 
@@ -199,7 +199,7 @@ Fleury's rule, discussed in the 1997 report, also works but must test at each st
 
 ## 6. Implementation
 
-The solver is a small Python 3 package, `chinese_postman`, built on NetworkX and covered by 170 automated tests (115 when the optional Blossom V library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with seven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).
+The solver is a small Python 3 package, `chinese_postman`, built on NetworkX and covered by 237 automated tests (182 when the optional Blossom V library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with ten modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).
 
 ### 6.1 Modules
 
@@ -212,6 +212,9 @@ The solver is a small Python 3 package, `chinese_postman`, built on NetworkX and
 | `euler.py` | `EULERIAN.C` | Hierholzer's algorithm on multigraphs, directed or not |
 | `instances.py` | Annex 2 data | Generators for the test families of chapter 7 |
 | `web.py` | — (new) | Builds networks for the website from examples, .GRA and CARP files and OpenStreetMap; reference for the JavaScript port |
+| `rural.py` | — (new) | Service and travel costs; rural postman: Frederickson's heuristic, lower bounds, branch-and-cut, combined solve\_rural (chapter 10) |
+| `fleet.py` | — (new) | Several postmen (optimal split, local search, bounds, exact model for small networks) and capacitated fleets |
+| `sequence.py` | — (new) | Routes as sequences of served streets: cost, best directions, insertion, 2-opt |
 
 Graphs are NetworkX multigraphs, so parallel streets between the same two junctions are kept, as the 1997 adjacency lists allowed. When computing shortest paths only the cheapest of any parallel edges matters, and the solver works on that simple graph internally.
 
@@ -242,6 +245,9 @@ For a directed graph the imbalance of each vertex, out-degree minus in-degree, p
 | Mixed CPP | 41 | Exact equals brute-force enumeration on 25 random networks; bound ≤ optimum ≤ heuristic; all-two-way and all-one-way cases equal the pure CPPs; the combined strategy proves optimality, including through the cutoff |
 | Web builders | 13 | Examples, .GRA, CARP and OpenStreetMap input give the expected networks and solve; bad input gives a clear message |
 | JavaScript solver | 243 networks | The website solver gives the Python optimum on every undirected and directed case, never claims a false optimum on mixed ones, and returns a valid tour |
+| Rural postman | 36 | Exact equals enumeration of every multiset of extra passes on the original network; Frederickson within 3/2 of the optimum; every street served; all-required equals the CPP; first-pass costs, undirected and directed |
+| Several postmen | 31 | Bound ≤ exact optimum ≤ heuristic; split within 2 − 1/k of the optimum; split equals enumeration of cut points; one postman equals the rural postman; capacities respected |
+| JavaScript extensions | 91 networks | Website rural postman and several postmen: valid routes, every street served, never below the Python optimum, bounds never above it |
 
 Every test also verifies the tour itself: it is closed, it covers every original edge, and its length equals the original edges plus the duplicates.
 
@@ -264,12 +270,13 @@ The project website, [miquelmp.github.io/chinese-postman-problem](https://miquel
 | Directed and mixed streets | `site/assets/cpp.js` | Minimum-cost flow; lower bounds and the mixed heuristic of chapter 9, with its starting orientations, balancing and local search |
 | Tour | `site/assets/cpp.js` | Hierholzer's algorithm, as in chapter 5 |
 | Networks | `site/assets/networks.js` | Built-in examples, `.GRA` and CARP readers, OpenStreetMap import through the Overpass API |
+| Extensions | `site/assets/extensions.js` | Rural postman and several postmen (chapter 10): Frederickson's heuristic, local search, optimal split into routes, lower bounds |
 
 The port is checked against the Python package. On 243 networks, from classic graphs to benchmark files and mixed towns, it returns the same optimum in every undirected and directed case, stays a mean 0.25% above the optimum on mixed ones, and always returns a valid closed tour; on 3,000 random matchings it agreed with NetworkX every time. The page is ready to solve in under a second.
 
 Only one step still needs Python: proving that a mixed tour is optimal. On request the page loads Pyodide, Python compiled to WebAssembly, with SciPy and the `chinese_postman` package, and runs the branch-and-cut of chapter 9 inside the browser in a few seconds.
 
-The interactive version accepts files of up to 2,500 junctions and OpenStreetMap areas of up to about one square kilometre, or 1,500 junctions. Larger networks are better solved with the Python package and its Blossom V backend.
+The interactive version accepts files of up to 2,500 junctions and OpenStreetMap areas of up to about one square kilometre, or 1,500 junctions. Larger networks are better solved with the Python package and its Blossom V backend. The page's service settings choose which streets need service (every street, a random share, the main roads of an OpenStreetMap area, or those marked in a benchmark file) and how many postmen share them, with the methods of chapter 10.
 
 ## 7. Computational experiments
 
@@ -370,7 +377,7 @@ The 2026 version keeps the structure of the 1997 method and improves each of its
 | Eulerian circuit | Cycle splicing over adjacency queues | Hierholzer with one pointer per vertex | Linear time |
 | Directed streets | Future work | Minimum-cost flow | Polynomial, solved |
 | Platform | Turbo C, 16-bit integers, 640 KB memory model | Python 3, unbounded integers, automatic memory | No size limits on costs or data |
-| Verification | Manual checks | 170 automated tests in Python and 243 networks re-checked in JavaScript, every tour validated | Results checked on each run |
+| Verification | Manual checks | 237 automated tests in Python and 334 networks re-checked in JavaScript, every tour validated | Results checked on each run |
 
 ### 8.2 The 1997 branch-and-bound
 
@@ -481,33 +488,96 @@ The objective cutoff lets branch-and-cut discard every branch that cannot beat t
 
 This is the approach the 1997 report proposed in its last chapter, a time-limited exact search used as a heuristic with a guarantee, now with a branch-and-cut solver behind it.
 
-## 10. Extensions
+## 10. The extensions proposed in 1997
 
-The undirected, directed and mixed CPP are now solved; the problems that real fleets face lie one or two steps further, and most of them are NP-hard. The 1997 conclusions anticipated two of them, directed streets and costs that differ between the first and later passes; both turn out to be central to modern arc routing.
+The 1997 report closed with a list of extensions that would bring the method closer to practice. Each of them is now implemented, tested and measured. This chapter follows them in turn, and for each problem states how hard it is, whether it is solved exactly or by a heuristic, and how far the heuristic can be from the optimum.
 
-| Problem | What it adds | Complexity | Typical method |
-| --- | --- | --- | --- |
-| Undirected CPP | — | Polynomial | Matching (this report) |
-| Directed CPP | One-way streets only | Polynomial | Minimum-cost flow (this report) |
-| Mixed CPP | Both one-way and two-way streets | NP-hard | Branch-and-cut and heuristic (chapter 9) |
-| Windy postman | Cost depends on direction (uphill, wind) | NP-hard | Branch-and-cut |
-| Rural postman (RPP) | Only some streets need service | NP-hard | Branch-and-cut; heuristics |
-| Hierarchical CPP | Some streets must be served first | Varies | Exact for special cases |
-| k-CPP (min-max) | k postmen, balance the longest tour | NP-hard | Heuristics, B&B |
-| Capacitated arc routing (CARP) | Several vehicles with limited capacity, a depot | NP-hard | Metaheuristics, branch-cut-and-price |
-| Turn penalties | U-turns and left turns cost extra | Depends on base problem | Transform to a node-routing problem |
+| Path proposed in 1997 | Where it leads | Chapter |
+| --- | --- | --- |
+| "La resolución del CPP para el caso asimétrico" (the asymmetric case) | Directed and mixed CPP | 6.3, 9 |
+| "Que el valor asociado en cada arista variara en función de que fuera o no la primera vez que se recorre" (a different cost for the first pass) | Service and deadheading costs; the rural postman problem | 10.2, 10.3 |
+| "El trabajo que se puede realizar en media jornada \[...\] es claramente limitado" (a shift limits the work) | Several postmen; capacitated fleets | 10.4, 10.5 |
 
-**First and later passes.** The 1997 idea of a street costing more the first time it is traversed (snow still on it, bins still full) is exactly the split between service cost and deadheading cost used in the rural postman problem and the CARP. A street is served once at its service cost; any further traversal costs only its travel time.
+### 10.1 Exact, heuristic, bound and guarantee
 
-**From one postman to a fleet.** Chapter 7 shows that on the classical CARP benchmarks a single CPP tour is usually within a few percent of the best known multi-vehicle solution. The CPP is thus a strong lower bound and a useful first step: split the tour into pieces that respect vehicle capacity (the route-first, cluster-second approach), then improve them locally.
+A problem is polynomial when an algorithm is known whose running time grows like a power of the network size; such problems are solved exactly at any size a city needs. The undirected and directed CPP are polynomial. A problem is NP-hard when no such algorithm is known. For these there are two complementary methods. An exact method, here branch-and-cut, finds the optimum and proves it, but its running time can grow very fast. A heuristic answers quickly and is paired with a lower bound, a value that no solution can beat; the distance between the heuristic and the bound is the most the heuristic can be off. Some heuristics also carry a guarantee: a proof that they are never more than a fixed factor above the optimum, on any network.
 
-**Real street data.** OpenStreetMap now provides free, worldwide street networks. The website of section 6.6 already reads them: it downloads a district's streets through the Overpass API, keeps junctions and street lengths, and marks one-way streets, so a district such as the ones studied in 1997 can be modelled in seconds instead of digitised by hand. For whole towns, the OSMnx library (Boeing, 2017) downloads the same data as a NetworkX multigraph that `chinese_postman` takes after a short conversion.
+### 10.2 First and later passes
 
-**Suggested next steps for this project:**
+Let every street e carry a service cost s(e), paid on the pass that serves it, and a travel cost c(e), paid on any other pass. The 1997 examples were a road covered in snow and a street whose bins are still full.
 
-1. Cycle-reversal moves for the mixed CPP heuristic, to remove its few remaining gaps of 3–5%.
-2. A rural postman variant on the Eglese instances, whose road networks already mark which streets need service.
-3. Route-first, cluster-second CARP heuristics, measured against the published bounds in the same benchmark files.
+When every street needs service, each is served exactly once, so the service costs add up to a constant, and only the extra passes can change. These must make every degree even, as in chapter 3, and they cost c. Hence
+
+```latex
+\text{cost} = \sum_{e \in E} s(e) + \min_{\text{T-join } J} c(J),
+```
+
+which is the ordinary CPP augmentation computed on the travel costs. The problem stays polynomial: matching for undirected networks and minimum-cost flow for directed ones (`rural.solve_two_costs`). For mixed networks it inherits the NP-hardness of chapter 9.
+
+### 10.3 The rural postman problem
+
+When only a subset R of the streets needs service, the other streets may still be used to travel. This is the rural postman problem (RPP). It is NP-hard (Lenstra and Rinnooy Kan, 1976), but the difficulty is precise. If the required streets, together with the depot, form one connected piece, the argument of section 10.2 still applies: pair the odd vertices of R by shortest paths through the whole network, and the result is optimal in polynomial time. When R falls into several pieces, choosing how to join them is the hard part.
+
+All three methods work on a reduced graph whose vertices are the endpoints of required streets and the depot. Two of them are joined by a deadhead edge whose cost is their shortest-path distance; edges whose shortest path passes through a third required vertex are left out, since they are never needed. With x(e) the number of extra passes over deadhead edge e, the model is
+
+```latex
+\min \sum_e c(e)\,x(e) \quad \text{s.t.} \quad x(\delta(v)) \equiv \deg_R(v) \pmod 2 \;\; \forall v, \qquad x(\delta(S)) \ge 2 \;\; \forall S \text{ union of pieces},\; S \ne V, \qquad x \in \{0,1,2\}.
+```
+
+- **Heuristic** (`rural.heuristic`). Frederickson (1979): join the pieces by a minimum spanning tree of their distances, then pair the odd vertices by a minimum matching. It is never more than 3/2 times the optimum (Benavent, Campos, Corberán and Mota, 1985). The route is then improved by moving each street to its best position and by reversing stretches of the route (2-opt), working on the sequence of served streets (`sequence.improve`).
+- **Lower bound** (`rural.lower_bound`). The best of two: the odd vertices of R must be paired, so the deadheading costs at least a minimum matching of them; and the linear relaxation of the model, with the cut around every piece and further cuts found by minimum cuts of the fractional solution.
+- **Exact method** (`rural.solve_exact`). HiGHS solves the integer program; whenever its solution falls apart, the cut around each component is added and the program solved again. This is the model of Ghiani and Laporte (2000), with the cuts added one round at a time.
+
+`rural.solve_rural` combines them as `solve_mixed` does in chapter 9: heuristic and bound first, then branch-and-cut told to beat the heuristic; if it cannot, the heuristic route is proven optimal.
+
+| Networks | Count | Streets to serve | Optimum proved | Frederickson above the optimum (mean, worst) | After local search (mean, worst) | Slowest proof |
+| --- | --- | --- | --- | --- | --- | --- |
+| Benchmark files, required streets in one piece | 51 | 28–347 | 51, by matching | — | — | 3.1 s |
+| Benchmark files, several pieces | 6 | 51–159 | 6 | 0.81%, 3.23% | 0.03%, 0.18% | 6.2 s |
+| Grid towns 10×10 and 20×20, 20% or 50% to serve | 12 | 30–387 | 10 | 3.73%, 8.33% | 1.04%, 4.75% | 85 s |
+| Grid towns 30×30, 20% or 50% to serve | 6 | 330–870 | 0 in two minutes | — | within 6.45% of the bound | — |
+
+The benchmark files are those of chapter 7 whose demands mark only some streets for service (Eglese and Beullens et al.); the towns are grids in which each street needs service with probability 0.2 or 0.5, with a two-minute limit. Frederickson's heuristic stays far inside its 3/2 guarantee: its worst case, on a small town with 15 pieces, is 8.3% above the optimum. The local search removes most of that excess, and branch-and-cut then either proves the route optimal or improves it. On the six largest towns, with 48 to 173 pieces, the optimum is not proved in two minutes, and the bound certifies the route within 1.4% to 6.5%.
+
+### 10.4 Several postmen
+
+When a district is too large for one shift, k postmen share it, all starting and ending at the depot. The min-max k-postmen problem asks for k routes that together serve every required street, with the longest route as short as possible. It is NP-hard even when every street needs service (Frederickson, Hecht and Kim, 1978).
+
+- **Heuristic** (`fleet.solve_k_postmen`). Write out one postman's route as a sequence of served streets, then cut it into k consecutive pieces. A dynamic programme finds the cut points that make the longest route shortest; each piece becomes a route from the depot and back. Several written-out orders of the same route are tried. A local search then moves and swaps streets between the longest route and the others, re-plans each route as a small rural postman problem, and perturbs the best solution a few streets at a time while time remains.
+- **Guarantee.** Let L be the length of an optimal single route, and r the largest cost of going from the depot to a required street, serving it and coming back. Any solution has a route at least r long, and the k routes together cost at least L, so the optimum is at least max(r, L/k). Frederickson, Hecht and Kim (1978) choose cut points on the optimal single route so that the longest route is at most (2 − 1/k) times the optimum. The dynamic programme considers every cut, so its result is at least as good; the guarantee holds whenever the single route is optimal, which is always the case when every street needs service.
+- **Lower bound.** max(r, L/k), with L replaced by its lower bound when the single route is not proved optimal.
+- **Exact method** (`fleet.solve_k_exact`), for small networks only: one copy of the rural model per postman, an assignment of every required street to one postman, the longest route as the objective, and connectivity cuts added round by round.
+
+| Networks | Count | Measure | Best split of one tour | After local search |
+| --- | --- | --- | --- | --- |
+| Small random networks, 2 or 3 postmen | 62 | Above the exact optimum (mean, worst) | 2.91%, 26.6% | 0.02%, 1.25% |
+| Small random networks | 62 | Optimal | — | 61 of 62 |
+| Benchmark networks, 2 to 10 postmen | 312 runs | Above the lower bound (median, worst) | 12.0%, — | 6.2%, 37.1% |
+
+On the small networks, half of them with every street to serve and half with 60%, the best split of one tour is never more than 27% above the optimum, well inside the guarantee of 50% for two postmen and 67% for three, and the local search reaches the optimum in 61 of the 62 cases. On the benchmark networks the optimum is out of reach and only the lower bound is available. Much of the remaining distance is the bound's: on the small networks, where the optimum is known, the same bound is a mean 3.4% and up to 21% below it. A stronger bound would be the natural next step.
+
+### 10.5 Vehicles with a capacity
+
+When each street produces a load and each vehicle carries a limited amount, the problem is the capacitated arc routing problem (CARP), the subject of the benchmark files used throughout this report. It is NP-hard. With the same sequence of served streets, Ulusoy's (1985) dynamic programme cuts the route into vehicle loads at least total cost; streets are then moved between routes while the total cost falls and the loads fit (`fleet.solve_carp`).
+
+On the 197 classical CARP instances (gdb, val, egl, kshs and the four Beullens families), the routes are a median 5.8% above the best solutions published (mean 5.5%, worst 14.8%), and match them on 16 instances; the split alone is a median 8.8% above. The best published solutions come from decades of dedicated metaheuristics and exact methods; the point here is how far the single tour of 1997 already goes when it is simply cut into vehicle loads.
+
+### 10.6 Summary
+
+| Problem | Complexity | Exact method here | Heuristic and guarantee | Measured distance from the optimum |
+| --- | --- | --- | --- | --- |
+| Every street, two-way or one-way | Polynomial | Matching or minimum-cost flow, any size | Not needed | 0 |
+| Every street, first pass dearer | Polynomial | Matching on the travel costs | Not needed | 0 |
+| Every street, mixed | NP-hard | Branch-and-cut, towns of up to 1,600 junctions | Orientation, balancing and local search | Mean 0.27%, worst 4.8% |
+| Some streets (rural postman) | NP-hard; polynomial with one piece | Branch-and-cut, all 57 benchmark networks and towns of up to 387 streets to serve | Frederickson, at most 3/2; local search | Mean 0.66%, worst 4.8% (16 proved cases) |
+| k postmen, min-max | NP-hard | Branch-and-cut, small networks | Best split, at most 2 − 1/k; local search | Mean 0.02%, worst 1.3% (62 small cases) |
+| Capacitated fleet (CARP) | NP-hard | Not attempted | Ulusoy split and relocations | Median 5.8% above the best known |
+
+### 10.7 Still open
+
+Some variants remain for future work: the windy postman, where a street costs more in one direction than the other (uphill, against the wind); turn penalties, where U-turns and left turns cost extra and which turn the problem into node routing on a larger graph; hierarchical service, where some streets must be served before others; and several depots.
+
+**Real street data.** OpenStreetMap now provides free, worldwide street networks. The website of section 6.6 already reads them: it downloads a district's streets through the Overpass API, keeps junctions and street lengths, marks one-way streets and main roads, so a district such as the ones studied in 1997 can be modelled in seconds instead of digitised by hand. For whole towns, the OSMnx library (Boeing, 2017) downloads the same data as a NetworkX multigraph that `chinese_postman` takes after a short conversion.
 
 ## 11. Conclusions
 
@@ -518,11 +588,12 @@ The Chinese Postman Problem can now be solved exactly, in polynomial time, on an
 3. **Directed streets.** The directed CPP, proposed as future work in 1997, is solved by minimum-cost flow in under half a second on a 3,600-junction one-way grid.
 4. **A strong bound for fleets.** On 39 benchmark networks where every street needs service, the single-postman tour costs a median 96.6% of the best known multi-vehicle solution. The CPP is therefore both a quick estimate and a tight lower bound for capacitated arc routing.
 5. **Mixed streets.** The mixed CPP, NP-hard, is solved exactly by branch-and-cut on every benchmark network (at most 5.2 s) and on towns of up to 1,600 junctions; beyond that a polynomial heuristic with dual-guided local search stays about 1% from the best known solution. Separation and bounding, the core of the 1997 work, is exactly what makes this possible.
-6. **Open to everyone.** The code, the results, this report and the 1997 original are published at github.com/miquelmp/chinese-postman-problem, and the website solves any street network in the browser, from a file or from OpenStreetMap, in seconds for networks of up to 2,500 junctions.
+6. **The paths left open in 1997.** A first pass dearer than the next keeps the problem polynomial when every street needs service. When only some streets do (the rural postman problem, NP-hard), branch-and-cut proves the optimum on all 57 benchmark networks that mark them, and the heuristic averages 0.66% above it. Several postmen sharing a district (NP-hard) are planned by the best split of one tour and a local search, optimal in 61 of 62 small cases where the optimum is known; with vehicle capacities, the same idea comes within a median 5.8% of the best published solutions.
+7. **Open to everyone.** The code, the results, this report and the 1997 original are published at github.com/miquelmp/chinese-postman-problem, and the website solves any street network in the browser, from a file or from OpenStreetMap, in seconds for networks of up to 2,500 junctions.
 
 The two observations of 1997 about practice still hold. Routine services such as refuse collection or mail delivery are bounded by a working shift, so the networks involved stay moderate in size; and for one-off emergencies such as snow clearing, a fast near-optimal answer can be worth more than a slow proven one. What has changed is that, for the CPP itself, a fast answer and a proven one are now the same answer.
 
-The natural continuation is the rural postman problem and capacitated routing for fleets, using the same code base, the same benchmark files, and real street networks from OpenStreetMap.
+The natural continuation is a stronger lower bound for several postmen, the windy postman and turn penalties for real vehicles, all on the same code base, the same benchmark files and real street networks from OpenStreetMap.
 
 ## References
 
@@ -557,6 +628,11 @@ The natural continuation is the rural postman problem and capacitated routing fo
 
 - Corberán, Á. and Laporte, G., eds. (2014). *Arc Routing: Problems, Methods, and Applications*. SIAM, Philadelphia.
 - Eiselt, H. A., Gendreau, M. and Laporte, G. (1995). Arc routing problems, part I: the Chinese postman problem. *Operations Research* 43, 231–242.
+- Lenstra, J. K. and Rinnooy Kan, A. H. G. (1976). On general routing problems. *Networks* 6(3), 273–280.
+- Frederickson, G. N., Hecht, M. S. and Kim, C. E. (1978). Approximation algorithms for some routing problems. *SIAM Journal on Computing* 7(2), 178–193.
+- Benavent, E., Campos, V., Corberán, Á. and Mota, E. (1985). Análisis de heurísticos para el problema del cartero rural. *Trabajos de Estadística y de Investigación Operativa* 36, 27–38.
+- Ulusoy, G. (1985). The fleet size and mix problem for capacitated arc routing. *European Journal of Operational Research* 22(3), 329–337.
+- Ghiani, G. and Laporte, G. (2000). A branch-and-cut algorithm for the undirected rural postman problem. *Mathematical Programming* 87(3), 467–481.
 
 **Benchmark instances**
 

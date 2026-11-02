@@ -12,11 +12,11 @@
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
-<header class="site-header"><div class="inner"><a class="brand" href="../">The Chinese Postman</a><nav class="site-nav" aria-label="Main"><a href="../try/" aria-current="page">Solve a network</a><a href="../report/">2026 report</a><a href="../1997/">1997 report</a><a href="https://github.com/miquelmp/chinese-postman-problem">Code</a></nav></div></header>
+<header class="site-header"><div class="inner"><a class="brand" href="../">The Chinese Postman</a><nav class="site-nav" aria-label="Main"><a href="../try/" aria-current="page">Solve a network</a><a href="../extensions/">Extensions</a><a href="../report/">2026 report</a><a href="../1997/">1997 report</a><a href="https://github.com/miquelmp/chinese-postman-problem">Code</a></nav></div></header>
 <main class="wrap">
   <div class="prose" style="margin-top:2.5rem">
     <h1 style="font-size:var(--step-4)">Solve a network</h1>
-    <p class="lede">Choose a network and find the shortest tour that walks every street. The solver runs inside your browser: nothing is sent to a server, except street data requested from OpenStreetMap.</p>
+    <p class="lede">Choose a network and find the shortest tour that walks every street, or only some of them, with one postman or several. The solver runs inside your browser: nothing is sent to a server, except street data requested from OpenStreetMap.</p>
   </div>
 
   <div class="app">
@@ -68,6 +68,31 @@
         <button class="button secondary" id="fetch-osm" type="button">Fetch streets in this view</button>
       </div>
 
+      <h2 class="panel-sub">Service</h2>
+      <div class="field">
+        <label for="serve">Streets to serve</label>
+        <select id="serve">
+          <option value="all">Every street</option>
+          <option value="share">A share of the streets</option>
+          <option value="main">Main streets only</option>
+          <option value="marked">As marked in the file</option>
+        </select>
+      </div>
+      <div class="field" id="share-field" hidden>
+        <label for="serve-share">Share to serve: <output id="serve-out">40%</output></label>
+        <input id="serve-share" type="range" min="0.1" max="0.9" step="0.05" value="0.4">
+        <button class="text-button" id="reshare" type="button">Choose other streets</button>
+      </div>
+      <div class="field">
+        <label for="postmen">Postmen</label>
+        <input id="postmen" type="number" min="1" max="8" value="1">
+        <span class="hint">Every postman starts and ends at the depot (the square). With several, the longest route is made as short as possible.</span>
+      </div>
+      <div class="field" data-for="osm">
+        <label class="check"><input id="on-foot" type="checkbox"> On foot: one-way rules do not apply</label>
+      </div>
+      <p class="hint" id="service-hint"></p>
+
       <button class="button" id="solve" type="button" disabled>Find the route</button>
       <p class="status" id="status" role="status" aria-live="polite">Loading…</p>
     </form>
@@ -84,12 +109,8 @@
         <label>Speed <input id="speed" type="range" min="0" max="5" step="1" value="1"></label>
         <span id="progress"></span>
       </div>
-      <p class="hint" style="font-size:.85rem;color:var(--ink-soft)">
-        <span class="key"><i class="k-street"></i>street</span>&nbsp;&nbsp;
-        <span class="key"><i class="k-route"></i>walked once</span>&nbsp;&nbsp;
-        <span class="key"><i class="k-repeat"></i>walked twice or more</span>&nbsp;&nbsp;
-        <span id="odd-key">Dark dots: junctions with an odd number of streets.</span> Arrows: one-way streets.
-      </p>
+      <p class="hint legend" id="legend"></p>
+      <ul class="routes" id="routes" hidden></ul>
       <dl class="stats" id="stats" hidden></dl>
       <p id="method" class="status"></p>
       <div class="panel" id="proof" hidden style="margin:1rem 0">

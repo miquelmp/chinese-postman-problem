@@ -111,6 +111,11 @@ p { margin: 0 0 1rem; }
 .key .k-route { background: var(--route); }
 .key .k-repeat { background: var(--repeat); }
 .key .k-street { background: var(--street); }
+.key .k-optional { background: var(--street-faint); }
+.key .k-depot { width: 0.75rem; height: 0.75rem; background: var(--ink); border-radius: 0; }
+.routes { list-style: none; padding: 0; margin: 0.5rem 0 1rem; display: flex; flex-wrap: wrap; gap: 0.35rem 1.25rem; font-size: var(--step--1); }
+.routes li { display: inline-flex; align-items: center; gap: 0.4rem; }
+.routes i { display: inline-block; width: 1.4rem; height: 0.3rem; border-radius: 2px; }
 
 /* ---------- network drawings ---------- */
 .net .street { stroke: var(--street); stroke-width: 2.2; fill: none; stroke-linecap: round; }
@@ -122,6 +127,10 @@ p { margin: 0 0 1rem; }
 .net .label { font-family: var(--sans); font-size: 12px; fill: var(--ink-soft); }
 .net .weight { font-family: var(--sans); font-size: 11px; fill: var(--ink-soft); }
 .net .postman { fill: var(--ink); stroke: var(--route); stroke-width: 3; }
+.net .postman.crew { stroke: #fff; stroke-width: 2; }
+.net .street.optional { stroke: var(--street-faint); }
+.net .street.optional.twice { stroke: var(--repeat); }
+.net .depot { fill: var(--ink); stroke: #fff; stroke-width: 2; }
 .net .arrow { fill: var(--street); }
 
 /* ---------- tables, figures ---------- */
@@ -213,3 +222,16 @@ input[type="range"] { width: 100%; accent-color: var(--ink); }
   font-family: var(--serif); padding-left: 1.5em; text-indent: -1.5em;
   overflow-wrap: anywhere;
 }
+
+/* Solver page: service settings */
+.panel h2.panel-sub { margin-top: 1.75rem; }
+.field label.check { display: flex; gap: 0.5rem; align-items: center; font-weight: 400; font-size: var(--step-0); }
+.panel > .hint { font-size: 0.85rem; color: var(--ink-soft); margin: 0 0 0.9rem; }
+.panel > .hint:empty { display: none; }
+.legend { font-size: 0.85rem; color: var(--ink-soft); }
+
+/* Extensions page */
+blockquote.quote1997 { margin: 1.25rem 0 0.25rem; padding: 0.25rem 0 0.25rem 1.25rem; border-left: 4px solid var(--route); }
+blockquote.quote1997 p { font-family: var(--serif); font-style: italic; font-size: 1.125rem; margin: 0; }
+.reading p.translation { font-family: var(--sans); font-size: var(--step--1); color: var(--ink-soft); margin-top: 0.4rem; }
+.refs li { margin-bottom: 0.5rem; }

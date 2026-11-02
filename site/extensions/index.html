@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Extensions — The Chinese Postman Problem</title>
+<meta name="description" content="The extensions proposed at the end of the 1997 project, followed up: one-way streets, streets that need service only once, and several postmen. How hard each one is, and how close the answers come to the optimum.">
+{{HEAD}}
+</head>
+<body>
+{{HEADER:extensions}}
+<main class="wrap">
+  <div class="prose reading" style="margin-top:2.5rem">
+    <h1 style="font-size:var(--step-4)">The paths left open in 1997</h1>
+    <p class="lede">The 1997 report ended with a short list of ways to bring the method closer to practice. Thirty years later each of them has been followed up, in the code and on the <a href="../try/">solver page</a>. This page explains what each extension asks, how hard it is to solve, and how close the answers come to the best possible.</p>
+  </div>
+
+  <section class="prose reading">
+    <h2>How hard is hard?</h2>
+    <p>A problem is <em>polynomial</em> when an algorithm is known whose running time grows like a power of the network size: twice the streets, a few times the work. Such problems are solved exactly, with a proof of optimality, at any size a city could need. The Chinese Postman Problem of 1997 is one of them.</p>
+    <p>A problem is <em>NP-hard</em> when no such algorithm is known, and finding one would settle the most famous open question in computer science. For these problems there are two honest answers. An <em>exact method</em>, here branch-and-cut (the heir of the 1997 branch-and-bound), finds the optimum and proves it, but its running time can explode on large networks. A <em>heuristic</em> answers quickly and comes with a <em>lower bound</em>: no route can be shorter than the bound, so the distance between the two is the most the heuristic can be off. Some heuristics also carry a <em>guarantee</em>, a proof that they are never more than a fixed factor from the optimum on any network.</p>
+  </section>
+
+  <section>
+    <h2>Summary</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Problem</th><th>Complexity</th><th>Exact method</th><th>Heuristic and its guarantee</th><th>Measured distance from the optimum</th></tr></thead>
+        <tbody>
+          <tr><td>Every street, two-way</td><td>Polynomial</td><td>Matching (Edmonds), any size</td><td>Not needed</td><td>0: always optimal</td></tr>
+          <tr><td>Every street, one-way</td><td>Polynomial</td><td>Minimum-cost flow, any size</td><td>Not needed</td><td>0: always optimal</td></tr>
+          <tr><td>Every street, mixed one-way and two-way</td><td>NP-hard</td><td>Branch-and-cut: proved on every benchmark network and towns of up to 1,600 junctions</td><td>Orientation + balancing + local search. No guarantee is proved for this variant; the related heuristics of Frederickson are within 5/3, and Raghavachari and Veerasamy's within 3/2</td><td>{{MIXED_GAP}}</td></tr>
+          <tr><td>Every street, first pass dearer than the next</td><td>Polynomial</td><td>Matching on the cost of later passes</td><td>Not needed</td><td>0: always optimal</td></tr>
+          <tr><td>Only some streets (rural postman)</td><td>NP-hard; polynomial when the streets to serve form one piece</td><td>Branch-and-cut: {{RURAL_EXACT}}</td><td>Frederickson: never above 3/2 of the optimum; then local search</td><td>{{RURAL_GAP}}</td></tr>
+          <tr><td>Several postmen, shortest longest route</td><td>NP-hard</td><td>Branch-and-cut on small networks only</td><td>Split one tour: never above 2 − 1/k of the optimum; then local search</td><td>{{K_GAP}}</td></tr>
+          <tr><td>Fleet with vehicle capacity (CARP)</td><td>NP-hard</td><td>Not attempted here; the literature uses branch-cut-and-price</td><td>Split one tour by capacity (Ulusoy), then moves between routes</td><td>{{CARP_GAP}}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="prose reading">
+    <h2>1. One-way streets</h2>
+    <blockquote class="quote1997" lang="es"><p>“La resolución del CPP para el caso asimétrico, lo que permitiría su aplicación a un número mucho mayor de casos.”</p></blockquote>
+    <p class="translation">“Solving the CPP for the asymmetric case, which would allow it to be applied to many more cases.” — 1997 report, chapter 13</p>
+    <p>When every street is one-way, the problem stays polynomial: each junction must be left as often as it is entered, and the cheapest extra passes that balance every junction are a minimum-cost flow. The directed version therefore needs no heuristic at all.</p>
+    <p>Real towns mix one-way and two-way streets, and this mixed problem is NP-hard (Papadimitriou, 1976). Branch-and-cut proves the optimum on every one of the 92 benchmark networks, in at most 5.2 seconds, and on towns of up to 1,600 junctions. Beyond that, a heuristic orients the two-way streets, balances the junctions exactly, and improves the result by reversing streets; it averages {{MIXED_MEAN}} above the optimum. The method follows the orient-then-balance idea of Frederickson (1979), whose heuristic is never more than 5/3 of the optimum (3/2 on planar networks); Raghavachari and Veerasamy (1999) reached 3/2 on any network.</p>
+    <p><a href="../report/#9-the-mixed-chinese-postman-problem">Chapter 9 of the 2026 report</a> gives the details.</p>
+  </section>
+
+  <section class="prose reading">
+    <h2>2. The first pass costs more</h2>
+    <blockquote class="quote1997" lang="es"><p>“Resolver el CPP con la variante de que el valor asociado en cada arista variara en función de que fuera o no la primera vez que se recorre. Esto se adaptaría más a la situación de que una misma carretera puede tener una dificultad de recorrerla muy distinta en función de que esté nevada o la nieve esté ya apartada; o que una calle no costará tanto de recorrer con los contenedores recogidos o por recoger.”</p></blockquote>
+    <p class="translation">“Solving the CPP with the variant that the value of each edge changes depending on whether or not it is the first time it is traversed. This would better match the fact that a road can be very different to drive depending on whether it is covered in snow or already cleared, or that a street costs less to drive once its bins have been emptied.” — 1997 report, chapter 13</p>
+    <p>Today this is the distinction between <em>service</em> and <em>deadheading</em>: the pass that clears the snow or empties the bins, and any later pass that only travels. It leads to two problems of very different difficulty.</p>
+    <h3>When every street needs service</h3>
+    <p>Each street is served exactly once, so the service costs are fixed; only the extra passes can change, and they cost the travel price. The best tour is therefore the ordinary postman solution computed on the travel costs. The problem stays polynomial and is solved exactly at any size.</p>
+    <h3>When only some streets need service: the rural postman</h3>
+    <p>Usually only some streets need service: the main roads when it snows, the commercial streets for night cleaning. The other streets may still be used to travel. This is the <em>rural postman problem</em>, and it is NP-hard (Lenstra and Rinnooy Kan, 1976). The difficulty is precise: if the streets to serve form a single connected piece, the old matching method still solves it exactly; when they fall into several pieces, choosing how to join the pieces is what is hard.</p>
+    <ul>
+      <li><strong>Heuristic.</strong> Join the pieces with a minimum spanning tree, then pair the odd junctions by a matching (Frederickson, 1979). It is never more than 3/2 of the optimum (Benavent, Campos, Corberán and Mota, 1985). A local search then moves streets within the route and reverses stretches of it.</li>
+      <li><strong>Lower bound.</strong> The best of two arguments: every odd junction must be paired, and every piece must be reached from outside at least twice.</li>
+      <li><strong>Exact method.</strong> Branch-and-cut on the junctions of the streets to serve, adding connectivity cuts whenever a solution falls apart (the model of Ghiani and Laporte, 2000).</li>
+    </ul>
+    <p>{{RURAL_TEXT}}</p>
+  </section>
+
+  <section class="prose reading">
+    <h2>3. Several postmen</h2>
+    <blockquote class="quote1997" lang="es"><p>“El trabajo que se puede realizar en media jornada (o incluso en una jornada laboral entera), después de la cual se debe volver al punto de partida, es claramente limitado.”</p></blockquote>
+    <p class="translation">“The work that can be done in half a working day, or even a whole one, after which one must return to the starting point, is clearly limited.” — 1997 report, chapter 13</p>
+    <p>In 1997 this observation explained why networks in practice stay small. It also points to the next problem: a district too large for one shift is shared among several postmen, all starting and ending at the depot.</p>
+    <h3>k postmen, the longest route as short as possible</h3>
+    <p>This <em>min-max k-postmen problem</em> is NP-hard even when every street must be served (Frederickson, Hecht and Kim, 1978). The heuristic writes out one postman's tour, cuts it into k consecutive pieces at the points that make the longest route shortest (a dynamic programme finds the best cut points exactly), and then moves and swaps streets between routes. Cutting an optimal single tour is never worse than 2 − 1/k times the optimum: 1.5 for two postmen, 1.67 for three.</p>
+    <p>{{K_TEXT}}</p>
+    <h3>Vehicles with a capacity</h3>
+    <p>When each street produces a load (refuse, salt to spread) and each vehicle carries a limited amount, the problem becomes the <em>capacitated arc routing problem</em>, the CARP. It is NP-hard, and only small cases are solved exactly in the literature. The same idea applies: one tour, cut where the vehicle fills up (Ulusoy, 1985), then streets moved between routes.</p>
+    <p>{{CARP_TEXT}}</p>
+  </section>
+
+  <section class="prose reading">
+    <h2>Try them</h2>
+    <p>On the <a href="../try/">solver page</a>, the <em>Service</em> settings choose which streets need service (every street, a random share, the main streets of an OpenStreetMap area, or those marked in a benchmark file) and how many postmen share the work. The page shows the routes, the lower bound and how far from it the answer can be. For a single postman with scattered streets to serve, it can also prove the optimum by branch-and-cut.</p>
+    <p>For one-way streets in OpenStreetMap, tick <em>On foot</em> to let the postmen walk them in both directions; the extensions above work on two-way networks.</p>
+  </section>
+
+  <section class="prose reading">
+    <h2>References</h2>
+    <ul class="refs">
+      <li>Benavent, E., Campos, V., Corberán, Á. and Mota, E. (1985). Análisis de heurísticos para el problema del cartero rural. <em>Trabajos de Estadística y de Investigación Operativa</em> 36, 27–38.</li>
+      <li>Frederickson, G. N. (1979). Approximation algorithms for some postman problems. <em>Journal of the ACM</em> 26(3), 538–554.</li>
+      <li>Frederickson, G. N., Hecht, M. S. and Kim, C. E. (1978). Approximation algorithms for some routing problems. <em>SIAM Journal on Computing</em> 7(2), 178–193.</li>
+      <li>Ghiani, G. and Laporte, G. (2000). A branch-and-cut algorithm for the undirected rural postman problem. <em>Mathematical Programming</em> 87(3), 467–481.</li>
+      <li>Golden, B. L. and Wong, R. T. (1981). Capacitated arc routing problems. <em>Networks</em> 11(3), 305–315.</li>
+      <li>Lenstra, J. K. and Rinnooy Kan, A. H. G. (1976). On general routing problems. <em>Networks</em> 6(3), 273–280.</li>
+      <li>Raghavachari, B. and Veerasamy, J. (1999). A 3/2-approximation algorithm for the mixed postman problem. <em>SIAM Journal on Discrete Mathematics</em> 12(4), 425–433.</li>
+      <li>Papadimitriou, C. H. (1976). On the complexity of edge traversing. <em>Journal of the ACM</em> 23(3), 544–554.</li>
+      <li>Ulusoy, G. (1985). The fleet size and mix problem for capacitated arc routing. <em>European Journal of Operational Research</em> 22(3), 329–337.</li>
+    </ul>
+  </section>
+</main>
+{{FOOTER}}
+</body>
+</html>

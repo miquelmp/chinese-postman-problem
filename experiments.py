@@ -180,6 +180,162 @@ def mixed(limit=300.0):
     save("mixed_benchmarks", rows)
 
 
+def _rural_row(family, name, G, limit, depot=1):
+    from chinese_postman import rural
+    t = time.perf_counter()
+    sol = rural.solve_rural(G, depot=depot, time_limit=limit)
+    i = sol.info
+    req = sum(1 for *_, d in G.edges(data=True) if d.get("required", True))
+    r = dict(family=family, instance=name, vertices=G.number_of_nodes(), edges=G.number_of_edges(),
+             required=req, pieces=i.get("pieces", 1), service=sol.service_cost,
+             frederickson=i.get("frederickson", sol.total_cost),
+             heuristic=i.get("heuristic_cost", sol.total_cost), lp_bound=i.get("lp_bound", ""),
+             best=sol.total_cost, lower_bound=sol.lower_bound, optimal=sol.optimal,
+             method=sol.method, seconds=round(time.perf_counter() - t, 3),
+             bound_gap_pct=round(sol.gap_pct, 2),
+             frederickson_gap_pct=round(100 * (i.get("frederickson", sol.total_cost) - sol.total_cost)
+                                        / sol.total_cost, 2),
+             heuristic_gap_pct=round(100 * (i.get("heuristic_cost", sol.total_cost) - sol.total_cost)
+                                     / sol.total_cost, 2))
+    print(f"{family:10} {name:14} req={req:4}/{G.number_of_edges():4} pieces={r['pieces']:3} "
+          f"fred={r['frederickson']:8} heur={r['heuristic']:8} best={sol.total_cost:8} "
+          f"opt={sol.optimal} {r['seconds']}s", flush=True)
+    return r
+
+
+def rural(limit=300.0):
+    """Rural postman: benchmark networks whose files mark only some streets as required,
+    and synthetic towns where a random share of the streets needs service."""
+    import random
+    rows, seen = [], set()
+    for fam, prefix in FAMILIES.items():
+        for path in sorted(glob.glob(f"data/carp/{prefix}*.dat")):
+            inst = read_carp(path)
+            G = inst.graph
+            if inst.required == G.number_of_edges():
+                continue
+            for u, v, k, d in G.edges(keys=True, data=True):
+                d["required"] = d["demand"] > 0
+            sig = tuple(sorted((min(u, v), max(u, v), w, d["required"]) for u, v, w, d in
+                               ((u, v, d["weight"], d) for u, v, d in G.edges(data=True))))
+            if sig in seen:
+                continue
+            seen.add(sig)
+            rows.append(_rural_row("rpp-" + fam, inst.name, G, limit))
+            save("rural_benchmarks", rows)
+    rows = []
+    for size in (10, 20, 30):
+        for share in (0.2, 0.5):
+            for seed in range(3):
+                G = I.manhattan(size, size, seed=seed)
+                rng = random.Random(seed)
+                for u, v, k, d in G.edges(keys=True, data=True):
+                    d["required"] = rng.random() < share
+                depot = min(G.nodes)
+                rows.append(_rural_row("rpp-town", f"town-{size}x{size}-{int(share*100)}%-s{seed}",
+                                       G, limit, depot=depot))
+                save("rural_towns", rows)
+
+
+def fleet_small(seconds=1.0, seeds=8):
+    """k postmen on small random networks: tour split and local search against the exact optimum."""
+    import random
+    import networkx as nx
+    from chinese_postman import fleet, rural
+    from chinese_postman.sequence import orient, route_cost, from_circuit
+    rows = []
+    for n, m in ((6, 9), (7, 11)):
+        for seed in range(seeds):
+            rng = random.Random(1000 * n + seed)
+            while True:
+                g = nx.gnm_random_graph(n, m, seed=rng.randrange(10 ** 9))
+                if nx.is_connected(g):
+                    break
+            for share in (1.0, 0.6):
+                G = nx.MultiGraph()
+                for u, v in g.edges():
+                    G.add_edge(u, v, weight=rng.randint(1, 20), required=rng.random() < share)
+                if not any(d["required"] for *_, d in G.edges(data=True)):
+                    continue
+                for k in (2, 3):
+                    t = time.perf_counter()
+                    sol = fleet.solve_k_postmen(G, k, depot=0, local_seconds=seconds)
+                    th = time.perf_counter() - t
+                    t = time.perf_counter()
+                    val, opt, _ = fleet.solve_k_exact(G, k, depot=0, time_limit=60)
+                    te = time.perf_counter() - t
+                    if val is None or not opt:
+                        continue
+                    val = round(val, 6)
+                    rows.append(dict(n=n, m=m, seed=seed, required_share=share, k=k,
+                                     single=sol.info["single_tour"], split=sol.info["split_max"],
+                                     heuristic=sol.max_cost, optimum=val, lower_bound=sol.lower_bound,
+                                     split_gap_pct=round(100 * (sol.info["split_max"] - val) / val, 2),
+                                     heuristic_gap_pct=round(100 * (sol.max_cost - val) / val, 2),
+                                     split_ratio=round(sol.info["split_max"] / val, 4),
+                                     guarantee=round(2 - 1 / k, 4), heuristic_s=round(th, 3),
+                                     exact_s=round(te, 3)))
+            print(n, m, seed, flush=True)
+        save("fleet_small", rows)
+
+
+def fleet_benchmarks(seconds=20.0):
+    """k postmen on the benchmark networks (k = the vehicles of the file), against the bound."""
+    from chinese_postman import fleet
+    rows, seen = [], set()
+    for fam, prefix in FAMILIES.items():
+        for path in sorted(glob.glob(f"data/carp/{prefix}*.dat")):
+            inst = read_carp(path)
+            if fam.startswith("beullens") and not inst.name[1:].isdigit():
+                continue
+            G = inst.graph
+            for u, v, k, d in G.edges(keys=True, data=True):
+                d["required"] = d["demand"] > 0
+            sig = (fam, G.number_of_nodes(), G.number_of_edges(), inst.required)
+            if sig in seen:
+                continue
+            seen.add(sig)
+            for k in sorted({2, 4, inst.vehicles}):
+                t = time.perf_counter()
+                sol = fleet.solve_k_postmen(G, k, depot=1, time_limit=seconds * 3, local_seconds=seconds)
+                rows.append(dict(family=fam, instance=inst.name, vertices=G.number_of_nodes(),
+                                 edges=G.number_of_edges(), required=inst.required, k=k,
+                                 single=sol.info["single_tour"], split=sol.info["split_max"],
+                                 longest=sol.max_cost, total=sol.total_cost, lower_bound=sol.lower_bound,
+                                 far_bound=sol.info["far_bound"], gap_pct=round(sol.gap_pct, 2),
+                                 split_gap_pct=round(100 * (sol.info["split_max"] - sol.lower_bound)
+                                                     / sol.lower_bound, 2),
+                                 seconds=round(time.perf_counter() - t, 2)))
+                print(f"{fam:10} {inst.name:10} k={k:2} split={sol.info['split_max']:8.0f} "
+                      f"longest={sol.max_cost:8.0f} lb={sol.lower_bound:8.0f} gap={sol.gap_pct:5.2f}%",
+                      flush=True)
+            save("fleet_benchmarks", rows)
+
+
+def carp(seconds=5.0):
+    """Capacitated fleets: route first, cluster second, against the best known solutions."""
+    from chinese_postman import fleet
+    rows = []
+    for fam, prefix in FAMILIES.items():
+        for path in sorted(glob.glob(f"data/carp/{prefix}*.dat")):
+            inst = read_carp(path)
+            t = time.perf_counter()
+            sol = fleet.solve_carp(inst.graph, inst.capacity, depot=1, local_seconds=seconds)
+            ub, lb = inst.upper_bound, inst.lower_bound
+            rows.append(dict(family=fam, instance=inst.name, vertices=inst.graph.number_of_nodes(),
+                             edges=inst.graph.number_of_edges(), required=inst.required,
+                             capacity=inst.capacity, best_known=ub, best_lower_bound=lb,
+                             split=sol.info["split_total"], improved=sol.total_cost,
+                             vehicles_used=len(sol.routes),
+                             split_gap_pct=round(100 * (sol.info["split_total"] - ub) / ub, 2),
+                             gap_to_best_known_pct=round(100 * (sol.total_cost - ub) / ub, 2),
+                             seconds=round(time.perf_counter() - t, 2)))
+            print(f"{fam:10} {inst.name:10} split={sol.info['split_total']:7.0f} "
+                  f"improved={sol.total_cost:7.0f} best={ub:6} gap={rows[-1]['gap_to_best_known_pct']:5.2f}%",
+                  flush=True)
+        save("carp", rows)
+
+
 if __name__ == "__main__":
     todo = sys.argv[1:] or ["classic", "benchmarks", "directed", "scaling"]
     for name in todo:

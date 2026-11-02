@@ -1,7 +1,9 @@
 /* Draws a street network as SVG and animates a postman tour over it.
    Instance: {nodes:[{id,x,y,label}], links:[{u,v,w,oneway}]}
    Result:   {circuit:[node ids]}
-   Streets turn yellow on their first traversal and red on the second. */
+   Streets turn yellow on the pass that serves them and red on any other pass.
+   Several postmen: {routes:[{circuit, links}]} - every postman walks at the same speed and the
+   streets he serves take his colour. */
 (function () {
   "use strict";
   const NS = "http://www.w3.org/2000/svg";
@@ -54,7 +56,8 @@
           const cx = mx - (y2 - y1) / len * off * 2 * sign, cy = my + (x2 - x1) / len * off * 2 * sign;
           d = `M${x1} ${y1}Q${cx} ${cy} ${x2} ${y2}`;
         }
-        const p = el("path", { d, class: "street" + (l.oneway ? " oneway" : ""), "stroke-width": streetW }, gStreets);
+        const p = el("path", { d, class: "street" + (l.oneway ? " oneway" : "") + (l.req === false ? " optional" : ""),
+                               "stroke-width": l.req === false ? streetW * 0.6 : streetW }, gStreets);
         p.dataset.base = streetW;
         paths[i] = p;
       });
@@ -97,26 +100,36 @@
         }
       });
     }
+    if (opts.depot !== undefined && nodes.has(opts.depot)) {
+      const [x, y] = P(opts.depot), q = big ? 6 : 9;
+      el("rect", { x: x - q, y: y - q, width: 2 * q, height: 2 * q, class: "depot" }, svg);
+    }
     const postman = el("circle", { r: big ? 4 : 7, class: "postman", visibility: "hidden" }, svg);
+    let crew = [];                       // one dot per postman in several-postmen mode
 
     // ---------------------------------------------------------------- tour animation
     let steps = [], count = [], i = 0, frac = 0, playing = false, raf = 0, last = 0, speed = 1;
     let onProgress = () => {}, onEnd = () => {};
     const pxPerSec = () => 140 * speed * (big ? 4 : 1);
 
+    const PALETTE = ["#f2b705", "#2f6690", "#3a9d5d", "#8e5bbf", "#e07a1f", "#1b998b", "#c8102e", "#6b4f2a"];
+    let multi = null;                    // several postmen: [{steps, i, frac, color, serves:Set, dot}]
     function paint(li) {
-      const c = count[li], p = paths[li], b = +p.dataset.base;
-      p.classList.toggle("done", c === 1);
-      p.classList.toggle("twice", c >= 2);
-      p.setAttribute("stroke-width", c ? Math.max(b * 1.9, 3) : b);
+      const p = paths[li], b = +p.dataset.base;
+      if (multi) {
+        const col = owner[li];
+        p.style.stroke = col || "";
+        p.setAttribute("stroke-width", col ? Math.max(b * 1.9, 3) : b);
+        return;
+      }
+      const c = count[li], opt = inst.links[li].req === false;
+      p.classList.toggle("done", c === 1 && !opt);
+      p.classList.toggle("twice", c >= 2 || (c === 1 && opt));
+      p.setAttribute("stroke-width", c ? Math.max((opt ? b / 0.6 : b) * 1.9, 3) : b);
     }
-    function setResult(res) {
-      stop();
-      count = inst.links.map(() => 0);
-      paths.forEach((_, li) => paint(li));
-      steps = [];
-      const used = inst.links.map(() => 0);
-      const c = res.circuit;
+    let owner = [];
+    function stepsOf(c) {
+      const out = [], used = inst.links.map(() => 0);
       for (let k = 0; k + 1 < c.length; k++) {
         const a = c[k], b = c[k + 1];
         const key = a < b ? `${a}|${b}` : `${b}|${a}`;
@@ -125,14 +138,46 @@
         cand.sort((x, y) => used[x] - used[y] || inst.links[x].w - inst.links[y].w);
         const li = cand[0];
         used[li]++;
-        steps.push({ li, fwd: inst.links[li].u === a });
+        out.push({ li, fwd: inst.links[li].u === a });
       }
+      return out;
+    }
+    function setResult(res) {
+      stop();
+      crew.forEach(d => d.remove()); crew = [];
+      paths.forEach(p => { p.style.stroke = ""; });
+      count = inst.links.map(() => 0);
+      owner = inst.links.map(() => null);
+      if (res.routes) {
+        multi = res.routes.map((r, k) => {
+          const color = PALETTE[k % PALETTE.length];
+          const dot = el("circle", { r: big ? 4 : 6, class: "postman crew", fill: color, visibility: "visible" }, svg);
+          crew.push(dot);
+          return { steps: stepsOf(r.circuit), i: 0, frac: 0, color, serves: new Set(r.links || []), dot };
+        });
+        steps = [].concat(...multi.map(m => m.steps));
+        postman.setAttribute("visibility", "hidden");
+      } else {
+        multi = null;
+        steps = stepsOf(res.circuit);
+        postman.setAttribute("visibility", steps.length ? "visible" : "hidden");
+      }
+      paths.forEach((_, li) => paint(li));
       i = 0; frac = 0;
-      postman.setAttribute("visibility", steps.length ? "visible" : "hidden");
       place();
       onProgress(0, steps.length);
     }
+    function colorOf(k) { return PALETTE[k % PALETTE.length]; }
+    function placeDot(m) {
+      if (!m.steps.length) { const [x, y] = P(opts.depot); m.dot.setAttribute("cx", x); m.dot.setAttribute("cy", y); return; }
+      const st = m.steps[Math.min(m.i, m.steps.length - 1)];
+      const p = paths[st.li], L = p.getTotalLength();
+      const f = m.i >= m.steps.length ? 1 : m.frac;
+      const pt = p.getPointAtLength((st.fwd ? f : 1 - f) * L);
+      m.dot.setAttribute("cx", pt.x); m.dot.setAttribute("cy", pt.y);
+    }
     function place() {
+      if (multi) { multi.forEach(placeDot); return; }
       if (!steps.length) return;
       const st = steps[Math.min(i, steps.length - 1)];
       const p = paths[st.li], L = p.getTotalLength();
@@ -140,9 +185,32 @@
       const pt = p.getPointAtLength((st.fwd ? f : 1 - f) * L);
       postman.setAttribute("cx", pt.x); postman.setAttribute("cy", pt.y);
     }
+    function walked() { return multi ? multi.reduce((a, m) => a + Math.min(m.i, m.steps.length), 0) : i; }
+    function tickMulti(dt) {
+      let running = false;
+      for (const m of multi) {
+        let budget = dt * pxPerSec();
+        while (budget > 0 && m.i < m.steps.length) {
+          const st = m.steps[m.i], L = Math.max(paths[st.li].getTotalLength(), 6), left = (1 - m.frac) * L;
+          if (budget >= left) {
+            budget -= left;
+            if (m.serves.has(st.li) && !owner[st.li]) { owner[st.li] = m.color; paint(st.li); }
+            m.i++; m.frac = 0;
+          } else { m.frac += budget / L; budget = 0; }
+        }
+        if (m.i < m.steps.length) running = true;
+      }
+      return running;
+    }
     function tick(t) {
       if (!playing) return;
       const dt = last ? (t - last) / 1000 : 0; last = t;
+      if (multi) {
+        const running = tickMulti(dt);
+        place(); onProgress(walked(), steps.length);
+        if (!running) { playing = false; onEnd(); return; }
+        raf = requestAnimationFrame(tick); return;
+      }
       let budget = dt * pxPerSec();
       while (budget > 0 && i < steps.length) {
         const st = steps[i], L = Math.max(paths[st.li].getTotalLength(), 6);
@@ -158,23 +226,27 @@
     }
     function play() {
       if (!steps.length) return;
-      if (i >= steps.length) reset();
+      if (walked() >= steps.length) reset();
       playing = true; last = 0; raf = requestAnimationFrame(tick);
     }
     function stop() { playing = false; cancelAnimationFrame(raf); }
     function reset() {
-      stop(); i = 0; frac = 0; count = inst.links.map(() => 0);
+      stop(); i = 0; frac = 0; count = inst.links.map(() => 0); owner = inst.links.map(() => null);
+      if (multi) multi.forEach(m => { m.i = 0; m.frac = 0; });
       paths.forEach((_, li) => paint(li)); place(); onProgress(0, steps.length);
     }
     function finish() {
       stop();
       count = inst.links.map(() => 0);
-      steps.forEach(st => count[st.li]++);
+      if (multi) {
+        owner = inst.links.map(() => null);
+        multi.forEach(m => { m.steps.forEach(st => { if (m.serves.has(st.li) && !owner[st.li]) owner[st.li] = m.color; }); m.i = m.steps.length; m.frac = 0; });
+      } else steps.forEach(st => count[st.li]++);
       paths.forEach((_, li) => paint(li));
-      i = steps.length; frac = 0; place(); onProgress(i, steps.length);
+      i = steps.length; frac = 0; place(); onProgress(steps.length, steps.length);
     }
     return {
-      setResult, play, pause: stop, reset, finish,
+      setResult, play, pause: stop, reset, finish, colorOf,
       isPlaying: () => playing,
       setSpeed: v => { speed = v; },
       onProgress: f => { onProgress = f; },
