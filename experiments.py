@@ -149,6 +149,40 @@ def scaling(budget=90.0):
     save("scaling", rows)
 
 
+def timing(repeats=5):
+    """Run time of each scaling network, repeated. Each pass covers every network, so that any
+    slow spell of the machine spreads across them. Writes results/timing_repeats.csv and resumes
+    from it. Run it alone on the machine."""
+    from chinese_postman.fast import solve_undirected_fast
+    record_environment()
+    rows = []
+    if os.path.exists(f"{OUT}/timing_repeats.csv"):
+        with open(f"{OUT}/timing_repeats.csv", newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+    done = {(r["backend"], r["instance"], int(r["repeat"])) for r in rows}
+    plan = [("networkx", k, s) for k in ("manhattan", "delaunay") for s in (10, 15, 20, 25, 30, 35, 40, 45)
+            if not (k == "delaunay" and s == 45)]
+    plan += [("lemon", "manhattan", s) for s in (45, 70, 100, 140, 200)]
+    plan += [("lemon", "delaunay", s) for s in (2025, 5000, 10000, 20000, 40000)]
+    graphs = {}
+    for repeat in range(1, repeats + 1):
+        for backend, kind, size in plan:
+            town = size if backend == "lemon" else size * size
+            name = f"{kind}-{size}x{size}" if kind == "manhattan" or backend == "networkx" else f"{kind}-{size}"
+            if (backend, name, repeat) in done:
+                continue
+            key = (kind, size, backend)
+            if key not in graphs:
+                graphs[key] = (I.manhattan(size, size, drop=0.1, seed=size) if kind == "manhattan"
+                               else I.delaunay_town(town, seed=size))
+            G = graphs[key]
+            sol = solve_undirected_fast(G) if backend == "lemon" else solve_undirected(G)
+            r = row(backend, name, G, sol, {"backend": backend, "repeat": repeat})
+            rows.append(r)
+            print(f"{backend:8} {name:20} #{repeat} {r['seconds']:9.3f} s", flush=True)
+            save("timing_repeats", rows)
+
+
 def directed():
     rows = []
     for r, c in ((6, 8), (10, 12), (20, 20), (40, 40), (60, 60)):
