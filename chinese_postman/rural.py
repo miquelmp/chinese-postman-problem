@@ -43,6 +43,7 @@ from .euler import eulerian_circuit
 
 @dataclass
 class RuralSolution:
+    """A rural postman tour with its costs, lower bound and proof status."""
     method: str
     total_cost: float           # service + deadheading
     service_cost: float         # sum of service costs of the required streets
@@ -55,6 +56,7 @@ class RuralSolution:
 
     @property
     def gap_pct(self) -> float:
+        """Percentage by which the tour exceeds the lower bound."""
         lb = self.lower_bound
         return 100.0 * max(self.total_cost - lb, 0.0) / lb if lb else 0.0
 

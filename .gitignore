@@ -7,3 +7,4 @@ dist/
 native/libblossom5.so
 native/blossom5-src/
 results/*.log
+data/mcpp/
