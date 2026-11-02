@@ -17,16 +17,19 @@ def konigsberg() -> nx.MultiGraph:
 
 
 def unit(G: nx.Graph) -> nx.MultiGraph:
+    """Copy a simple graph as a multigraph with every cost equal to 1."""
     M = nx.MultiGraph()
     M.add_edges_from(G.edges, weight=1)
     return M
 
 
 def petersen() -> nx.MultiGraph:
+    """The Petersen graph with unit costs."""
     return unit(nx.petersen_graph())
 
 
 def dodecahedron() -> nx.MultiGraph:
+    """The dodecahedral graph with unit costs."""
     return unit(nx.dodecahedral_graph())
 
 

@@ -15,6 +15,7 @@ import networkx as nx
 
 
 def read_gra(path: str, directed: bool = False):
+    """Read a .GRA file into a NetworkX multigraph (a directed one if `directed`)."""
     tok = open(path, encoding="utf-8").read().split()
     nv, ne = int(tok[0]), int(tok[1])
     G = nx.MultiDiGraph() if directed else nx.MultiGraph()
@@ -26,6 +27,7 @@ def read_gra(path: str, directed: bool = False):
 
 
 def write_gra(G, path: str) -> None:
+    """Write a multigraph in the .GRA format."""
     edges = list(G.edges(data="weight"))
     with open(path, "w", encoding="utf-8") as f:
         f.write(f"{G.number_of_nodes()}\n{len(edges)}\n")
@@ -35,6 +37,7 @@ def write_gra(G, path: str) -> None:
 
 @dataclass
 class CARPInstance:
+    """A CARP benchmark: its road graph, vehicles, capacity and published bounds."""
     name: str
     graph: nx.MultiGraph       # every edge, vertices renumbered from 1
     required: int              # edges with demand > 0
@@ -45,6 +48,7 @@ class CARPInstance:
 
 
 def read_carp(path: str) -> CARPInstance:
+    """Read a CARP .dat file, keeping each street's demand as an edge attribute."""
     import os
     v = [int(x) for x in open(path, encoding="utf-8").read().split()]
     n, m = v[0], v[1]

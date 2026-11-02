@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026.4.0 — 2 November 2026
+
+- `tools/certify_matching.py` confirms every optimum of the fast backend with a dual certificate, without Blossom V, and reaches 19,942 odd vertices.
+- Mixed heuristic and exact method measured on 25 published instances (`results/mixed_published.csv`). The heuristic is weaker and slower there than on the project's own networks.
+- API reference, docstrings, contributing guide, code of conduct, architecture notes, reproduction guide and pinned dependencies.
+- The report now separates established methods from new work and states tolerances and the hypotheses of the guarantees.
+- The CARP comparison on the 65 instances with more vehicles no longer says which way the difference goes, because that was not checked.
+
 ## 2026.3.0 — 2 November 2026
 
 - Mixed towns measured on five seeds per size. All towns of up to 400 junctions are proved, and 8 of the 10 at 900 and 1,600.

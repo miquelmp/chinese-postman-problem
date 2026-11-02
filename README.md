@@ -97,6 +97,8 @@ print(team.route_costs, team.lower_bound)
 | `site/assets/cpp.js`, `extensions.js`, `networks.js` | JavaScript port of the solvers and the network builders, used by the website |
 | `chinese_postman/io.py`, `instances.py` | File formats; test-network generators |
 | `experiments.py` | Reproduces the experiments of chapters 7 to 10 of the 2026 report; writes `results/*.csv` |
+| `tools/certify_matching.py`, `tools/match_sparse.mjs` | Independent dual certificate of the large matchings, without Blossom V |
+| `tools/fetch_mcpp.sh` | Downloads the published mixed instances into `data/mcpp/` (not stored here) |
 | `data/carp/` | Classical CARP benchmark instances (gdb, val, egl, Beullens, kshs) from [CARPData.jl](https://github.com/rafaelmartinelli/CARPData.jl) |
 | `examples/example_1997.gra` | The worked example of the 1997 report |
 | `report/` | 2026 report (Markdown source and PDF) and the 1997 report (PDF) |
