@@ -294,17 +294,19 @@ def mcpp(limit=120.0, step=4):
 def mcpp_crossed(limit=120.0, sets=("05", "10")):
     """Every published instance of the given sizes, so that degree and one-way share vary
     independently (the name MA0532 is family A, 500 vertices, degree 3, one-way code 2).
-    Adds to results/mixed_published.csv."""
+    Writes results/mixed_crossed.csv and resumes from it."""
     from chinese_postman.mixed import read_mcpp
     record_environment()
-    with open(f"{OUT}/mixed_published.csv", newline="", encoding="utf-8") as f:
-        rows = list(csv.DictReader(f))
+    rows = []
+    if os.path.exists(f"{OUT}/mixed_crossed.csv"):
+        with open(f"{OUT}/mixed_crossed.csv", newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
     done = {r["instance"] for r in rows}
     for path in sorted(sorted(glob.glob("data/mcpp/M*")), key=lambda p: os.path.basename(p)[2:4]):
         name = os.path.basename(path)
         if name[2:4] in sets and name not in done:
             rows.append(_mixed_row("mcpp-" + name[:2], name, read_mcpp(path), limit))
-            save("mixed_published", rows)
+            save("mixed_crossed", rows)
 
 
 def mixed(limit=300.0):
