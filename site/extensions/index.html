@@ -19,6 +19,10 @@
     <h2>How hard is hard?</h2>
     <p>A problem is <em>polynomial</em> when an algorithm is known whose running time grows like a power of the network size: twice the streets, a few times the work. Such problems are solved exactly, with a proof of optimality, at any size a city could need. The Chinese Postman Problem of 1997 is one of them.</p>
     <p>A problem is <em>NP-hard</em> when no such algorithm is known, and finding one would settle the most famous open question in computer science. For these problems there are two honest answers. An <em>exact method</em>, here branch-and-cut (the heir of the 1997 branch-and-bound), finds the optimum and proves it, but its running time can explode on large networks. A <em>heuristic</em> answers quickly and comes with a <em>lower bound</em>: no route can be shorter than the bound, so the distance between the two is the most the heuristic can be off. Some heuristics also carry a <em>guarantee</em>, a proof that they are never more than a fixed factor from the optimum on any network.</p>
+    <h3>P versus NP</h3>
+    <p>Whether a polynomial algorithm can exist for these problems is the <em>P versus NP</em> question, posed formally by Cook (1971) and, independently, by Levin (1973). It is one of the seven Millennium Prize Problems announced by the Clay Mathematics Institute in 2000, each with a prize of one million dollars; of the seven, only the Poincaré conjecture has been solved. P versus NP is still open: proofs are claimed regularly, and none has been accepted.</p>
+    <p>If P = NP were proved, every NP-hard problem on this page would have an exact polynomial algorithm, and heuristics would no longer be needed in principle. Two caveats: the proof might show that such an algorithm exists without showing how to build it, or it might give one whose running time grows with so high a power of the network size that it is useless in practice. Much of today's cryptography, which relies on some problems being hard, would also be at risk. If P ≠ NP, as most researchers expect, there is no shortcut, and the combination used here, already proposed in 1997, is the right one: an exact search as far as it can go, and beyond that a heuristic with a bound.</p>
+    <p>The postman shows how thin the line is. Edmonds' method solves the Chinese Postman Problem in polynomial time, yet a few one-way streets, a few streets that need no service, or a second postman are enough to put it on the other side.</p>
   </section>
 
   <section>
@@ -88,13 +92,16 @@
     <h2>References</h2>
     <ul class="refs">
       <li>Benavent, E., Campos, V., Corberán, Á. and Mota, E. (1985). Análisis de heurísticos para el problema del cartero rural. <em>Trabajos de Estadística y de Investigación Operativa</em> 36, 27–38.</li>
+      <li>Clay Mathematics Institute (2000). The Millennium Prize Problems: P vs NP. <a href="https://www.claymath.org/millennium/p-vs-np/">claymath.org</a>.</li>
+      <li>Cook, S. A. (1971). The complexity of theorem-proving procedures. <em>Proceedings of the 3rd Annual ACM Symposium on Theory of Computing</em>, 151–158.</li>
       <li>Frederickson, G. N. (1979). Approximation algorithms for some postman problems. <em>Journal of the ACM</em> 26(3), 538–554.</li>
       <li>Frederickson, G. N., Hecht, M. S. and Kim, C. E. (1978). Approximation algorithms for some routing problems. <em>SIAM Journal on Computing</em> 7(2), 178–193.</li>
       <li>Ghiani, G. and Laporte, G. (2000). A branch-and-cut algorithm for the undirected rural postman problem. <em>Mathematical Programming</em> 87(3), 467–481.</li>
       <li>Golden, B. L. and Wong, R. T. (1981). Capacitated arc routing problems. <em>Networks</em> 11(3), 305–315.</li>
       <li>Lenstra, J. K. and Rinnooy Kan, A. H. G. (1976). On general routing problems. <em>Networks</em> 6(3), 273–280.</li>
-      <li>Raghavachari, B. and Veerasamy, J. (1999). A 3/2-approximation algorithm for the mixed postman problem. <em>SIAM Journal on Discrete Mathematics</em> 12(4), 425–433.</li>
+      <li>Levin, L. A. (1973). Universal sequential search problems. <em>Problemy Peredachi Informatsii</em> 9(3), 115–116 (in Russian).</li>
       <li>Papadimitriou, C. H. (1976). On the complexity of edge traversing. <em>Journal of the ACM</em> 23(3), 544–554.</li>
+      <li>Raghavachari, B. and Veerasamy, J. (1999). A 3/2-approximation algorithm for the mixed postman problem. <em>SIAM Journal on Discrete Mathematics</em> 12(4), 425–433.</li>
       <li>Ulusoy, G. (1985). The fleet size and mix problem for capacitated arc routing. <em>European Journal of Operational Research</em> 22(3), 329–337.</li>
     </ul>
   </section>

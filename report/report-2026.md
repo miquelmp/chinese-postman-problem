@@ -502,6 +502,12 @@ The 1997 report closed with a list of extensions that would bring the method clo
 
 A problem is polynomial when an algorithm is known whose running time grows like a power of the network size; such problems are solved exactly at any size a city needs. The undirected and directed CPP are polynomial. A problem is NP-hard when no such algorithm is known. For these there are two complementary methods. An exact method, here branch-and-cut, finds the optimum and proves it, but its running time can grow very fast. A heuristic answers quickly and is paired with a lower bound, a value that no solution can beat; the distance between the heuristic and the bound is the most the heuristic can be off. Some heuristics also carry a guarantee: a proof that they are never more than a fixed factor above the optimum, on any network.
 
+Whether a polynomial algorithm can exist for the NP-hard problems is the P versus NP question, posed formally by Cook (1971) and, independently, by Levin (1973). It is one of the seven Millennium Prize Problems announced by the Clay Mathematics Institute in 2000, each with a prize of one million dollars; of the seven, only the Poincaré conjecture has been solved, and P versus NP remains open.
+
+If P = NP were proved, every NP-hard problem in this chapter, and the mixed CPP of chapter 9, would have an exact polynomial algorithm, and heuristics would no longer be needed in principle. Two caveats apply: the proof might show that such an algorithm exists without showing how to build it, or it might give one whose running time grows with so high a power of the network size that it is useless in practice. Much of today's cryptography, which relies on some problems being hard, would also be at risk. If P ≠ NP, as most researchers expect, there is no shortcut, and the approach proposed in 1997 and followed here is the right one: an exact search as far as it can go, and beyond that a heuristic with a bound.
+
+The postman shows how thin the line is. Edmonds' method solves the Chinese Postman Problem in polynomial time, yet a few one-way streets, a few streets that need no service, or a second postman are enough to cross it.
+
 ### 10.2 First and later passes
 
 Let every street e carry a service cost s(e), paid on the pass that serves it, and a travel cost c(e), paid on any other pass. The 1997 examples were a road covered in snow and a street whose bins are still full.
@@ -606,6 +612,9 @@ The natural continuation is a stronger lower bound for several postmen, the wind
 - Hierholzer, C. (1873). Über die Möglichkeit, einen Linienzug ohne Wiederholung und ohne Unterbrechung zu umfahren. *Mathematische Annalen* 6, 30–32.
 - Papadimitriou, C. H. (1976). On the complexity of edge traversing. *Journal of the ACM* 23(3), 544–554.
 - Frederickson, G. N. (1979). Approximation algorithms for some postman problems. *Journal of the ACM* 26(3), 538–554.
+- Cook, S. A. (1971). The complexity of theorem-proving procedures. *Proceedings of the 3rd Annual ACM Symposium on Theory of Computing*, 151–158.
+- Levin, L. A. (1973). Universal sequential search problems. *Problemy Peredachi Informatsii* 9(3), 115–116 (in Russian).
+- Clay Mathematics Institute (2000). The Millennium Prize Problems: P vs NP. [claymath.org/millennium/p-vs-np](https://www.claymath.org/millennium/p-vs-np/)
 
 **Matching algorithms**
 
