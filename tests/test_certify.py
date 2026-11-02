@@ -1,4 +1,5 @@
 """The dual certificate of tools/certify_matching.py, and the reader of published instances."""
+import csv
 import importlib.util
 import itertools
 import random
@@ -87,3 +88,17 @@ def test_read_mcpp_rejects_windy_costs(tmp_path):
     path.write_text("(1, 2) coste 5 6\n", encoding="latin-1")
     with pytest.raises(ValueError):
         read_mcpp(str(path))
+
+
+def test_measured_mixed_results_agree_with_published_values():
+    """Every optimum proved must equal the published one, and no bound or tour may cross it."""
+    published = {r["instance"]: r for r in csv.DictReader(open(ROOT / "results" / "mcpp_published_values.csv"))}
+    assert len(published) == 120
+    for name in ("mixed_published.csv", "mixed_crossed.csv"):
+        for r in csv.DictReader(open(ROOT / "results" / name)):
+            p = published[r["instance"]]
+            low, high = float(p["lower_bound"]), float(p["upper_bound"])
+            exact = float(r["exact"])
+            assert exact >= low - 1e-3 and float(r["exact_bound"]) <= high + 1e-3
+            if r["exact_optimal"] == "True":
+                assert round(exact) == round(high) if p["status"] == "optimal" else exact <= high

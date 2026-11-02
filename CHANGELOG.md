@@ -1,7 +1,10 @@
 # Changelog
 
-## Unreleased
+## 2026.6.0 — 2 November 2026
 
+- Results on the mixed instances of Corberán et al. (2012) are compared with the published values. All 39 optima proved here equal them.
+- The sample is complete at 30 instances, and all 48 instances of 500 and 1,000 junctions are added. They separate street density from the one-way share, which the sample had linked.
+- The heuristic's published figures change: mean 2.09% and worst 5.79% against the published optima, in place of 1.50% and 5.33% on the instances proved here.
 - `native/lemon_src` now carries LEMON's own `LICENSE` file, and its notes list the compiler fixes in the rlemon copy.
 
 ## 2026.5.0 — 2 November 2026

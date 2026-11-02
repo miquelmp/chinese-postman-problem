@@ -16,7 +16,9 @@ Every result file is in `results/`. Run the commands from the repository root, a
 | 8.3 Branch-and-bound | `bnb.csv` | `python3 experiments.py bnb` | |
 | 9.3 Local search | `local_search.csv` | `python3 experiments.py local_search` | after `mixed` |
 | 9.4 Mixed benchmarks and towns | `mixed_benchmarks.csv`, `mixed_city.csv` | `python3 experiments.py mixed` | hours |
-| 9.4 Published mixed instances | `mixed_published.csv` | `sh tools/fetch_mcpp.sh`, then `python3 experiments.py mcpp` | hours |
+| 9.4 Published mixed instances, sample | `mixed_published.csv` | `sh tools/fetch_mcpp.sh`, then `python3 experiments.py mcpp` | hours |
+| 9.4 Published mixed instances, full set of 500 and 1,000 junctions | `mixed_crossed.csv` | the same download, then `python3 experiments.py mcpp_crossed` | about an hour |
+| 9.4 Published values | `mcpp_published_values.csv` | Copied from `MCPP.txt` on the instance page of Corberán et al. | — |
 | 10.3 Rural postman | `rural_benchmarks.csv`, `rural_towns.csv` | `python3 experiments.py rural` | |
 | 10.4 Several postmen | `fleet_small.csv`, `fleet_benchmarks.csv` | `python3 experiments.py fleet_small fleet_benchmarks` | hours |
 | 10.5 Capacitated fleets | `carp.csv` | `python3 experiments.py carp` | |
