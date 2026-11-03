@@ -46,3 +46,4 @@ mixed,RB575,1326,994,1,58799.0,undirected,57880.0,branch-and-cut,True,57880.0,19
 mixed,RB577,1326,994,1,72261.0,lp-0,71769.0,branch-and-cut,True,71769.0,19.878
 directed,160-20-1.0,440,104,20,16588.0,cheaper,15303.0,branch-and-cut,False,14683.0,20.059
 directed,160-20-2.0,437,103,20,16039.0,cheaper,14810.0,branch-and-cut,False,14446.0,20.043
+directed,160-20-2.1_3,464,127,20,21352.0,cheaper,20377.0,branch-and-cut,False,20029.0,20.018
