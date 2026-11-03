@@ -95,6 +95,14 @@
     </form>
 
     <div class="stage">
+      <section class="problem-card" id="problem" aria-live="polite" hidden>
+        <div class="problem-head">
+          <h2 id="problem-name"></h2>
+          <a id="problem-link" href="../report/">Read more</a>
+        </div>
+        <ul class="chips" id="problem-chips"></ul>
+        <p id="problem-text"></p>
+      </section>
       <div id="osm-map" class="hidden"></div>
       <div class="stage-frame">
         <svg id="net" role="img" aria-label="Street network"></svg>

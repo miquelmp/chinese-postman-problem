@@ -90,7 +90,10 @@
       const p = paths[i], L = p.getTotalLength(), m = p.getPointAtLength(L / 2), m2 = p.getPointAtLength(L / 2 + 1);
       const dx = m2.x - m.x, dy = m2.y - m.y, len = Math.hypot(dx, dy) || 1;
       const along = Math.abs(dx) / len;
-      if (along < 0.5) return { L, x: m.x + 6, y: m.y + 4, along, anchor: "start" };   // beside a steep street
+      if (along < 0.5) {                 // beside a steep street, on the side with room
+        const right = m.x + 6 + costText(inst.links[i]).length * 6 <= W;
+        return { L, x: right ? m.x + 6 : m.x - 6, y: m.y + 4, along, anchor: right ? "start" : "end" };
+      }
       return { L, x: m.x - dy / len * 11, y: m.y + dx / len * 11 + 4, along, anchor: "middle" };
     };
     // "auto": label every street only if every label fits on its street and clear of the others
@@ -98,7 +101,7 @@
       if (inst.links.length > 300) return false;
       const boxes = inst.links.map((l, i) => {
         const q = labelAt(i), w = costText(l).length * 6;
-        return { x: q.anchor === "start" ? q.x + w / 2 : q.x, y: q.y, w, fits: q.along < 0.5 || w <= q.L - 4 };
+        return { x: q.anchor === "start" ? q.x + w / 2 : q.anchor === "end" ? q.x - w / 2 : q.x, y: q.y, w, fits: q.along < 0.5 || w <= q.L - 4 };
       });
       if (boxes.some(b => !b.fits)) return false;
       return boxes.every((a, i) => boxes.every((b, j) => j <= i ||

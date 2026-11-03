@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- The solver shows which problem is being solved, its complexity, the kind of solution and a link to the report.
+- Streets show their cost: on a label when all labels fit, otherwise when the pointer rests on them, with both costs on a windy street.
+- Partial service and several postmen now refuse windy networks, instead of ignoring the second cost.
+
 ## 2026.10.0 — 3 November 2026
 
 - Adds the windy postman: `chinese_postman/windy.py`, section 10.6 of the report, a section on the extensions page, and a hilly town in the solver.

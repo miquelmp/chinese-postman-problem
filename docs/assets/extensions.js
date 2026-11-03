@@ -25,7 +25,7 @@
 
   // ------------------------------------------------------------------ problem
   function problem(inst, depotId) {
-    if (inst.links.some(l => l.oneway)) throw new Error("Partial service and several postmen work on two-way networks");
+    if (inst.links.some(l => l.oneway || (l.w2 !== undefined && l.w2 !== l.w))) throw new Error("Partial service and several postmen work on two-way networks with one cost per street");
     const ids = [], idx = new Map();
     for (const nd of inst.nodes) { idx.set(nd.id, ids.length); ids.push(nd.id); }
     const n = ids.length;

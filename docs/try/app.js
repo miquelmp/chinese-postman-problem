@@ -111,6 +111,61 @@
     $("legend").innerHTML = parts.join("&nbsp;&nbsp; ");
   }
 
+  // What is being solved, and what kind of answer to expect
+  function requiredPieces(I) {
+    const up = new Map(), find = x => { while (up.get(x) !== x) { up.set(x, up.get(up.get(x))); x = up.get(x); } return x; };
+    const add = x => { if (!up.has(x)) up.set(x, x); };
+    if (I.depot !== undefined) add(I.depot);
+    for (const l of I.links) if (l.req !== false) { add(l.u); add(l.v); up.set(find(l.u), find(l.v)); }
+    return new Set([...up.keys()].map(find)).size;
+  }
+
+  function problemOf(I) {
+    const k = +$("postmen").value, partial = I.links.some(l => l.req === false), kind = kindOf(I);
+    const proof = ["Exact proof on request", "method"];
+    if (kind !== "undirected" && (k > 1 || partial))
+      return { name: "Combination not available", tone: "off", link: "",
+               chips: [["Not available", "off"]],
+               text: "Serving only some streets, or sharing them among several postmen, works on two-way networks with one cost per street." };
+    if (k > 1)
+      return { name: "Several postmen", tone: "hard", link: "104-several-postmen",
+               chips: [["NP-hard", "hard"], ["Heuristic with a lower bound", "method"]],
+               text: "Share the streets among the postmen so that the longest route is as short as possible." };
+    if (partial) {
+      const one = requiredPieces(I) === 1;
+      return { name: "Rural postman", tone: one ? "easy" : "hard", link: "103-the-rural-postman-problem",
+               chips: one ? [["Polynomial here", "easy"], ["Exact method", "method"]]
+                          : [["NP-hard", "hard"], ["Heuristic with a lower bound", "method"], proof],
+               text: one ? "Only some streets need service, and they form one connected piece with the depot, so the problem stays easy."
+                         : "Only some streets need service, and joining their separate pieces is the hard part." };
+    }
+    return {
+      undirected: { name: "Undirected Chinese postman", tone: "easy", link: "32-edmonds-method",
+                    chips: [["Polynomial", "easy"], ["Exact method", "method"]],
+                    text: "Drive every street at least once and return. Every street can be driven both ways." },
+      directed: { name: "Directed Chinese postman", tone: "easy", link: "63-directed-graphs",
+                  chips: [["Polynomial", "easy"], ["Exact method", "method"]],
+                  text: "Drive every street at least once and return. Every street is one-way." },
+      mixed: { name: "Mixed Chinese postman", tone: "hard", link: "9-the-mixed-chinese-postman-problem",
+               chips: [["NP-hard", "hard"], ["Heuristic with a lower bound", "method"], proof],
+               text: "One-way and two-way streets together. Choosing a direction for each two-way street is the hard part." },
+      windy: { name: "Windy postman", tone: "hard", link: "106-the-windy-postman",
+               chips: [["NP-hard", "hard"], ["Win's heuristic with a lower bound", "method"], proof],
+               text: "Every street can be driven both ways, at a different cost each way." },
+    }[kind];
+  }
+
+  function showProblem(I, verdict) {
+    const p = problemOf(I), chips = p.chips.concat(verdict ? [verdict] : []);
+    $("problem").hidden = false;
+    $("problem").dataset.tone = p.tone;
+    $("problem-name").textContent = p.name;
+    $("problem-text").textContent = p.text;
+    $("problem-chips").innerHTML = chips.map(([t, c]) => `<li class="chip ${c}">${t}</li>`).join("");
+    $("problem-link").hidden = !p.link;
+    $("problem-link").href = `../report/#${p.link}`;
+  }
+
   function showInst(newInst) {
     inst = newInst; result = null;
     $("empty").classList.add("hidden");
@@ -125,6 +180,7 @@
     legend(+$("postmen").value > 1 ? "postmen" : "single");
     $("routes").hidden = true;
     $("service-hint").textContent = serviceHint();
+    showProblem(inst);
     $("speed").value = inst.links.length > 1000 ? 5 : inst.links.length > 200 ? 3 : 1;
     view.setSpeed(speeds[+$("speed").value]);
     view.onProgress((i, n) => { $("progress").textContent = n ? `${i} of ${n} streets walked` : ""; });
@@ -194,6 +250,7 @@
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) view.finish();
     legend(res.kind === "postmen" ? "postmen" : "single");
     renderRoutes(res);
+    showProblem(inst, res.optimal ? ["Proven optimal", "easy"] : [`Within ${res.gap_pct.toFixed(2)}% of the bound`, "hard"]);
     const needProof = ["mixed", "rural", "windy"].includes(res.kind) && !res.optimal;
     $("proof").hidden = !needProof;
     $("proof-status").textContent = "";
