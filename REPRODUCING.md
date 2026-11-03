@@ -14,6 +14,7 @@ Every result file is in `results/`. Run the commands from the repository root, a
 | 10.6 Windy postman, Win on all instances | `windy_win.csv` | `sh tools/fetch_wpp.sh`, then `python3 experiments.py wpp_win` | minutes |
 | 10.7 Rural postman on every network | `rural_general.csv` | Instances in `data/wrpp`, `data/mrpp` and `data/drpp` (see below), then `python3 experiments.py rural_general` | hours |
 | 10.7 Several postmen, every network | `k_general.csv` | Same instances, then `python3 experiments.py k_general` | hours |
+| 10.7 Rural postman, mixed, longer limit | `rural_mixed_long.csv` | Same instances, then `python3 experiments.py rural_mixed_long` | an hour |
 | 10.7 Several postmen, published optima | `k_published.csv` | Instances in `data/mmwrpp` (see below), then `python3 experiments.py k_published` | about an hour |
 | 10.6 Windy postman, combined method | `windy_published.csv` | `python3 experiments.py wpp` | over 2 hours; it resumes if stopped |
 | 10.6 Published values | `wpp_published_values.csv` | Copied from `WPP.txt` on the instance page of Corberán et al. | — |
