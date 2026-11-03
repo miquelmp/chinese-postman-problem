@@ -216,7 +216,18 @@ def solve(inst, time_limit: float = 20.0, gap_tol: float = 0.0) -> dict:
     kind = kind_of(inst)
     links = [(l["u"], l["v"], l["w"], bool(l.get("oneway"))) for l in inst["links"]]
     out = {"kind": kind, "original": sum(w for _, _, w, _ in links)}
-    if kind == "windy":
+    if kind != "undirected" and any(l.get("req") is False for l in inst["links"]):
+        from .windyrural import RuralProblem, solve as solve_general
+        P = RuralProblem([(l["u"], l["v"], l["w"], None if l.get("oneway") else l.get("w2", l["w"]),
+                           l.get("req") is not False) for l in inst["links"]], inst.get("depot"))
+        s = solve_general(P, time_limit=time_limit)
+        out.update(kind="rural", total=s.total_cost, circuit=s.circuit, optimal=bool(s.optimal),
+                   lower_bound=s.lower_bound, gap_pct=round(s.gap_to_bound_pct or 0.0, 3), method=s.method,
+                   heuristic=s.info.get("heuristic"), original=sum(l["w"] for l in inst["links"] if l.get("req") is not False),
+                   served=sum(l["w"] for l in inst["links"] if l.get("req") is not False),
+                   deadhead=s.total_cost - sum(l["w"] for l in inst["links"] if l.get("req") is not False),
+                   pieces=len(P.required_pieces()))
+    elif kind == "windy":
         from .windy import WindyGraph, solve_windy
         W = WindyGraph([(l["u"], l["v"], l["w"], l.get("w2", l["w"])) for l in inst["links"]])
         s = solve_windy(W, time_limit=time_limit)

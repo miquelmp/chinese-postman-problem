@@ -259,36 +259,40 @@ class _Paths:
         return out[::-1]
 
 
-def _join(P, arcs, paths):
-    """One-way paths that join the pieces of `arcs`, chosen as a minimum spanning tree."""
-    pieces = _pieces_of(arcs, P)
-    added = []
-    while len(pieces) > 1:
-        tree, rest = pieces[0], pieces[1:]
-        ti = [paths.idx[v] for v in tree]
-        best = None
-        for q, S in enumerate(rest):
-            si = [paths.idx[v] for v in S]
-            sub = paths.dist[np.ix_(ti, si)]
+def _joining_paths(pieces, paths, keep=6):
+    """Candidate paths between the first piece and each other, in both directions, cheapest first."""
+    tree = [paths.idx[v] for v in pieces[0]]
+    found = []
+    for S in pieces[1:]:
+        si = [paths.idx[v] for v in S]
+        for rows, cols in ((tree, si), (si, tree)):
+            sub = paths.dist[np.ix_(rows, cols)]
             u, v = np.unravel_index(np.argmin(sub), sub.shape)
-            if best is None or sub[u, v] < best[0]:
-                best = (sub[u, v], ti[u], si[v], q)
-        _, a, b, q = best
-        added += paths.path(paths.nodes[a], paths.nodes[b])
-        pieces = [tree | rest[q]] + [s for i, s in enumerate(rest) if i != q]
-    return added
+            if np.isfinite(sub[u, v]):
+                found.append((float(sub[u, v]), rows[u], cols[v]))
+    return sorted(found)[:keep]
 
 
-def _complete(P, forced, bal, paths):
-    """Rebalance `forced` arcs and join pieces until one Eulerian tour exists."""
+def _complete(P, forced, bal, paths, keep=None):
+    """Rebalance `forced` arcs. While pieces remain, add the joining path that gives the cheapest
+    rebalanced total, until one Eulerian tour exists."""
     forced = list(forced)
+    keep = keep or (6 if len(P.links) < 600 else 2)
+    extra, flow, duals = bal.solve(forced)
     while True:
-        extra, flow, duals = bal.solve(forced)
         arcs = [(a, b, c, 1) for a, b, c in forced] + flow
-        joins = _join(P, arcs, paths)
-        if not joins:
+        pieces = _pieces_of(arcs, P)
+        if len(pieces) == 1:
             return sum(c for *_, c in forced) + extra, arcs, forced, duals
-        forced += joins
+        best = None
+        for _, a, b in _joining_paths(pieces, paths, keep):
+            path = paths.path(paths.nodes[a], paths.nodes[b])
+            trial = forced + path
+            x, f, m = bal.solve(trial)
+            total = sum(c for *_, c in trial) + x
+            if best is None or total < best[0]:
+                best = (total, trial, x, f, m)
+        _, forced, extra, flow, duals = best
 
 
 def _improve(P, W, forced, n_req, bal, paths, max_seconds, tries=25):
@@ -312,7 +316,7 @@ def _improve(P, W, forced, n_req, bal, paths, max_seconds, tries=25):
                 break
             trial = list(forced)
             trial[i] = other(i)
-            t2, a2, f2, m2 = _complete(P, trial[:n_req], bal, paths)
+            t2, a2, f2, m2 = _complete(P, trial[:n_req], bal, paths, keep=1)
             if t2 < total - 1e-9:
                 total, arcs, forced, m = t2, a2, f2, m2
                 flips += 1
