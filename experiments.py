@@ -5,6 +5,7 @@
 """
 import csv
 import glob
+import json
 import os
 import sys
 import time
@@ -341,6 +342,26 @@ def mcpp_crossed(limit=120.0, sets=("05", "10")):
         if name[2:4] in sets and name not in done:
             rows.append(_mixed_row("mcpp-" + name[:2], name, read_mcpp(path), limit))
             save("mixed_crossed", rows)
+
+
+def osm(limit=300.0):
+    """Real street networks: the OpenStreetMap extracts in data/osm, with the one-way tags as they
+    are. Writes results/mixed_osm.csv."""
+    from chinese_postman import web
+    from chinese_postman.mixed import MixedGraph
+    record_environment()
+    rows = []
+    for path in sorted(glob.glob("data/osm/*.json")):
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        name = os.path.basename(path).split("_")[0]
+        inst = web.from_osm(data, name=name, max_nodes=10 ** 6)
+        M = MixedGraph([(l["u"], l["v"], l["w"], bool(l["oneway"])) for l in inst["links"]])
+        r = _mixed_row("osm", name, M, limit)
+        r["osm_timestamp"] = data["osm3s"]["timestamp_osm_base"]
+        r["links_before_filter"] = inst["links_before_filter"]
+        rows.append(r)
+        save("mixed_osm", rows)
 
 
 def mixed(limit=300.0):
