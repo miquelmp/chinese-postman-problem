@@ -25,7 +25,7 @@
 
   // ------------------------------------------------------------------ problem
   function problem(inst, depotId) {
-    if (inst.links.some(l => l.oneway || (l.w2 !== undefined && l.w2 !== l.w))) throw new Error("Partial service and several postmen work on two-way networks with one cost per street");
+    if (inst.links.some(l => l.oneway || (l.w2 !== undefined && l.w2 !== l.w))) throw new Error("This method works on two-way networks with one cost per street");
     const ids = [], idx = new Map();
     for (const nd of inst.nodes) { idx.set(nd.id, ids.length); ids.push(nd.id); }
     const n = ids.length;
@@ -417,7 +417,161 @@
     };
   }
 
-  const API = { problem, rural, postmen, splitMinMax, routeCost, orient, fromCircuit, lowerBound };
+  // ------------------------------------------------------------------ directed, mixed and windy networks
+  /** Some streets, or several postmen, on any network (as chinese_postman.windyrural and kpostmen):
+      orient the required links, rebalance by a min-cost flow, join the pieces by shortest paths at
+      the cheapest rebalanced total, and for several postmen cut the route at least cost. */
+  function general(inst, k, opts) {
+    opts = Object.assign({ maxSeconds: 4 }, opts || {});
+    const t0 = Date.now(), CP = CPP;
+    const ids = inst.nodes.map(nd => nd.id), idx = new Map(ids.map((v, i) => [v, i])), n = ids.length;
+    const L = inst.links.map((l, li) => ({ a: idx.get(l.u), b: idx.get(l.v), f: l.w,
+      r: l.oneway ? null : (l.w2 === undefined ? l.w : l.w2), req: l.req !== false, li }));
+    const allowed = [];
+    for (const l of L) { allowed.push([l.a, l.b, l.f]); if (l.r !== null) allowed.push([l.b, l.a, l.r]); }
+    const adj = CP.simpleAdjacency(n, allowed), deadhead = [];
+    for (let v = 0; v < n; v++) for (let e = adj.start[v]; e < adj.start[v + 1]; e++) deadhead.push([v, adj.to[e], Infinity, adj.wt[e]]);
+    const req = L.filter(l => l.req), service = req.reduce((s, l) => s + Math.min(l.f, l.r === null ? l.f : l.r), 0);
+    const depot = inst.depot !== undefined && idx.has(inst.depot) ? idx.get(inst.depot) : req[0].a;
+    const memo = new Map(), from = v => { if (!memo.has(v)) memo.set(v, CP.dijkstra(adj, v)); return memo.get(v); };
+    const reach = from(depot).dist;
+    for (const l of req) if (!isFinite(reach[l.a]) || !isFinite(reach[l.b]) || !isFinite(from(l.b).dist[depot]) || !isFinite(from(l.a).dist[depot]))
+      throw new Error("Some street to serve cannot be reached from the depot and back");
+    const arcCost = new Map(deadhead.map(([a, b, , w]) => [a * n + b, w]));
+    const path = (a, b) => {
+      const { pred } = from(a), out = [];
+      for (let v = b; v !== a; v = pred[v]) out.push([pred[v], v, arcCost.get(pred[v] * n + v)]);
+      return out.reverse();
+    };
+    const pieces = edges => {
+      const up = new Int32Array(n).map((_, i) => i), find = x => { while (up[x] !== x) { up[x] = up[up[x]]; x = up[x]; } return x; };
+      for (const [a, b] of edges) up[find(a)] = find(b);
+      const groups = new Map();
+      const note = v => { const r = find(v); if (!groups.has(r)) groups.set(r, new Set()); groups.get(r).add(v); };
+      note(depot);
+      for (const l of req) { note(l.a); note(l.b); }
+      return [...groups.values()];
+    };
+    const balance = forced => {
+      const sup = new Float64Array(n);
+      for (const [a, b] of forced) { sup[a] -= 1; sup[b] += 1; }
+      return CP.minCostFlow(n, deadhead, sup);
+    };
+    const complete = start => {
+      let forced = start.slice();
+      for (;;) {
+        const f = balance(forced), edges = forced.map(e => [e[0], e[1]]);
+        deadhead.forEach(([a, b], j) => { for (let r = 0; r < f.flow[j]; r++) edges.push([a, b]); });
+        const groups = pieces(edges);
+        if (groups.length === 1) return { total: forced.reduce((s, e) => s + e[2], 0) + f.cost, edges };
+        const first = [...groups[0]], cand = [];
+        for (const S of groups.slice(1)) {
+          let best = null;
+          for (const x of S) {
+            const dx = from(x).dist;
+            for (const y of first) {
+              const fwd = from(y).dist[x], back = dx[y];
+              if (!best || fwd < best[0]) best = [fwd, y, x];
+              if (back < best[0]) best = [back, x, y];
+            }
+          }
+          cand.push(best);
+        }
+        cand.sort((p, q) => p[0] - q[0]);
+        let pick = null;
+        for (const [, a, b] of cand.slice(0, 3)) {
+          const trial = forced.concat(path(a, b)), f2 = balance(trial);
+          const value = trial.reduce((s, e) => s + e[2], 0) + f2.cost;
+          if (!pick || value < pick[0]) pick = [value, trial];
+        }
+        forced = pick[1];
+      }
+    };
+    const cheaper = l => (l.r === null || l.f <= l.r ? [l.a, l.b, l.f] : [l.b, l.a, l.r]);
+    let best = complete(req.map(cheaper));
+    if (L.some(l => l.r !== null)) {          // start from the undirected route on summed costs
+      const summed = Object.assign({}, inst, { links: inst.links.map(l => Object.assign({}, l, {
+        w: l.oneway ? 2 * l.w : l.w + (l.w2 === undefined ? l.w : l.w2), oneway: false, w2: undefined })) });
+      const seq = rural(summed, { maxSeconds: Math.min(1.5, opts.maxSeconds / 3), depot: inst.depot }).circuit.map(v => idx.get(v));
+      const seen = new Map();
+      for (let i = 0; i + 1 < seq.length; i++) { const key = seq[i] * n + seq[i + 1]; seen.set(key, (seen.get(key) || 0) + 1); }
+      const forced = req.map(l => {
+        if (l.r !== null && (seen.get(l.b * n + l.a) || 0) > 0 && !(seen.get(l.a * n + l.b) > 0)) return [l.b, l.a, l.r];
+        return l.r === null || (seen.get(l.a * n + l.b) || 0) > 0 ? [l.a, l.b, l.f] : cheaper(l);
+      });
+      const other = complete(forced);
+      if (other.total < best.total) best = other;
+    }
+    // lower bound: each required link driven the cheaper way or reversed, with free rebalancing
+    const sup = new Float64Array(n), arcs = deadhead.slice();
+    let base = 0;
+    for (const l of req) {
+      const [a, b, lo] = cheaper(l), hi = l.r === null ? null : Math.max(l.f, l.r);
+      sup[a] -= 1; sup[b] += 1; base += lo;
+      if (hi !== null) arcs.push([b, a, 2, (hi - lo) / 2]);
+    }
+    const lower = Math.ceil(base + CP.minCostFlow(n, arcs, sup).cost - 1e-9);
+    const circuit = CP.eulerianCircuit(n, best.edges, true, depot);
+    const onePiece = pieces(req.map(l => [l.a, l.b])).length;
+    if (k <= 1) {
+      const total = best.total, optimal = total <= lower + 1e-9;
+      return { kind: "rural", total, served: service, deadhead: total - service, lower_bound: lower, optimal,
+               gap_pct: Math.round(Math.max(0, (total - lower) / lower * 100) * 1000) / 1000,
+               circuit: circuit.map(v => ids[v]), pieces: onePiece, required: req.length,
+               method: "Orientation of the required streets, min-cost rebalance and shortest joins; bound from the same flow",
+               seconds: (Date.now() - t0) / 1000 };
+    }
+    // several postmen: cut the served streets of the route at least cost
+    const open = new Map();
+    for (const l of req) for (const key of [l.a * n + l.b, l.b * n + l.a]) { if (!open.has(key)) open.set(key, []); open.get(key).push(l); }
+    const used = new Set(), tasks = [];
+    for (let i = 0; i + 1 < circuit.length; i++) {
+      const a = circuit[i], b = circuit[i + 1], l = (open.get(a * n + b) || []).find(x => !used.has(x.li) &&
+        (x.a === a ? true : x.r !== null));
+      if (l) { used.add(l.li); tasks.push([a, b, l.a === a ? l.f : l.r, l.li]); }
+    }
+    const m = tasks.length, K = Math.min(k, m), d = (a, b) => from(a).dist[b];
+    const hop = new Float64Array(m), pre = new Float64Array(m + 1);
+    for (let t = 0; t + 1 < m; t++) hop[t] = d(tasks[t][1], tasks[t + 1][0]);
+    for (let t = 0; t < m; t++) pre[t + 1] = pre[t] + tasks[t][2] + hop[t];
+    const cost = (i, j) => d(depot, tasks[i][0]) + pre[j + 1] - pre[i] - hop[j] + d(tasks[j][1], depot);
+    let f = Float64Array.from({ length: m }, (_, j) => cost(0, j));
+    const cuts = [];
+    for (let r = 1; r < K; r++) {
+      const g = f.slice(), st = new Int32Array(m).fill(-1);
+      for (let j = 1; j < m; j++) for (let i = 0; i < j; i++) {
+        const c = Math.max(f[i], cost(i + 1, j));
+        if (c < g[j] - 1e-12) { g[j] = c; st[j] = i + 1; }
+      }
+      f = g; cuts.push(st);
+    }
+    const spans = [];
+    let j = m - 1;
+    for (let r = K - 1; r > 0; r--) { const s0 = cuts[r - 1][j]; if (s0 >= 0) { spans.push([s0, j]); j = s0 - 1; } }
+    spans.push([0, j]);
+    const routes = spans.reverse().map(([s, e]) => {
+      const seq = [depot];
+      let at = depot;
+      for (let t = s; t <= e; t++) {
+        for (const [, y] of path(at, tasks[t][0])) seq.push(y);
+        seq.push(tasks[t][1]); at = tasks[t][1];
+      }
+      for (const [, y] of path(at, depot)) seq.push(y);
+      return { circuit: seq.map(v => ids[v]), cost: cost(s, e), served: tasks.slice(s, e + 1).reduce((a, x) => a + x[2], 0),
+               streets: e - s + 1, links: tasks.slice(s, e + 1).map(x => x[3]) };
+    }).sort((p, q) => q.cost - p.cost);
+    const longest = routes[0].cost, total = routes.reduce((s, r) => s + r.cost, 0);
+    let far = 0;
+    for (const l of req) far = Math.max(far, Math.min(d(depot, l.a) + l.f + d(l.b, depot), l.r === null ? Infinity : d(depot, l.b) + l.r + d(l.a, depot)));
+    const lb = Math.ceil(Math.max(far, lower / k) - 1e-9);
+    return { kind: "postmen", k, longest, total, lower_bound: lb, optimal: longest <= lb + 1e-9,
+             gap_pct: Math.round(Math.max(0, (longest - lb) / lb * 100) * 1000) / 1000,
+             split_longest: longest, single: best.total, routes,
+             method: "One route split into routes at least cost; bound from the farthest street and the share of one route",
+             seconds: (Date.now() - t0) / 1000 };
+  }
+
+  const API = { problem, rural, postmen, general, splitMinMax, routeCost, orient, fromCircuit, lowerBound };
   if (typeof module !== "undefined" && module.exports) module.exports = API;
   else root.Extensions = API;
 })(typeof self !== "undefined" ? self : this);

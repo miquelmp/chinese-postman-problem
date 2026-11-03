@@ -217,7 +217,7 @@ Fleury's rule, discussed in the 1997 report, also works but must test at each st
 
 ## 6. Implementation
 
-The solver is a small Python 3 package, `chinese_postman`, built on NetworkX and covered by 348 automated tests (289 when the optional LEMON library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with eleven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).
+The solver is a small Python 3 package, `chinese_postman`, built on NetworkX and covered by 419 automated tests (360 when the optional LEMON library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with eleven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).
 
 ### 6.1 Modules
 
@@ -269,7 +269,8 @@ For a directed graph the imbalance of each vertex, out-degree minus in-degree, p
 | Web builders | 14 | Examples, .GRA, CARP and OpenStreetMap input give the expected networks and solve; bad input gives a clear message |
 | JavaScript solver | 243 networks | The website solver gives the Python optimum on every undirected and directed case, never claims a false optimum on mixed ones, and returns a valid tour |
 | Rural postman | 36 | Exact equals enumeration of every multiset of extra passes on the original network; Frederickson within 3/2 of the optimum; every street served; all-required equals the CPP; first-pass costs, undirected and directed |
-| Several postmen | 31 | Bound ≤ exact optimum ≤ heuristic; split within 2 − 1/k of the optimum; split equals enumeration of cut points; one postman equals the rural postman; capacities respected |
+| Rural postman, every network | 39 | Exact equals enumeration on small windy, mixed and directed networks; bound ≤ exact ≤ heuristic; all-required cases equal the windy postman; measured results agree with their bounds and with published optima |
+| Several postmen | 32 | Bound ≤ exact optimum ≤ heuristic; split within 2 − 1/k of the optimum; split equals enumeration of cut points; one postman equals the rural postman; capacities respected; on windy, mixed and directed networks; no measured route falls below a published bound |
 | JavaScript extensions | 91 networks | Website rural postman and several postmen: valid routes, every street served, never below the Python optimum, bounds never above it |
 
 Every test that produces a tour also verifies it: it is closed, it covers every original edge, and its length equals the original edges plus the duplicates.
@@ -293,7 +294,7 @@ The project website, [miquelmp.github.io/chinese-postman-problem](https://miquel
 | Directed and mixed streets | `site/assets/cpp.js` | Minimum-cost flow; lower bounds and the mixed heuristic of chapter 9, with its starting orientations, balancing and local search |
 | Tour | `site/assets/cpp.js` | Hierholzer's algorithm, as in chapter 5 |
 | Networks | `site/assets/networks.js` | Built-in examples, `.GRA` and CARP readers, OpenStreetMap import through the Overpass API |
-| Extensions | `site/assets/extensions.js` | Rural postman and several postmen (chapter 10): Frederickson's heuristic, local search, optimal split into routes, lower bounds |
+| Extensions | `site/assets/extensions.js` | Rural postman and several postmen on every network (chapter 10): Frederickson's heuristic, local search, optimal split into routes, lower bounds |
 
 The port is checked against the Python package. On 243 networks, from classic graphs to benchmark files and mixed towns, it returns the same optimum in every undirected and directed case, stays a mean 0.25% above the optimum on mixed ones, and always returns a valid closed tour; on 3,000 random matchings it agreed with NetworkX every time. The page is ready to solve in under a second.
 
@@ -429,7 +430,7 @@ The 2026 version keeps the structure of the 1997 method and improves each of its
 | Eulerian circuit | Cycle splicing over adjacency queues | Hierholzer with one pointer per vertex | Linear time |
 | Directed streets | Future work | Minimum-cost flow | Polynomial (Edmonds and Johnson, 1973) |
 | Platform | Turbo C, 16-bit integers, 640 KB memory model | Python 3, unbounded integers, automatic memory | No size limits on costs or data |
-| Verification | Manual checks | 348 automated tests in Python and 334 networks and 3,000 matchings re-checked in JavaScript, every tour validated | Results checked on each run |
+| Verification | Manual checks | 419 automated tests in Python and 334 networks and 3,000 matchings re-checked in JavaScript, every tour validated | Results checked on each run |
 
 ### 8.2 The 1997 branch-and-bound
 
@@ -703,7 +704,47 @@ The combined method, with a limit of 2 minutes, was run on all 48 instances of 5
 
 The browser solver offers a hilly town, with a synthetic surface and costs that follow the slope, solved by Win's method and proved by branch-and-cut on request.
 
-### 10.7 Summary
+### 10.7 Every network and every service
+
+Sections 10.3 and 10.4 work on two-way networks. Any of the four kinds of network can also need service on only some streets, or be shared among several postmen, which gives six further problems. All six are NP-hard, since the two-way versions are. The model is that of section 10.6 with two changes: a street without service may be left undriven, and every piece of the streets to serve must be reached from outside (`chinese_postman/windyrural.py`). Those connectivity constraints are added between integer solves, as in section 10.3.
+
+- **Bound.** The linear relaxation with connectivity cuts.
+- **Heuristic.** Three starts orient the streets to serve: at their cheaper direction, from the relaxation, and, after the idea of Benavent, Corberán, Piñana, Plana and Sanchis (2005), from an undirected rural postman on the summed costs, followed by a windy postman on the network it gives. Each start is rebalanced by minimum-cost flow, and the pieces are joined by the shortest path that gives the lowest rebalanced total. No distance guarantee is proved.
+- **Combined method** (`windyrural.solve`). Heuristic and bound first, then branch-and-cut told to beat the heuristic. Each integer solution that falls into pieces is joined into a valid route, and a better route lowers the cutoff, so a run stopped by its time limit still improves on the heuristic.
+- **Several postmen** (`chinese_postman/kpostmen.py`). As in section 10.4: one route is cut into k by dynamic programming, here from about eight opening points, using directed distances. Links then move out of the longest route, with each route reordered after a move, and random moves of short runs of links restart the search. The lower bound is the larger of the farthest single job and a k-th of the bound for one route.
+
+**Rural postman, published instances.** Three families were read unchanged: the windy rural instances of the page of Corberán, Plana and Sanchis (see also their 2007 paper), with 522 published values (`results/wrpp_published_values.csv`), the mixed rural instances of the same page, and the 61 directed instances of Campos and Savall (1995) as distributed with OAR Lib. Every eighth windy file and all mixed and directed files ran with a limit of 20 seconds for branch-and-cut (`results/rural_general.csv`). Twelve mixed files ran again with 5 minutes (`results/rural_mixed_long.csv`). The limit does not cover the heuristic, so the largest cases took up to 9 minutes.
+
+| Network | Instances | Streets | Limit | Optimum proved | Best route above the bound (mean, worst) |
+| --- | --- | --- | --- | --- | --- |
+| One-way | 61 | 211–801 | 20 s | 45 | 0.74%, 8.9% |
+| Mixed | 36 | 884–2,678 | 20 s | 2 | 9.0%, 25% |
+| Mixed | 6 | 884–1,326 | 5 min | 6 | 0 |
+| Mixed | 6 | 1,867–2,678 | 5 min | 0 | 2.1%, 4.8% |
+| Windy | 66 | 14–3,037 | 20 s | 44 | 5.8%, 46% |
+
+The windy files are the only ones here with published values for comparison. On the 47 files of the sample that have one, all optima, the best route is a mean 0.62% above the published value, with a worst case of 7.6%, and equals it on 32. The heuristic alone is a mean 1.66% above. The other 19 files of the sample are not in the list. No result falls below a published value. The mixed and directed instances have no published values in this project, so their only test is the bound. The heuristic alone is much weaker on these two: on the 45 proved directed cases it is a mean 8.4% above the optimum, with a worst case of 20%, and on the 6 proved mixed cases 1.3–12%. Branch-and-cut does the work there.
+
+The 5-minute run shows that the 25% of the 20-second table belongs to the time limit and not to the problem. On the six files of up to 1,326 streets, 1 to 4 minutes proved the optimum.
+
+**Several postmen, published optima.** The 144 instances of Benavent, Corberán, Plana and Sanchis (2009), with 2 to 6 postmen, give 705 cases: 629 with a published optimum and 76 open (`results/mmwrpp_published_values.csv`, `results/k_published.csv`). They have 10–184 links. The files do not name a depot, so vertex 1 was assumed. The assumption is not verified, but it fits: no route falls below a published optimum or bound, and 340 equal an optimum exactly. With 2 seconds of local search per case the heuristic took at most 5.2 seconds.
+
+| Postmen | Published optima | Split alone above the optimum (mean) | After local search (mean, worst) | Equal to the optimum |
+| --- | --- | --- | --- | --- |
+| 2 | 144 | 8.85% | 2.68%, 11.9% | 56 |
+| 3 | 130 | 9.31% | 2.64%, 11.7% | 60 |
+| 4 | 124 | 7.57% | 2.20%, 16.0% | 65 |
+| 5 | 124 | 6.95% | 1.48%, 10.6% | 82 |
+| 6 | 107 | 5.47% | 1.55%, 17.2% | 77 |
+| All | 629 | 7.74% | 2.15%, 17.2% | 340 |
+
+On the 76 open cases it improves on no published upper bound, staying a mean 6.5% above. These are heuristic results and the worst cases are far from the optimum, so this method gives a good route quickly, without any promise on a given network.
+
+**Several postmen, one-way and mixed.** No published values were available for these, so each was measured against the lower bound with 2 to 5 postmen and 5 seconds of local search (`results/k_general.csv`). The run reached its 2-hour limit after 8 directed and 3 mixed instances, of 211–1,318 links, and before the windy ones, which the table above covers. The longest route is a mean 32% above the bound on directed instances and 35% on mixed ones, with worst cases of 52% and 64%. The windy results suggest that much of this distance belongs to the bound, which assumes that the work divides perfectly among the postmen, but on these networks that is not proved. On the mixed instances the local search improved on the split by less than 1% in the time given.
+
+The website solves these problems in the browser with a simpler heuristic in JavaScript, and for one postman offers the proof of this section through Python running in the page.
+
+### 10.8 Summary
 
 | Problem | Complexity | Exact method here | Heuristic and guarantee | Measured distance from the optimum |
 | --- | --- | --- | --- | --- |
@@ -713,9 +754,11 @@ The browser solver offers a hilly town, with a synthetic surface and costs that 
 | Every street, a cost for each way (windy postman) | NP-hard; polynomial if Eulerian | Branch-and-cut, 5 of 61 published instances in two minutes | Win, at most 2; local search | Mean 0.10%, worst 0.44% (99 published instances) |
 | Some streets (rural postman) | NP-hard; polynomial with one piece | Branch-and-cut, all 57 benchmark networks and 10 of the 12 towns of up to 400 junctions | Frederickson, at most 3/2; local search | Mean 0.66%, worst 4.8% (16 proved cases) |
 | k postmen, min-max | NP-hard | Branch-and-cut, small networks | Best split, at most 2 − 1/k; local search | Mean 0.02%, worst 1.3% (62 small cases) |
+| Some streets, on one-way, mixed or windy networks | NP-hard | Branch-and-cut: 45 of 61 one-way in 20 s; 6 of 12 mixed in 5 min; 44 of 66 windy in 20 s | Orientation, rebalancing and joining; no guarantee | Best route mean 0.62%, worst 7.6% (47 published windy instances) |
+| k postmen, on one-way, mixed or windy networks | NP-hard | Not attempted | Split and local search; no guarantee | Mean 2.15%, worst 17.2% (629 published optima, depot assumed) |
 | Capacitated fleet (CARP) | NP-hard | Not attempted | Ulusoy split and relocations | Median 5.8% above the best known, number of vehicles free |
 
-### 10.8 Still open
+### 10.9 Still open
 
 Some variants remain for future work: turn penalties, where U-turns and left turns cost extra and which turn the problem into node routing on a larger graph; hierarchical service, where some streets must be served before others; and several depots.
 
@@ -730,7 +773,7 @@ The Chinese Postman Problem has been solvable in polynomial time since 1973, and
 3. **Directed streets.** The directed CPP, proposed as future work in 1997, is solved by minimum-cost flow in under half a second on a 3,600-junction one-way grid.
 4. **A bound for fleets that depends on capacity.** On 63 benchmark instances where every street needs service, the single-postman tour costs a median 95.1% of the best known multi-vehicle solution, from 100% down to 47.5%. The CPP is a quick estimate and a close lower bound when vehicles have capacity to spare, and a weak one when they do not.
 5. **Mixed streets.** The mixed CPP, NP-hard, is solved exactly by branch-and-cut on every benchmark network (at most 5.8 s), on all 20 towns of up to 400 junctions and on 8 of the 10 of 900 and 1,600 junctions. Beyond that, five minutes of branch-and-cut end within about 1% of a proven bound, and a polynomial heuristic with dual-guided local search gives a tour 1% to 2.4% above that result in about a minute. On a published test set the optima proved here all equal the published ones, but the picture for the heuristic is less favourable: it is up to 5.8% above the optimum where few streets are one-way, and slower. On five real street networks every optimum is proved in at most 34 seconds, and the heuristic is at most 3.1% above it. Separation and bounding, the core of the 1997 work, is exactly what makes this possible.
-6. **The paths left open in 1997.** A first pass dearer than the next keeps the problem polynomial when every street needs service. With a different cost each way (the windy postman, NP-hard), Win's method comes within a mean 0.10% of the 99 published optima in seconds. When only some streets do (the rural postman problem, NP-hard), branch-and-cut proves the optimum on all 57 benchmark networks that mark them, and the heuristic averages 0.66% above it. Several postmen sharing a district (NP-hard) are planned by the best split of one tour and a local search, optimal in 61 of 62 small cases where the optimum is known; with vehicle capacities, the same idea comes within a median 5.8% of the best published costs, with the number of vehicles left free.
+6. **The paths left open in 1997.** A first pass dearer than the next keeps the problem polynomial when every street needs service. With a different cost each way (the windy postman, NP-hard), Win's method comes within a mean 0.10% of the 99 published optima in seconds. When only some streets do (the rural postman problem, NP-hard), branch-and-cut proves the optimum on all 57 benchmark networks that mark them, and the heuristic averages 0.66% above it. Several postmen sharing a district (NP-hard) are planned by the best split of one tour and a local search, optimal in 61 of 62 small cases where the optimum is known; with vehicle capacities, the same idea comes within a median 5.8% of the best published costs, with the number of vehicles left free. The six remaining combinations of network and service, rural and several postmen on one-way, mixed and windy networks, are also solved (section 10.7): on 47 published windy rural instances the best route is a mean 0.62% above the published optimum, and on 629 published min-max optima the several-postmen heuristic is a mean 2.15% above, with worst cases of 7.6% and 17.2%.
 7. **Open to everyone.** The code, the results, this report and the 1997 original are published at github.com/miquelmp/chinese-postman-problem, and the website solves street networks of up to 2,500 junctions in the browser, from a file or from OpenStreetMap, in seconds.
 
 The two observations of 1997 about practice still hold. Routine services such as refuse collection or mail delivery are bounded by a working shift, so the networks involved stay moderate in size; and for one-off emergencies such as snow clearing, a fast near-optimal answer can be worth more than a slow proven one. For the CPP itself, thanks to the matching theory of the 1960s and 1970s and to today's implementations, a fast answer and a proven one are the same answer.
@@ -784,6 +827,10 @@ The natural continuation is a stronger lower bound for several postmen, real slo
 - Chen, Y., Hao, J.-K. and Glover, F. (2016). A hybrid metaheuristic approach for the capacitated arc routing problem. *European Journal of Operational Research* 253(1), 25–39.
 - Guan, M. G. (1984). On the windy postman problem. *Discrete Applied Mathematics* 9(1), 41–46.
 - Win, Z. (1989). On the windy postman problem on Eulerian graphs. *Mathematical Programming* 44(1), 97–112.
+- Campos, V. and Savall, J. V. (1995). A computational study of several heuristics for the DRPP. *Computational Optimization and Applications* 4(1), 67–77.
+- Benavent, E., Corberán, Á., Piñana, E., Plana, I. and Sanchis, J. M. (2005). New heuristic algorithms for the windy rural postman problem. *Computers & Operations Research* 32(12), 3111–3128.
+- Corberán, Á., Plana, I. and Sanchis, J. M. (2007). A branch & cut algorithm for the windy general routing problem and special cases. *Networks* 49(4), 245–257.
+- Benavent, E., Corberán, Á., Plana, I. and Sanchis, J. M. (2009). Min-max K-vehicles windy rural postman problem. *Networks* 54(4), 216–226.
 - Ulusoy, G. (1985). The fleet size and mix problem for capacitated arc routing. *European Journal of Operational Research* 22(3), 329–337.
 - Ghiani, G. and Laporte, G. (2000). A branch-and-cut algorithm for the undirected rural postman problem. *Mathematical Programming* 87(3), 467–481.
 

@@ -86,6 +86,11 @@ with a side of spacing * sqrt(n), so the density of junctions stays the same at 
 <h3><code>write_gra(G, path: str)</code></h3><p>Write a multigraph in the .GRA format.</p>
 <h3><code>class CARPInstance</code></h3><p>A CARP benchmark: its road graph, vehicles, capacity and published bounds.</p>
 <h3><code>read_carp(path: str)</code></h3><p>Read a CARP .dat file, keeping each street&#x27;s demand as an edge attribute.</p>
+<h2 id="kpostmen">chinese_postman.kpostmen</h2><p>Several postmen on windy, mixed and directed networks, with the longest route as short as possible.</p>
+<h3><code>class KSolution</code></h3><p>Routes from the depot, each a vertex sequence, with their costs and a lower bound.</p>
+<h3><code>KSolution.longest(self)</code></h3><p>Cost of the longest route.</p>
+<h3><code>KSolution.gap_pct(self)</code></h3><p>Percentage by which the longest route exceeds the lower bound.</p>
+<h3><code>solve_k_postmen(P: RuralProblem, k: int, local_seconds: float=5.0)</code></h3><p>At most k routes from the depot that together serve every required link.</p>
 <h2 id="mixed">chinese_postman.mixed</h2><p>Mixed Chinese Postman Problem: two-way streets (edges) and one-way streets (arcs).</p>
 <h3><code>class MixedGraph</code></h3><p>A street network whose links may be one-way or two-way.</p>
 <h3><code>MixedGraph.nodes(self)</code></h3><p>All vertices, sorted.</p>
@@ -191,6 +196,23 @@ each by an exact rebalance, improve the two best by reversals, and return the be
 Win&#x27;s among them when it applies.</p>
 <h3><code>solve_windy(W: WindyGraph, time_limit: float=300.0, start=None)</code></h3><p>Heuristic and bounds first, then branch-and-cut told to find a tour cheaper than the
 heuristic&#x27;s. If it proves there is none, the heuristic&#x27;s tour is optimal.</p>
+<h2 id="windyrural">chinese_postman.windyrural</h2><p>Rural postman on networks with a cost for each direction of each street.</p>
+<h3><code>class RuralProblem</code></h3><p>Links with a cost each way, some of them required, and an optional depot.</p>
+<h3><code>RuralProblem.windy(self)</code></h3><p>The network without the service requirement.</p>
+<h3><code>RuralProblem.is_feasible(self)</code></h3><p>Return True if every required link and the depot lie in one strongly connected part.</p>
+<h3><code>RuralProblem.required_pieces(self)</code></h3><p>Vertex sets of the connected pieces of required links, with the depot.</p>
+<h3><code>class RuralSolution</code></h3><p>A route with its cost, lower bound and whether it is proven optimal.</p>
+<h3><code>RuralSolution.gap_to_bound_pct(self)</code></h3><p>Percentage by which the route exceeds the lower bound, or None without a bound.</p>
+<h3><code>read_instance(path: str, forbidden: int=99999999)</code></h3><p>Read an instance in the format of Corberan et al.: required links, then the others, each as
+`(i, j) coste c_ij c_ji`. Costs of at least `forbidden` forbid that direction.</p>
+<h3><code>read_directed(path: str)</code></h3><p>Read a directed instance in the format of Campos et al., as distributed with OAR Lib: counts,
+then one line `tail, head, cost, required` for each arc.</p>
+<h3><code>lower_bound(P: RuralProblem)</code></h3><p>The linear relaxation with a cut around each required piece. Returns (value, columns, x).</p>
+<h3><code>solve_exact(P: RuralProblem, time_limit: float=300.0, start=None)</code></h3><p>Solve the integer program with HiGHS, adding connectivity cuts between integer solutions.</p>
+<h3><code>solve_heuristic(P: RuralProblem, start=None, pre=None, local_seconds: float=30.0)</code></h3><p>Orient the required links from the relaxation or at their cheaper direction, rebalance, join
+the pieces, and improve the two best starts by reversals.</p>
+<h3><code>solve(P: RuralProblem, time_limit: float=300.0, start=None, local_seconds: float=6.0)</code></h3><p>Heuristic first, then branch-and-cut told to find a cheaper route. If it proves that there
+is none, the heuristic route is optimal.</p>
   </div>
 </main>
 <footer class="site-footer"><div class="inner"><p>Miquel Monserrat Pons. Final-year project, ETSEIB (Universitat Politècnica de Catalunya), 1997; revised 2026 with AI assistance (Claude, by Anthropic).</p><p>Code under the MIT licence; texts and figures under CC BY 4.0. <a href="https://github.com/miquelmp/chinese-postman-problem">Source on GitHub</a>.</p><p>Benchmark instances from the arc-routing literature, as collected in CARPData.jl (MIT). Street data © OpenStreetMap contributors (ODbL). The in-browser solver is written in JavaScript; the optional exact proof runs Python through Pyodide, with NetworkX and SciPy (HiGHS).</p></div></footer>

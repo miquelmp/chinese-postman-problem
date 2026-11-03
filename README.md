@@ -27,12 +27,11 @@ it can, and otherwise returns a heuristic tour with a proven lower bound, using 
 
 | Tool | Language | Scope | Exact methods | Last activity |
 | --- | --- | --- | --- | --- |
-| This package | Python, JavaScript | Undirected, directed, mixed, rural, several postmen, CARP | Matching, minimum-cost flow, branch-and-cut (HiGHS) | 2026 |
+| This package | Python, JavaScript | Undirected, directed, mixed, windy; rural and several postmen on each of them; CARP | Matching, minimum-cost flow, branch-and-cut (HiGHS) | 2026 |
 | [OAR Lib](https://github.com/Olibear/ArcRoutingLibrary) (Lum, Golden and Wasil, 2019) | Java | Undirected, directed, mixed, windy rural, directed rural, several vehicles | Undirected and directed only; heuristics elsewhere | 2019 |
 | [postman_problems](https://github.com/brooksandrew/postman_problems) (Brooks) | Python | Undirected, and rural when the required streets form one component | Not stated | 2018 |
 
-OAR Lib is the closest project, and is broader in some ways: it covers windy and directed rural problems,
-which this package does not. A new package rather than a contribution to it was chosen because it is
+OAR Lib is the closest project. A new package rather than a contribution to it was chosen because it is
 written in Java and has been inactive since 2019, while this work needed exact mixed and rural methods
 on open-source solvers, a Python interface and a version that runs in the browser. NetworkX provides
 building blocks, Eulerian circuits and matchings, which this package uses.
@@ -53,7 +52,7 @@ building blocks, Eulerian circuits and matchings, which this package uses.
 
 ```bash
 pip install -e ".[test]"
-pytest -q                            # 289 tests (348 once the optional LEMON library is built)
+pytest -q                            # 360 tests (419 once the optional LEMON library is built)
 ```
 
 ```python
@@ -88,6 +87,8 @@ print(team.route_costs, team.lower_bound)
 | `chinese_postman/cpp.py` | Undirected CPP (Edmonds' method) and directed CPP (minimum-cost flow) |
 | `chinese_postman/mixed.py` | Mixed CPP: bounds, exact branch-and-cut, heuristic with local search, combined `solve_mixed` |
 | `chinese_postman/windy.py` | Windy postman: bounds, branch-and-cut, Win's method, local search, combined `solve_windy` |
+| `chinese_postman/windyrural.py` | Rural postman on windy, mixed and directed networks: bound, branch-and-cut, heuristic, combined `solve` |
+| `chinese_postman/kpostmen.py` | Several postmen on windy, mixed and directed networks |
 | `chinese_postman/rural.py` | Service and travel costs; rural postman: Frederickson, bounds, branch-and-cut, combined `solve_rural` |
 | `chinese_postman/fleet.py` | Several postmen (min-max k-postmen), exact model for small cases, capacitated fleets (CARP) |
 | `chinese_postman/sequence.py` | Routes as sequences of served streets: cost, best directions, insertion, local search |

@@ -39,8 +39,7 @@
     return total >= 10000 ? `${(v / 1000).toFixed(1)} km` : `${Math.round(v).toLocaleString("en")} m`;
   };
 
-  let blocked = false;                  // this network and service cannot be solved yet
-  function setBusy(b) { busy = b; $("solve").disabled = b || !inst || blocked; $("fetch-osm").disabled = b; }
+  function setBusy(b) { busy = b; $("solve").disabled = b || !inst; $("fetch-osm").disabled = b; }
 
   // ---------------------------------------------------------------- service settings
   function pickDepot(I) {               // the junction nearest the middle of the drawing
@@ -119,22 +118,19 @@
   function problemOf(I) {
     const k = +$("postmen").value, partial = I.links.some(l => l.req === false), kind = kindOf(I);
     const proof = ["Exact proof on request", "method"];
-    if (kind !== "undirected" && (k > 1 || partial))
-      return { name: "Combination not available", tone: "off", link: "",
-               chips: [["Not available", "off"]],
-               text: "Serving only some streets, or sharing them among several postmen, works on two-way networks with one cost per street. " +
-                     ($("source").value === "osm" ? "Tick “On foot”, serve every street with one postman, or choose another network." : "Serve every street with one postman, or choose a Grid town.") };
+    const family = { undirected: "", directed: "Directed ", mixed: "Mixed ", windy: "Windy " }[kind];
+    const here = kind === "undirected" ? "" : "107-every-network-and-every-service";
     if (k > 1)
-      return { name: "Several postmen", tone: "hard", link: "104-several-postmen",
+      return { name: `${family}several postmen`.replace(/^s/, "S"), tone: "hard", link: here || "104-several-postmen",
                chips: [["NP-hard", "hard"], ["Heuristic with a lower bound", "method"]],
                text: "Share the streets among the postmen so that the longest route is as short as possible." };
     if (partial) {
-      const one = requiredPieces(I) === 1;
-      return { name: "Rural postman", tone: one ? "easy" : "hard", link: "103-the-rural-postman-problem",
-               chips: one ? [["Polynomial here", "easy"], ["Exact method", "method"]]
-                          : [["NP-hard", "hard"], ["Heuristic with a lower bound", "method"], proof],
-               text: one ? "Only some streets need service, and they form one connected piece with the depot, so the problem stays easy."
-                         : "Only some streets need service, and joining their separate pieces is the hard part." };
+      const one = requiredPieces(I) === 1, easy = one && (kind === "undirected" || kind === "directed");
+      return { name: `${family}rural postman`.replace(/^r/, "R"), tone: easy ? "easy" : "hard", link: here || "103-the-rural-postman-problem",
+               chips: easy ? [["Polynomial here", "easy"], ["Exact method", "method"]]
+                           : [["NP-hard", "hard"], ["Heuristic with a lower bound", "method"], proof],
+               text: easy ? "Only some streets need service, and they form one connected piece with the depot, so the problem stays easy."
+                          : "Only some streets need service. Joining their separate pieces, and choosing directions, is the hard part." };
     }
     return {
       undirected: { name: "Undirected Chinese postman", tone: "easy", link: "32-edmonds-method",
@@ -161,8 +157,6 @@
     $("problem-chips").innerHTML = chips.map(([t, c]) => `<li class="chip ${c}">${t}</li>`).join("");
     $("problem-link").hidden = !p.link;
     $("problem-link").href = `../report/#${p.link}`;
-    blocked = p.tone === "off";
-    $("solve").disabled = busy || !inst || blocked;
   }
 
   function showInst(newInst) {
