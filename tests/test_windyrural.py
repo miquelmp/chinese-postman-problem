@@ -12,7 +12,8 @@ from chinese_postman import instances as I
 from chinese_postman import rural
 from chinese_postman.windy import WindyGraph
 from chinese_postman.windy import solve_exact as windy_exact
-from chinese_postman.windyrural import (RuralProblem, lower_bound, read_directed, read_instance, solve,
+from chinese_postman.windyrural import (RuralProblem, lower_bound, read_directed, read_directed_general,
+                                        read_instance, solve,
                                         solve_exact, solve_heuristic)
 
 
@@ -170,3 +171,52 @@ def test_mixed_results_agree_with_the_published_optima(name):
         assert float(r["bound"]) <= optimum + 1e-6 <= float(r["best"]) + 2e-6
         if r["optimal"] == "True":
             assert float(r["best"]) == optimum
+
+
+DIRECTED = """NOMBRE: test
+VERTICES: 4
+ARCOS_REQ: 1
+ARCOS_NOREQ: 4
+VERTICES_REQ: 1
+LIST OF ARCS:
+(1,2) coste 5
+ARCOS_NOREQ:
+(2,1) coste 1 -1
+(2,3) coste 2 -1
+(3,1) coste 2 -1
+(2,4) coste 7 -1
+(4,1) coste 7 -1
+VERT_REQ:
+3
+"""
+
+
+def test_directed_general_reader_and_required_vertices(tmp_path):
+    path = tmp_path / "x.dat"
+    path.write_text(DIRECTED, encoding="latin-1")
+    P = read_directed_general(str(path))
+    assert P.vertices == (3,) and len(P.links) == 6 and sum(l[4] for l in P.links) == 1
+    assert solve_exact(P).total_cost == 9                 # 1, 2, 3, 1, not the shorter 1, 2, 1
+    sol = solve(P)
+    assert sol.optimal and sol.total_cost == 9 and 3 in sol.circuit
+    free = RuralProblem(P.links)
+    assert solve(free).total_cost == 6
+
+
+def test_files_without_a_list_of_vertices_require_all_of_them(tmp_path):
+    path = tmp_path / "x.dat"
+    path.write_text(DIRECTED.replace("VERTICES_REQ: 1\n", "").replace("VERT_REQ:\n3\n", ""), encoding="latin-1")
+    assert read_directed_general(str(path)).vertices == (1, 2, 3, 4)
+
+
+def test_directed_results_agree_with_the_published_values():
+    rows = _csv("directed_published.csv") + _csv("dgrp_lap.csv")
+    assert rows
+    for r in rows:
+        published = float(r["published"])
+        if r["bound"]:
+            assert float(r["bound"]) <= published + 1e-6
+        if r["best"]:
+            assert float(r["best"]) >= published - 1e-6
+            if r["optimal"] == "True":
+                assert float(r["best"]) == published

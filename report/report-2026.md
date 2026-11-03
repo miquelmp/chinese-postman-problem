@@ -217,7 +217,7 @@ Fleury's rule, discussed in the 1997 report, also works but must test at each st
 
 ## 6. Implementation
 
-The solver is a small Python 3 package, `chinese_postman`, built on NetworkX and covered by 421 automated tests (362 when the optional LEMON library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with eleven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).
+The solver is a small Python 3 package, `chinese_postman`, built on NetworkX and covered by 424 automated tests (365 when the optional LEMON library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with eleven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).
 
 ### 6.1 Modules
 
@@ -269,7 +269,7 @@ For a directed graph the imbalance of each vertex, out-degree minus in-degree, p
 | Web builders | 14 | Examples, .GRA, CARP and OpenStreetMap input give the expected networks and solve; bad input gives a clear message |
 | JavaScript solver | 243 networks | The website solver gives the Python optimum on every undirected and directed case, never claims a false optimum on mixed ones, and returns a valid tour |
 | Rural postman | 36 | Exact equals enumeration of every multiset of extra passes on the original network; Frederickson within 3/2 of the optimum; every street served; all-required equals the CPP; first-pass costs, undirected and directed |
-| Rural postman, every network | 41 | Exact equals enumeration on small windy, mixed and directed networks; bound ≤ exact ≤ heuristic; all-required cases equal the windy postman; measured results agree with their bounds and with published optima |
+| Rural postman, every network | 44 | Exact equals enumeration on small windy, mixed and directed networks; bound ≤ exact ≤ heuristic; all-required cases equal the windy postman; measured results agree with their bounds and with published optima |
 | Several postmen | 32 | Bound ≤ exact optimum ≤ heuristic; split within 2 − 1/k of the optimum; split equals enumeration of cut points; one postman equals the rural postman; capacities respected; on windy, mixed and directed networks; no measured route falls below a published bound |
 | JavaScript extensions | 91 networks | Website rural postman and several postmen: valid routes, every street served, never below the Python optimum, bounds never above it |
 
@@ -430,7 +430,7 @@ The 2026 version keeps the structure of the 1997 method and improves each of its
 | Eulerian circuit | Cycle splicing over adjacency queues | Hierholzer with one pointer per vertex | Linear time |
 | Directed streets | Future work | Minimum-cost flow | Polynomial (Edmonds and Johnson, 1973) |
 | Platform | Turbo C, 16-bit integers, 640 KB memory model | Python 3, unbounded integers, automatic memory | No size limits on costs or data |
-| Verification | Manual checks | 421 automated tests in Python and 334 networks and 3,000 matchings re-checked in JavaScript, every tour validated | Results checked on each run |
+| Verification | Manual checks | 424 automated tests in Python and 334 networks and 3,000 matchings re-checked in JavaScript, every tour validated | Results checked on each run |
 
 ### 8.2 The 1997 branch-and-bound
 
@@ -718,14 +718,32 @@ Sections 10.3 and 10.4 work on two-way networks. Any of the four kinds of networ
 | Network | Instances | Streets | Limit | Optimum proved | Best route above the bound (mean, worst) |
 | --- | --- | --- | --- | --- | --- |
 | One-way | 61 | 211–801 | 20 s | 45 | 0.74%, 8.9% |
+| One-way, the 16 left open | 16 | 211–792 | 5 min | 14 | 0.06%, 0.53% |
 | Mixed | 36 | 884–2,678 | 20 s | 2 | 9.0%, 25% |
 | Mixed | 6 | 884–1,326 | 5 min | 6 | 0 |
 | Mixed | 6 | 1,867–2,678 | 5 min | 0 | 2.1%, 4.8% |
 | Windy | 66 | 14–3,037 | 20 s | 44 | 5.8%, 46% |
 
-On the 47 windy files of the sample with a published value, all optima, the best route is a mean 0.62% above the published value, with a worst case of 7.6%, and equals it on 32. The heuristic alone is a mean 1.66% above. The other 19 files of the sample are not in the list. No result falls below a published value. All 36 mixed files have a published optimum (`results/mrpp_published_values.csv`, copied from `MRPP.txt` on the instance page), and every value proved here equals it. With 20 seconds the best route is a mean 2.67% above the optimum, with a worst case of 12.4%, and equals it on 2. With 5 minutes it equals it on the 6 files of up to 1,326 streets, and is a mean 1.51% above on the 6 larger ones, with a worst case of 3.5%. No route or bound crosses a published value. The directed instances have no published values in this project, so their only test is the bound. The heuristic alone is weak on these two families: on the 45 proved directed cases it is a mean 8.4% above the optimum, with a worst case of 20%, and on the mixed files a mean 2.7%, with a worst case of 12%. Branch-and-cut does the work there.
+On the 47 windy files of the sample with a published value, all optima, the best route is a mean 0.62% above the published value, with a worst case of 7.6%, and equals it on 32. The heuristic alone is a mean 1.66% above. The other 19 files of the sample are not in the list. No result falls below a published value. All 36 mixed files have a published optimum (`results/mrpp_published_values.csv`, copied from `MRPP.txt` on the instance page), and every value proved here equals it. With 20 seconds the best route is a mean 2.67% above the optimum, with a worst case of 12.4%, and equals it on 2. With 5 minutes it equals it on the 6 files of up to 1,326 streets, and is a mean 1.51% above on the 6 larger ones, with a worst case of 3.5%. No route or bound crosses a published value. The 61 directed files have no published values in this project, so their test is the bound, and the related published sets below. With 5 minutes 14 of the 16 left open were proved (`results/rural_directed_long.csv`), which makes 59 of 61. The heuristic alone is weak on these two families: on the 45 directed cases proved in 20 seconds it is a mean 8.4% above the optimum, with a worst case of 20%, and on the mixed files a mean 2.7%, with a worst case of 12%. Branch-and-cut does the work there.
 
 The 25% of the 20-second table is mostly a weak bound: the same routes are at most 12.4% above the optimum. On the six files of up to 1,326 streets, 1 to 4 minutes proved the optimum.
+
+**Directed general routing and stacker crane.** Two related directed sets from the same page do have published values (`results/dgrp_published_values.csv`, `results/scp_published_values.csv`). In the directed general routing problem some vertices must also be visited, which `RuralProblem.vertices` adds as further pieces. The stacker crane problem is a directed rural postman whose arcs to serve rarely touch. These are `results/directed_published.csv` and `results/dgrp_lap.csv`.
+
+The 36 DG files list no vertices to visit. Read literally they give routes below the published optima, and with every vertex required they give those optima, so that reading was adopted. It is an inference from the values, not a statement in the files.
+
+| Set | Files | Arcs | Branch-and-cut limit | Proved, each equal to the published optimum | Best route above the optimum (mean, worst) |
+| --- | --- | --- | --- | --- | --- |
+| DG | 36 | 1,166–3,177 | 60 s | 31 | 1.45%, 18.2% |
+| Stacker crane, random | 14 | 3,824–59,901 | 60–120 s | 14 | 0 |
+| Stacker crane, grid, 100 arcs to serve | 10 | 2,410–3,827 | 60 s | 8 | 0.47%, 3.0% |
+| Stacker crane, grid, 300 arcs to serve | 10 | 8,625–13,246 | 60 s | 0 | 8.05%, 13.9% |
+| Stacker crane, grid, 500 arcs to serve | 10 | 12,218–16,491 | 60 s | 0 | 2.42%, 5.5% |
+| Directed general routing, large | 70 | 50,000 | 120 s | 60 | 0 on those 60; no route within the time on the other 10 |
+
+No route falls below a published optimum, no bound rises above one, and no value proved here differs from a published one. The method is weakest when the pieces are many and small, as on the grid files. The random crane files took at most 18 seconds each. The 60 large files proved took a median of about 7 seconds, on networks of 5,000 junctions. Above 10,000 links `solve` now runs branch-and-cut first, because on these networks the relaxation is often tight and the joining heuristic is slow. HiGHS sometimes overran its limit, by up to 23 minutes, so the last 23 large files had a hard limit of 5 minutes, which stopped 3 of them.
+
+Sixty of the 104 crane files were left out: all 40 of the 100 × 100 grid and the 20 of the 50 × 50 grid with 1,000 and 2,000 arcs to serve. Each has a header that counts more arcs than the file holds (16,269 against 15,535 on `Crane_grid50_1000_8_1`, for instance). On all 20 of the 50 × 50 files the linear bound is above the published optimum, which a complete network could not give, so the files are probably incomplete. This has not been confirmed with the authors.
 
 **Several postmen, published optima.** The 144 instances of Benavent, Corberán, Plana and Sanchis (2009), with 2 to 6 postmen, give 705 cases: 629 with a published optimum and 76 open (`results/mmwrpp_published_values.csv`, `results/k_published.csv`). They have 10–184 links. The files do not name a depot, so vertex 1 was assumed. The assumption is not verified, but it fits: no route falls below a published optimum or bound, and 340 equal an optimum exactly. With 2 seconds of local search per case the heuristic took at most 5.2 seconds.
 
@@ -754,7 +772,7 @@ The website solves these problems in the browser with a simpler heuristic in Jav
 | Every street, a cost for each way (windy postman) | NP-hard; polynomial if Eulerian | Branch-and-cut, 5 of 61 published instances in two minutes | Win, at most 2; local search | Mean 0.10%, worst 0.44% (99 published instances) |
 | Some streets (rural postman) | NP-hard; polynomial with one piece | Branch-and-cut, all 57 benchmark networks and 10 of the 12 towns of up to 400 junctions | Frederickson, at most 3/2; local search | Mean 0.66%, worst 4.8% (16 proved cases) |
 | k postmen, min-max | NP-hard | Branch-and-cut, small networks | Best split, at most 2 − 1/k; local search | Mean 0.02%, worst 1.3% (62 small cases) |
-| Some streets, on one-way, mixed or windy networks | NP-hard | Branch-and-cut: 45 of 61 one-way in 20 s; 6 of 12 mixed in 5 min; 44 of 66 windy in 20 s | Orientation, rebalancing and joining; no guarantee | Best route mean 0.62%, worst 7.6% (47 published windy instances, 20 s); mean 0.76%, worst 3.5% (12 published mixed instances, 5 min) |
+| Some streets, on one-way, mixed or windy networks | NP-hard | Branch-and-cut: 45 of 61 one-way in 20 s; 6 of 12 mixed in 5 min; 44 of 66 windy in 20 s | Orientation, rebalancing and joining; no guarantee | Best route mean 0.62%, worst 7.6% (47 published windy instances, 20 s); mean 0.76%, worst 3.5% (12 published mixed instances, 5 min); 113 of 150 related directed instances proved, each equal to the published optimum |
 | k postmen, on one-way, mixed or windy networks | NP-hard | Not attempted | Split and local search; no guarantee | Mean 2.15%, worst 17.2% (629 published optima, depot assumed) |
 | Capacitated fleet (CARP) | NP-hard | Not attempted | Ulusoy split and relocations | Median 5.8% above the best known, number of vehicles free |
 

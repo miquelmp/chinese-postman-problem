@@ -42,6 +42,7 @@ class RuralProblem:
     """Links with a cost each way, some of them required, and an optional depot."""
     links: list                      # (u, v, cost_uv, cost_vu, required)
     depot: object = None
+    vertices: tuple = ()             # vertices the route must visit, whatever links it drives
 
     @property
     def windy(self):
@@ -51,7 +52,7 @@ class RuralProblem:
     def is_feasible(self):
         """Return True if every required link and the depot lie in one strongly connected part."""
         D = self.windy.digraph()
-        needed = {x for u, v, *_, r in self.links if r for x in (u, v)}
+        needed = {x for u, v, *_, r in self.links if r for x in (u, v)} | set(self.vertices)
         if self.depot is not None:
             needed.add(self.depot)
         return any(needed <= c for c in nx.strongly_connected_components(D))
@@ -61,6 +62,7 @@ class RuralProblem:
         G = nx.Graph()
         if self.depot is not None:
             G.add_node(self.depot)
+        G.add_nodes_from(self.vertices)
         G.add_edges_from((u, v) for u, v, *_, r in self.links if r)
         return [set(c) for c in nx.connected_components(G)]
 
@@ -116,6 +118,29 @@ def read_directed(path: str) -> RuralProblem:
     return RuralProblem(links)
 
 
+def read_directed_general(path: str) -> RuralProblem:
+    """Read an instance of the directed general routing or stacker crane problem in the format of
+    Corberan et al.: required arcs, the other arcs, then required vertices, with `(i, j) coste c`."""
+    with open(path, encoding="latin-1") as f:
+        text = f.read()
+    text = re.split(r"CORDENADAS", text)[0]
+    body = re.split(r"LIST OF (?:REQUIRED )?ARCS\s*:", text, maxsplit=1)[1]
+    head, *rest = re.split(r"VERT_REQ\s*:|VERTICES REQUE\s*:", body, maxsplit=1)
+    parts = re.split(r"ARCOS_NOREQ\s*:|LIST OF NO REQUIRED ARCS\s*:", head, maxsplit=1)
+    links = []
+    for required, part in zip((True, False), parts):
+        for i, j, c in re.findall(r"\(\s*(\d+)\s*,\s*(\d+)\s*\)\s*cost[e]?\s+(-?\d+)", part):
+            if i != j:
+                links.append((int(i), int(j), int(c), None, required))
+    if not links:
+        raise ValueError(f"{path}: no arcs found")
+    if "VERTICES_REQ" in text:
+        vertices = tuple(int(x) for x in re.findall(r"\d+", rest[0])) if rest else ()
+    else:                                    # the DG files list none, and require every vertex
+        vertices = tuple(sorted({x for l in links for x in l[:2]}))
+    return RuralProblem(links, vertices=vertices)
+
+
 # ------------------------------------------------------------------ the model
 def _columns(P):
     W = P.windy
@@ -141,11 +166,16 @@ def _base_model(P):
 
 def _cut(cols, sets):
     """Rows x(leaving S) >= 1 for each vertex set S."""
+    idx = {}
+    tail = np.array([idx.setdefault(a, len(idx)) for _, a, _, _ in cols])
+    head = np.array([idx.setdefault(b, len(idx)) for _, _, b, _ in cols])
     r, cc = [], []
     for i, S in enumerate(sets):
-        for j, (_, a, b, _) in enumerate(cols):
-            if a in S and b not in S:
-                r.append(i); cc.append(j)
+        inside = np.zeros(len(idx), bool)
+        inside[[idx[v] for v in S if v in idx]] = True
+        j = np.flatnonzero(inside[tail] & ~inside[head])
+        r.append(np.full(len(j), i)); cc.append(j)
+    r, cc = np.concatenate(r), np.concatenate(cc)
     A = coo_matrix((np.ones(len(r)), (r, cc)), shape=(len(sets), len(cols))).tocsr()
     return LinearConstraint(A, 1, np.inf)
 
@@ -155,8 +185,9 @@ def _pieces_of(arcs, P):
     G = nx.Graph()
     if P.depot is not None:
         G.add_node(P.depot)
+    G.add_nodes_from(P.vertices)
     G.add_edges_from((a, b) for a, b, *_ in arcs)
-    needed = {x for u, v, *_, r in P.links if r for x in (u, v)}
+    needed = {x for u, v, *_, r in P.links if r for x in (u, v)} | set(P.vertices)
     if P.depot is not None:
         needed.add(P.depot)
     return [set(c) for c in nx.connected_components(G) if c & needed]
@@ -431,9 +462,14 @@ def solve_heuristic(P: RuralProblem, start=None, pre=None, local_seconds: float 
 
 def solve(P: RuralProblem, time_limit: float = 300.0, start=None, local_seconds: float = 6.0) -> RuralSolution:
     """Heuristic first, then branch-and-cut told to find a cheaper route. If it proves that there
-    is none, the heuristic route is optimal."""
+    is none, the heuristic route is optimal. Above 10,000 links branch-and-cut goes first."""
     t0 = time.perf_counter()
     pre = lower_bound(P)
+    if len(P.links) > 10000:                 # the heuristic is slow here, and the relaxation often tight
+        arcs, total, bound, proved, status = _branch_and_cut(P, time_limit / 2)
+        if proved and arcs is not None:
+            return RuralSolution("branch-and-cut", total, total, True, _circuit(arcs, start or P.depot),
+                                 time.perf_counter() - t0, {"heuristic": total, "status": status})
     he = solve_heuristic(P, start=start, pre=pre, local_seconds=local_seconds)
     integral = _integral(P)
     lb = float(np.ceil(pre[0] - 1e-6)) if integral else pre[0]

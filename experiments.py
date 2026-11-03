@@ -464,6 +464,93 @@ def rural_mixed_long(limit=300.0, step=3):
         save("rural_mixed_long", rows)
 
 
+def directed_published(limit=60.0, max_links=25000):
+    """Published directed instances: the DG files, then the stacker crane files with every arc their
+    header counts. Writes results/directed_published.csv and resumes from it."""
+    from chinese_postman.windyrural import read_directed_general, solve
+
+    def values(name):
+        with open(f"{OUT}/{name}_published_values.csv", newline="", encoding="utf-8") as f:
+            return {r["instance"]: r for r in csv.DictReader(f)}
+
+    def scp_name(path):
+        return (os.path.basename(path).rsplit(".", 1)[0].replace("Crane100", "cranegen100")
+                .replace("Crane300", "cranegen300").replace("Crane_", "crane_"))
+
+    plan = [("DG", p, os.path.basename(p).replace("_new.dat", ""), values("dgrp"))
+            for p in sorted(glob.glob("data/dgrp/DG[0-9]*"))]
+    plan += [("SCP", p, scp_name(p), values("scp")) for p in sorted(glob.glob("data/scp/*"))]
+    rows = []
+    if os.path.exists(f"{OUT}/directed_published.csv"):
+        with open(f"{OUT}/directed_published.csv", newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+    done = {r["instance"] for r in rows}
+    for family, path, name, known in plan:
+        if name in done:
+            continue
+        with open(path, encoding="latin-1") as f:
+            if "finales" in f.read(200):       # the header counts more arcs than the file holds
+                continue
+        P = read_directed_general(path)
+        if len(P.links) > max_links:
+            print("too large:", name, len(P.links), flush=True)
+            continue
+        row = dict(family=family, instance=name, links=len(P.links), required=sum(l[4] for l in P.links),
+                   vertices=len(P.vertices), pieces=len(P.required_pieces()), status=known[name]["status"],
+                   published=known[name]["upper_bound"])
+        sol = solve(P, time_limit=limit)
+        row.update(heuristic=sol.info.get("heuristic", sol.total_cost), best=sol.total_cost,
+                   bound=sol.lower_bound, optimal=sol.optimal, seconds=round(sol.seconds, 2))
+        rows.append(row)
+        print(row, flush=True)
+        save("directed_published", rows)
+
+
+def dgrp_lap(limit=120.0, only=None):
+    """The large published directed general routing files, with branch-and-cut alone: on these
+    networks the joining heuristic is slow. Writes results/dgrp_lap.csv and resumes from it."""
+    from chinese_postman.windyrural import _branch_and_cut, read_directed_general
+    with open(f"{OUT}/dgrp_published_values.csv", newline="", encoding="utf-8") as f:
+        known = {r["instance"]: r for r in csv.DictReader(f)}
+    rows = []
+    if os.path.exists(f"{OUT}/dgrp_lap.csv"):
+        with open(f"{OUT}/dgrp_lap.csv", newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+    done = {r["instance"] for r in rows}
+    for path in sorted(glob.glob("data/dgrp/DGRP_LAP*")):
+        name = os.path.basename(path).rsplit(".", 1)[0]
+        if name in done or (only and name != only):
+            continue
+        P = read_directed_general(path)
+        t = time.perf_counter()
+        _, total, bound, proved, status = _branch_and_cut(P, limit)
+        rows.append(dict(instance=name, links=len(P.links), required=sum(l[4] for l in P.links),
+                         vertices=len(P.vertices), published=known[name]["upper_bound"], best=total,
+                         bound=bound, optimal=proved, status=status, seconds=round(time.perf_counter() - t, 2)))
+        print(rows[-1], flush=True)
+        save("dgrp_lap", rows)
+
+
+def rural_directed_long(limit=300.0):
+    """The directed rural files that rural_general did not prove, with a longer limit."""
+    from chinese_postman.windyrural import read_directed, solve
+    with open(f"{OUT}/rural_general.csv", newline="", encoding="utf-8") as f:
+        todo = [r["instance"] for r in csv.DictReader(f) if r["family"] == "directed" and r["optimal"] != "True"]
+    rows = []
+    if os.path.exists(f"{OUT}/rural_directed_long.csv"):
+        with open(f"{OUT}/rural_directed_long.csv", newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+    done = {r["instance"] for r in rows}
+    for name in todo:
+        if name in done:
+            continue
+        sol = solve(read_directed(f"data/drpp/{name}"), time_limit=limit)
+        rows.append(dict(instance=name, heuristic=sol.info.get("heuristic", sol.total_cost), best=sol.total_cost,
+                         bound=sol.lower_bound, optimal=sol.optimal, seconds=round(sol.seconds, 1)))
+        print(rows[-1], flush=True)
+        save("rural_directed_long", rows)
+
+
 def k_general(seconds=5.0, step=24):
     """Several postmen on windy, mixed and directed networks: a sample of the rural instances, with
     2 to 5 postmen, against the lower bound. Writes results/k_general.csv and resumes from it."""
