@@ -66,7 +66,6 @@
         const p = el("path", { d, class: "street" + (l.oneway ? " oneway" : "") + (l.req === false ? " optional" : ""),
                                "stroke-width": l.req === false ? streetW * 0.6 : streetW }, gStreets);
         p.dataset.base = streetW;
-        el("title", {}, p).textContent = `${costText(l)}${inst.units ? " " + inst.units : ""}`;
         paths[i] = p;
       });
     });
@@ -87,11 +86,29 @@
 
     const n = inst.nodes.length;
     const showLabels = opts.labels === true || (opts.labels === "auto" && n <= 30);
-    if (opts.weights && inst.links.length <= 40) {
+    const labelAt = i => {
+      const p = paths[i], L = p.getTotalLength(), m = p.getPointAtLength(L / 2), m2 = p.getPointAtLength(L / 2 + 1);
+      const dx = m2.x - m.x, dy = m2.y - m.y, len = Math.hypot(dx, dy) || 1;
+      const along = Math.abs(dx) / len;
+      if (along < 0.5) return { L, x: m.x + 6, y: m.y + 4, along, anchor: "start" };   // beside a steep street
+      return { L, x: m.x - dy / len * 11, y: m.y + dx / len * 11 + 4, along, anchor: "middle" };
+    };
+    // "auto": label every street only if every label fits on its street and clear of the others
+    const allFit = () => {
+      if (inst.links.length > 300) return false;
+      const boxes = inst.links.map((l, i) => {
+        const q = labelAt(i), w = costText(l).length * 6;
+        return { x: q.anchor === "start" ? q.x + w / 2 : q.x, y: q.y, w, fits: q.along < 0.5 || w <= q.L - 4 };
+      });
+      if (boxes.some(b => !b.fits)) return false;
+      return boxes.every((a, i) => boxes.every((b, j) => j <= i ||
+        Math.abs(a.x - b.x) > (a.w + b.w) / 2 + 2 || Math.abs(a.y - b.y) > 13));
+    };
+    const showCosts = opts.weights === "auto" ? allFit() : opts.weights && inst.links.length <= 40;
+    if (showCosts) {
       inst.links.forEach((l, i) => {
-        const p = paths[i], L = p.getTotalLength(), m = p.getPointAtLength(L / 2), m2 = p.getPointAtLength(L / 2 + 1);
-        const dx = m2.x - m.x, dy = m2.y - m.y, len = Math.hypot(dx, dy) || 1;
-        const t = el("text", { x: m.x - dy / len * 11, y: m.y + dx / len * 11 + 4, class: "weight", "text-anchor": "middle" }, gText);
+        const { x, y, anchor } = labelAt(i);
+        const t = el("text", { x, y, class: "weight", "text-anchor": anchor }, gText);
         t.textContent = costText(l);
       });
     }
@@ -112,6 +129,31 @@
       const [x, y] = P(opts.depot), q = big ? 6 : 9;
       el("rect", { x: x - q, y: y - q, width: 2 * q, height: 2 * q, class: "depot" }, svg);
     }
+    // Resting the pointer on a street shows its cost. Wide invisible strokes make streets easy to hit.
+    if (opts.weights === "auto") {
+      const gHit = el("g", {}, svg), tip = el("g", { class: "tip", visibility: "hidden" }, svg);
+      const box = el("rect", { rx: 4 }, tip), text = el("text", {}, tip);
+      const show = (ev, i) => {
+        const scale = W / (svg.getBoundingClientRect().width || W), size = 13 * scale;
+        const pt = new DOMPoint(ev.clientX, ev.clientY).matrixTransform(svg.getScreenCTM().inverse());
+        text.textContent = `${costText(inst.links[i])}${inst.units ? " " + inst.units : ""}`;
+        text.setAttribute("font-size", size);
+        const b = text.getBBox(), m = 5 * scale;
+        const x = Math.min(Math.max(pt.x - b.width / 2, m), W - b.width - m), y = Math.max(pt.y - 14 * scale, b.height + m);
+        text.setAttribute("x", x); text.setAttribute("y", y);
+        const c = text.getBBox();
+        box.setAttribute("x", c.x - m); box.setAttribute("y", c.y - m / 2);
+        box.setAttribute("width", c.width + 2 * m); box.setAttribute("height", c.height + m);
+        tip.setAttribute("visibility", "visible");
+      };
+      paths.forEach((p, i) => {
+        const h = el("path", { d: p.getAttribute("d"), class: "hit" }, gHit);
+        h.addEventListener("pointerover", ev => show(ev, i));
+        h.addEventListener("pointermove", ev => show(ev, i));
+        h.addEventListener("pointerout", () => tip.setAttribute("visibility", "hidden"));
+      });
+    }
+
     const postman = el("circle", { r: big ? 4 : 7, class: "postman", visibility: "hidden" }, svg);
     let crew = [];                       // one dot per postman in several-postmen mode
 
@@ -254,6 +296,7 @@
       i = steps.length; frac = 0; place(); onProgress(steps.length, steps.length);
     }
     return {
+      costsShown: !!showCosts,
       setResult, play, pause: stop, reset, finish, colorOf,
       isPlaying: () => playing,
       setSpeed: v => { speed = v; },

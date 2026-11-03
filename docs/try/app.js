@@ -116,9 +116,12 @@
     $("empty").classList.add("hidden");
     const twoWay = kindOf(inst) === "undirected", partial = inst.links.some(l => l.req === false);
     const showDepot = partial || +$("postmen").value > 1;
-    view = Postman.draw($("net"), inst, { labels: "auto", weights: inst.links.length <= 30,
+    view = Postman.draw($("net"), inst, { labels: "auto", weights: "auto",
                                           odd: twoWay && !partial && inst.nodes.length <= 400,
                                           depot: showDepot ? inst.depot : undefined });
+    $("cost-hint").textContent = view.costsShown ? "The label on each street gives its cost."
+      : "Too many streets to label: rest the pointer on a street, or tap it, to see its cost.";
+    $("cost-hint").hidden = false;
     legend(+$("postmen").value > 1 ? "postmen" : "single");
     $("routes").hidden = true;
     $("service-hint").textContent = serviceHint();

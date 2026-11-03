@@ -127,6 +127,10 @@ p { margin: 0 0 1rem; }
 .net .node.odd { fill: var(--ink); }
 .net .label { font-family: var(--sans); font-size: 12px; fill: var(--ink-soft); }
 .net .weight { font-family: var(--sans); font-size: 11px; fill: var(--ink-soft); }
+.net .hit { stroke: transparent; stroke-width: 12; fill: none; pointer-events: stroke; }
+.net .tip { pointer-events: none; }
+.net .tip rect { fill: var(--ink); }
+.net .tip text { font-family: var(--sans); fill: #fff; }
 .net .postman { fill: var(--ink); stroke: var(--route); stroke-width: 3; }
 .net .postman.crew { stroke: #fff; stroke-width: 2; }
 .net .street.optional { stroke: var(--street-faint); }
