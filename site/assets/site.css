@@ -127,6 +127,23 @@ p { margin: 0 0 1rem; }
 .net .node.odd { fill: var(--ink); }
 .net .label { font-family: var(--sans); font-size: 12px; fill: var(--ink-soft); }
 .net .weight { font-family: var(--sans); font-size: 11px; fill: var(--ink-soft); }
+.problem-card { border: 1px solid var(--rule); border-left: 5px solid var(--street); border-radius: 6px; padding: 0.8rem 1rem; margin: 0 0 1rem; background: var(--paper); }
+.problem-card[data-tone="easy"] { border-left-color: #2e7d4f; }
+.problem-card[data-tone="hard"] { border-left-color: var(--route); }
+.problem-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.25rem 1rem; }
+.problem-head h2 { font-size: var(--step-1); margin: 0; }
+.problem-head a { font-size: var(--step--1); }
+.chips { list-style: none; display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.5rem 0; padding: 0; }
+.chip { font-size: 0.8rem; font-weight: 600; line-height: 1.2; padding: 0.25rem 0.6rem; border-radius: 999px; background: var(--panel); color: var(--ink); }
+.chip.easy { background: #e3f2e9; color: #1f5c39; }
+.chip.hard { background: #fdf1cc; color: #6b5000; }
+.chip.method { background: #e2ecf4; color: #24506f; }
+.chip.off { background: var(--panel); color: var(--ink-soft); }
+.problem-card p { margin: 0; font-size: 0.9rem; color: var(--ink-soft); }
+.net .hit { stroke: transparent; stroke-width: 12; fill: none; pointer-events: stroke; }
+.net .tip { pointer-events: none; }
+.net .tip rect { fill: var(--ink); }
+.net .tip text { font-family: var(--sans); fill: #fff; }
 .net .postman { fill: var(--ink); stroke: var(--route); stroke-width: 3; }
 .net .postman.crew { stroke: #fff; stroke-width: 2; }
 .net .street.optional { stroke: var(--street-faint); }
