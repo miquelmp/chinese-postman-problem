@@ -1,0 +1,5 @@
+family,instance,vertices,links,win,win_s,heuristic,winner,best,method,optimal,bound,seconds
+wpp-WA,WA0531,500,837,530782.0,0.146,530782.0,win,530782.0,heuristic,False,520820.0,120.042
+wpp-WA,WA0532,500,813,496993.0,0.092,496993.0,win,496962.0,branch-and-cut,True,496962.0,97.655
+wpp-WA,WA0535,500,837,481554.0,0.155,481554.0,win,481554.0,heuristic,False,432748.0,120.052
+wpp-WA,WA0541,500,1028,591697.0,0.183,591697.0,win,591697.0,"heuristic, proved",True,591697.0,27.186

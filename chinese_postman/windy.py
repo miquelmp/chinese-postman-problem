@@ -117,6 +117,14 @@ def read_wpp(path: str, forbidden: int = 99999999) -> WindyGraph:
     return WindyGraph(links)
 
 
+def _undirected(G):
+    """The undirected CPP, by the fast backend where it exists (not in the browser)."""
+    try:
+        return solve_undirected(G, backend="auto")
+    except ImportError:
+        return solve_undirected(G)
+
+
 # ------------------------------------------------------------------ the model
 def _model(W: WindyGraph):
     nodes = W.nodes
@@ -152,7 +160,7 @@ def bounds(W: WindyGraph):
     G = nx.MultiGraph()
     for u, v, a, b in W.links:
         G.add_edge(u, v, weight=min(c for c in (a, b) if c is not None))
-    und = solve_undirected(G, backend="auto").total_cost
+    und = _undirected(G).total_cost
     return max(float(res.fun), und), float(res.fun), und, (cols, res.x)
 
 
@@ -197,7 +205,7 @@ def _copies(W: WindyGraph):
         if key not in best or a + b < sum(W.links[best[key]][2:]):
             best[key] = k
     copies = {k: 1 for k in range(len(W.links))}
-    for u, v, _ in solve_undirected(G, backend="auto").duplicated:
+    for u, v, _ in _undirected(G).duplicated:
         copies[best[frozenset((u, v))]] += 1
     return copies
 

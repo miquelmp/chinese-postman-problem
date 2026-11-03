@@ -22,6 +22,21 @@ for (const [name, size, share] of [["example1997"], ["konigsberg"], ["petersen"]
   }
 }
 check(CPP.solve(NW.example("example1997")).total === 63, "1997 example optimum 63");
+for (const seed of [0, 1, 2]) {
+  const inst = NW.example("hilly-town", 10, 0, seed);
+  const r = CPP.solve(inst);
+  check(r.kind === "windy", "hilly town is windy");
+  check(r.lower_bound <= r.total && r.total <= 2 * r.lower_bound, "hilly town bound");
+  const cost = new Map();
+  for (const l of inst.links) {
+    const f = `${l.u},${l.v}`, b = `${l.v},${l.u}`;
+    cost.set(f, Math.min(l.w, cost.get(f) ?? Infinity));
+    cost.set(b, Math.min(l.w2, cost.get(b) ?? Infinity));
+  }
+  let walked = 0;
+  for (let i = 0; i + 1 < r.circuit.length; i++) walked += cost.get(`${r.circuit[i]},${r.circuit[i + 1]}`);
+  check(walked <= r.total && r.circuit[0] === r.circuit[r.circuit.length - 1], "hilly town tour cost");
+}
 check(CPP.solve(NW.example("konigsberg")).total === 9, "Königsberg 9 crossings");
 check(CPP.solve(NW.example("petersen")).total === 20, "Petersen 20");
 

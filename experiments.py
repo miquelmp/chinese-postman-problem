@@ -396,6 +396,18 @@ def wpp(limit=120.0, step=4):
         save("windy_published", rows)
 
 
+def wpp_win():
+    """Win's method on all 120 published windy instances in data/wpp. Writes results/windy_win.csv."""
+    from chinese_postman.windy import read_wpp, solve_win
+    rows = []
+    for path in sorted(glob.glob("data/wpp/W*"), key=lambda p: os.path.basename(p)[2:]):
+        W = read_wpp(path)
+        win = solve_win(W)
+        rows.append(dict(instance=os.path.basename(path), vertices=len(W.nodes), links=len(W.links),
+                         win=win.total_cost, seconds=round(win.seconds, 3)))
+    save("windy_win", rows)
+
+
 def mixed(limit=300.0):
     from chinese_postman.mixed import from_graph
     mixed_towns(limit)
