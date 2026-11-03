@@ -409,8 +409,8 @@ def wpp_win():
 
 
 def _campos():
-    """The instance files of Campos et al., without the archives stored beside them."""
-    return [p for p in glob.glob("data/drpp/*") if not p.endswith((".zip", ".gz", ".tar", ".rar", ".7z"))]
+    """The instance files of Campos et al., without the notes stored beside them."""
+    return [p for p in glob.glob("data/drpp/*") if not p.endswith((".pdf", ".zip", ".gz", ".tar", ".rar", ".7z"))]
 
 
 def rural_general(limit=20.0, step=8):
