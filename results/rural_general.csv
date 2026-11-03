@@ -95,3 +95,8 @@ mixed,RD555,2643,1338,21,58372.0,undirected,58372.0,heuristic,False,53708.0,108.
 mixed,RD557,2643,1338,21,81425.0,lp-0,81425.0,heuristic,False,79547.0,303.46
 mixed,RD572,2678,2035,1,71608.0,undirected,71608.0,heuristic,False,64893.0,40.226
 mixed,RD575,2678,2035,1,82565.0,undirected,82565.0,heuristic,False,77280.0,46.626
+mixed,RD577,2678,2035,1,124196.0,lp-0,124196.0,heuristic,False,123089.0,52.34
+windy,A3101,174,83,33,10762.0,undirected,10433.0,branch-and-cut,False,10421.0,20.027
+windy,A3109,174,83,33,13480.0,undirected,13132.0,branch-and-cut,True,13132.0,12.419
+windy,A3205,174,89,28,10288.0,undirected,10053.0,branch-and-cut,True,10053.0,10.993
+windy,A5101,174,99,18,11130.0,undirected,11032.0,"branch-and-cut, repaired, proved",True,11032.0,10.532
