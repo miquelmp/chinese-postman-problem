@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Section 6.8 mentions Route Crafter.
 - The page of the 1997 report says why branch-and-bound was chosen.
 - Removes from section 7.1 a description of the Delaunay towns that 2026.9.0 made obsolete.
 

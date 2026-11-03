@@ -309,7 +309,9 @@ HiGHS works in floating point. Its optimality statements are therefore numerical
 
 ### 6.8 Related software
 
-Two open packages cover part of the same ground. OAR Lib (Lum, Golden and Wasil, 2019), in Java under the MIT licence, is the broadest: exact methods for the undirected and directed CPP and heuristics for the mixed, windy, rural and multi-vehicle variants. Its last commit dates from February 2019. `postman_problems` (Brooks), in Python, solves the CPP and the rural postman problem with connected required streets; its last release dates from 2018. This package adds exact methods for the mixed and rural cases, certified matching at large scale and a browser version. It has no windy solvers, which OAR Lib has.
+Two open packages and one website cover part of the same ground. OAR Lib (Lum, Golden and Wasil, 2019), in Java under the MIT licence, is the broadest: exact methods for the undirected and directed CPP and heuristics for the mixed, windy, rural and multi-vehicle variants. Its last commit dates from February 2019. `postman_problems` (Brooks), in Python, solves the CPP and the rural postman problem with connected required streets; its last release dates from 2018. This package adds exact methods for the mixed and rural cases, certified matching at large scale and a browser version. It has no windy solvers, which OAR Lib has.
+
+Route Crafter (2025–), under the MIT licence, is the nearest website. It runs OAR Lib's solvers in the browser on OpenStreetMap data and produces a GPX route, for collecting street-level imagery. It is a practical tool and does not report proofs of optimality or measured gaps, which are the focus here.
 
 ## 7. Computational experiments
 
@@ -768,6 +770,7 @@ The natural continuation is a stronger lower bound for several postmen, the wind
 **Software**
 
 - Lum, O., Golden, B. and Wasil, E. (2019). OAR Lib: an open source arc routing library. *Mathematical Programming Computation* 11(3), 587–629. Distributes the mixed instances of section 9.4.
+- seen-one. Route Crafter, github.com/seen-one/Route-Crafter.
 - Brooks, A. W. postman_problems: solutions to the Chinese postman problem and the rural postman problem, github.com/brooksandrew/postman_problems.
 - Hagberg, A., Schult, D. and Swart, P. (2008). Exploring network structure, dynamics, and function using NetworkX. *Proceedings of SciPy 2008*, 11–15.
 - Virtanen, P. et al. (2020). SciPy 1.0: fundamental algorithms for scientific computing in Python. *Nature Methods* 17, 261–272.
