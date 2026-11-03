@@ -1,7 +1,8 @@
 # Changelog
 
-## Unreleased
+## 2026.8.0 — 3 November 2026
 
+- Five real street networks from OpenStreetMap are solved and reported (`data/osm`, `results/mixed_osm.csv`).
 - `native/lemon_src/README.md` records a further comparison: 22 of the 26 LEMON files match a copy with the older code.
 
 ## 2026.7.0 — 2 November 2026

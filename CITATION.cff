@@ -5,8 +5,8 @@ type: software
 authors:
   - family-names: "Monserrat Pons"
     given-names: "Miquel"
-version: "2026.7.0"
-date-released: "2026-11-02"
+version: "2026.8.0"
+date-released: "2026-11-03"
 license: MIT
 repository-code: "https://github.com/miquelmp/chinese-postman-problem"
 references:
