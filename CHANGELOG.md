@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Removes from section 7.1 a description of the Delaunay towns that 2026.9.0 made obsolete.
+
 ## 2026.9.0 — 3 November 2026
 
 - Delaunay towns keep a constant density of junctions at any size, with lengths of at least 1 m. The old towns had streets of 4 m at 40,000 junctions, and 595 zero costs. All Delaunay measurements are rerun, and the optima change because the lengths do.

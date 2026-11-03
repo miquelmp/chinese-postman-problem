@@ -329,7 +329,7 @@ Every instance tested, 92 distinct benchmark networks (53 of them from real road
 | Delaunay town | Random junctions at a constant density (a square of side 100 m × √n), Delaunay triangulation thinned to 75%, lengths of at least 1 m | 12 | 100–40,000 | 214–89,977 | 48–19,942 |
 | One-way grid | Directed grid, alternating one-way streets, two-way outer ring | 5 | 48–3,600 | 113–8,142 arcs | 18–204 unbalanced |
 
-Benchmark files that share a road network and differ only in demands (for example val1A, val1B and val1C) were solved once, leaving 92 distinct networks out of 254 files. Families A and B in the same repository, of unknown origin, were left out. Delaunay towns are drawn in a 1 km square whatever their size, so the largest have unrealistically short streets, about 6 m on average at 20,000 junctions. Lengths are rounded to whole metres, which gives 152 of those 44,974 streets a cost of 0.
+Benchmark files that share a road network and differ only in demands (for example val1A, val1B and val1C) were solved once, leaving 92 distinct networks out of 254 files. Families A and B in the same repository, of unknown origin, were left out. Delaunay towns keep a constant density of junctions: they are drawn in a square of side 100 m × √n, so streets average about 88 m on the largest towns. Lengths are rounded to whole metres, with a minimum of 1 m, so no street has a cost of 0.
 
 ### 7.2 Classic graphs
 
