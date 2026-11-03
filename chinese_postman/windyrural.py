@@ -462,9 +462,14 @@ def solve_heuristic(P: RuralProblem, start=None, pre=None, local_seconds: float 
 
 def solve(P: RuralProblem, time_limit: float = 300.0, start=None, local_seconds: float = 6.0) -> RuralSolution:
     """Heuristic first, then branch-and-cut told to find a cheaper route. If it proves that there
-    is none, the heuristic route is optimal."""
+    is none, the heuristic route is optimal. Above 10,000 links branch-and-cut goes first."""
     t0 = time.perf_counter()
     pre = lower_bound(P)
+    if len(P.links) > 10000:                 # the heuristic is slow here, and the relaxation often tight
+        arcs, total, bound, proved, status = _branch_and_cut(P, time_limit / 2)
+        if proved and arcs is not None:
+            return RuralSolution("branch-and-cut", total, total, True, _circuit(arcs, start or P.depot),
+                                 time.perf_counter() - t0, {"heuristic": total, "status": status})
     he = solve_heuristic(P, start=start, pre=pre, local_seconds=local_seconds)
     integral = _integral(P)
     lb = float(np.ceil(pre[0] - 1e-6)) if integral else pre[0]

@@ -506,6 +506,31 @@ def directed_published(limit=60.0, max_links=25000):
         save("directed_published", rows)
 
 
+def dgrp_lap(limit=120.0):
+    """The large published directed general routing files, with branch-and-cut alone: on these
+    networks the joining heuristic is slow. Writes results/dgrp_lap.csv and resumes from it."""
+    from chinese_postman.windyrural import _branch_and_cut, read_directed_general
+    with open(f"{OUT}/dgrp_published_values.csv", newline="", encoding="utf-8") as f:
+        known = {r["instance"]: r for r in csv.DictReader(f)}
+    rows = []
+    if os.path.exists(f"{OUT}/dgrp_lap.csv"):
+        with open(f"{OUT}/dgrp_lap.csv", newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+    done = {r["instance"] for r in rows}
+    for path in sorted(glob.glob("data/dgrp/DGRP_LAP*")):
+        name = os.path.basename(path).rsplit(".", 1)[0]
+        if name in done:
+            continue
+        P = read_directed_general(path)
+        t = time.perf_counter()
+        _, total, bound, proved, status = _branch_and_cut(P, limit)
+        rows.append(dict(instance=name, links=len(P.links), required=sum(l[4] for l in P.links),
+                         vertices=len(P.vertices), published=known[name]["upper_bound"], best=total,
+                         bound=bound, optimal=proved, status=status, seconds=round(time.perf_counter() - t, 2)))
+        print(rows[-1], flush=True)
+        save("dgrp_lap", rows)
+
+
 def rural_directed_long(limit=300.0):
     """The directed rural files that rural_general did not prove, with a longer limit."""
     from chinese_postman.windyrural import read_directed, solve
