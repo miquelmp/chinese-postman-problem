@@ -4,6 +4,7 @@
 
 - The solver shows which problem is being solved, its complexity, the kind of solution and a link to the report.
 - Streets show their cost: on a label when all labels fit, otherwise when the pointer rests on them, with both costs on a windy street.
+- The extensions page has a table of the network and service combinations solved so far, and the solver disables the others.
 - Partial service and several postmen now refuse windy networks, instead of ignoring the second cost.
 
 ## 2026.10.0 — 3 November 2026
