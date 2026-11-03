@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026.9.0 — 3 November 2026
+
+- Delaunay towns keep a constant density of junctions at any size, with lengths of at least 1 m. The old towns had streets of 4 m at 40,000 junctions, and 595 zero costs. All Delaunay measurements are rerun, and the optima change because the lengths do.
+- The home page and the summaries state that CARP results leave the number of vehicles free.
+- Section 8.2 explains why branch-and-bound was chosen in 1997.
+- Corrected a stale count of automated tests.
+
 ## 2026.8.0 — 3 November 2026
 
 - Five real street networks from OpenStreetMap are solved and reported (`data/osm`, `results/mixed_osm.csv`).
