@@ -408,6 +408,36 @@ def wpp_win():
     save("windy_win", rows)
 
 
+def rural_general(limit=20.0, step=6):
+    """Rural postman on windy, mixed and directed networks: every `step`-th published windy file,
+    and all mixed and directed files. Resumes from results/rural_general.csv."""
+    from chinese_postman.windyrural import read_directed, read_instance, solve
+    record_environment()
+    rows = []
+    if os.path.exists(f"{OUT}/rural_general.csv"):
+        with open(f"{OUT}/rural_general.csv", newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+    done = {r["instance"] for r in rows}
+    plan = [("directed", p, read_directed) for p in sorted(glob.glob("data/drpp/*"))]
+    plan += [("mixed", p, read_instance) for p in sorted(glob.glob("data/mrpp/*"))]
+    plan += [("windy", p, read_instance) for p in sorted(glob.glob("data/wrpp/*"))[::step]]
+    for family, path, reader in plan:
+        name = os.path.basename(path).replace(".DAT", "")
+        if name in done:
+            continue
+        P = reader(path)
+        if not P.is_feasible():
+            print("skipped, not strongly connected:", name, flush=True)
+            continue
+        sol = solve(P, time_limit=limit)
+        rows.append(dict(family=family, instance=name, links=len(P.links), required=sum(l[4] for l in P.links),
+                         pieces=len(P.required_pieces()), heuristic=sol.info.get("heuristic", sol.total_cost),
+                         start=sol.info.get("start", ""), best=sol.total_cost, method=sol.method,
+                         optimal=sol.optimal, bound=sol.lower_bound, seconds=round(sol.seconds, 3)))
+        print(rows[-1], flush=True)
+        save("rural_general", rows)
+
+
 def mixed(limit=300.0):
     from chinese_postman.mixed import from_graph
     mixed_towns(limit)

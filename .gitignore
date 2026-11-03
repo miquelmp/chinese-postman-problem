@@ -8,3 +8,6 @@ native/liblemon_match.so
 results/*.log
 data/mcpp/
 data/wpp/
+data/wrpp/
+data/mrpp/
+data/drpp/
