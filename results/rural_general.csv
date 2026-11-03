@@ -144,3 +144,21 @@ windy,P242200,125,55,7,4970.0,undirected,4909.0,branch-and-cut,True,4909.0,1.442
 windy,a1015751,1656,1289,16,836692.0,undirected,836692.0,heuristic,False,670836.0,401.891
 windy,a1020508,2131,1079,26,676381.0,undirected,676381.0,heuristic,False,552210.0,523.948
 windy,a1030505,3037,1536,5,913939.0,undirected,913939.0,heuristic,False,806049.0,338.011
+windy,a5155011,842,436,27,306663.0,undirected,306663.0,heuristic,False,238171.0,31.418
+windy,a5202518,1515,285,74,234175.0,undirected,234175.0,heuristic,False,176699.0,25.646
+windy,a5302515,1719,395,31,248780.0,undirected,248780.0,heuristic,False,205604.0,41.568
+windy,hd1110,141,50,22,1818.0,undirected,1738.0,branch-and-cut,True,1738.0,11.369
+windy,hd218,162,55,19,1754.0,undirected,1733.0,branch-and-cut,True,1733.0,7.227
+windy,hd322,153,50,20,6394.0,lp-0,6161.0,branch-and-cut,True,6161.0,5.548
+windy,hd5110,178,90,10,2272.0,undirected,2263.0,branch-and-cut,True,2263.0,8.678
+windy,hd618,181,81,16,2021.0,undirected,2011.0,branch-and-cut,True,2011.0,13.806
+windy,hd722,188,121,9,12618.0,undirected,12526.0,branch-and-cut,True,12526.0,9.201
+windy,hd9110,189,116,9,2659.0,undirected,2607.0,branch-and-cut,True,2607.0,9.575
+windy,hg118,105,41,19,161.0,undirected,161.0,"heuristic, proved",True,161.0,3.574
+windy,hg222,119,49,20,6313.0,lp-0,6081.0,branch-and-cut,True,6081.0,7.789
+windy,hg4110,148,73,13,275.0,undirected,266.0,branch-and-cut,True,266.0,5.275
+windy,hg518,165,77,18,254.0,undirected,251.0,branch-and-cut,True,251.0,5.586
+windy,hg622,162,82,11,9875.0,undirected,9801.0,branch-and-cut,True,9801.0,5.431
+windy,hg8110,180,107,9,383.0,undirected,375.0,branch-and-cut,True,375.0,4.235
+windy,hg918,175,109,6,343.0,undirected,336.0,branch-and-cut,True,336.0,3.182
+windy,m7211,316,228,8,62076.0,undirected,61437.0,branch-and-cut,True,61437.0,11.21
