@@ -18,6 +18,7 @@ Every result file is in `results/`. Run the commands from the repository root, a
 | 10.7 Several postmen, published optima | `k_published.csv` | Instances in `data/mmwrpp` (see below), then `python3 experiments.py k_published` | about an hour |
 | 10.6 Windy postman, combined method | `windy_published.csv` | `python3 experiments.py wpp` | over 2 hours; it resumes if stopped |
 | 10.6 Published values | `wpp_published_values.csv` | Copied from `WPP.txt` on the instance page of Corberán et al. | — |
+| 10.7 Published values, mixed rural | `mrpp_published_values.csv` | Copied from `MRPP.txt` on the instance page of Corberán et al. | — |
 | 9.4 Real street networks | `mixed_osm.csv` | `python3 experiments.py osm` | minutes |
 | 7.4 Repeated timing | `timing_repeats.csv` | `bash native/build_lemon.sh`, then `python3 experiments.py timing`, alone on the machine | about 75 minutes |
 | 7.4 Certificates | `certificates.csv` | `python3 tools/certify_matching.py` | Node.js; 7 GB of RAM |

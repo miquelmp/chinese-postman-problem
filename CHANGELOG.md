@@ -1,9 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Section 10.7 compares the mixed rural results with the 36 published optima: every proved value equals its published value, and no route or bound crosses one.
+
 ## 2026.11.0 — 3 November 2026
 
 - Adds the rural postman and several postmen on one-way, mixed and windy networks: `chinese_postman/windyrural.py`, `chinese_postman/kpostmen.py`, section 10.7 of the report, and the solver page. The coverage table on the extensions page is complete.
-- On published instances: windy rural best routes a mean 0.62% above the optimum (worst 7.6%, 47 instances); several postmen a mean 2.15% above (worst 17.2%, 629 optima, with the depot assumed at vertex 1). Mixed and directed rural instances have no published values here and were measured against the bound.
+- On published instances: windy rural best routes a mean 0.62% above the optimum (worst 7.6%, 47 instances); several postmen a mean 2.15% above (worst 17.2%, 629 optima, with the depot assumed at vertex 1). Directed rural instances have no published values here and were measured against the bound.
 - The solver shows which problem is being solved, its complexity, the kind of solution and a link to the report.
 - Streets show their cost: on a label when all labels fit, otherwise when the pointer rests on them, with both costs on a windy street.
 - The extensions page has a table of the network and service combinations solved so far, and the solver disables the others.
