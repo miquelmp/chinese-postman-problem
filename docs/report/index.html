@@ -411,7 +411,7 @@
 <p>Each vertex keeps a pointer into its adjacency list that only moves forward, and each edge is marked used once. The total work is therefore O(n + m). This per-vertex pointer is the refinement that makes the 2026 implementation strictly linear in the size of the graph.</p>
 <p>Fleury's rule, discussed in the 1997 report, also works but must test at each step whether an edge is a bridge of the remaining graph. Even with modern dynamic connectivity structures this is slower and more complicated than Hierholzer, so it is no longer used in practice.</p>
 <h2 id="6-implementation">6. Implementation</h2>
-<p>The solver is a small Python 3 package, <code>chinese_postman</code>, built on NetworkX and covered by 421 automated tests (362 when the optional LEMON library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with eleven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).</p>
+<p>The solver is a small Python 3 package, <code>chinese_postman</code>, built on NetworkX and covered by 424 automated tests (365 when the optional LEMON library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with eleven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).</p>
 <h3 id="61-modules">6.1 Modules</h3>
 <div class="table-scroll"><table>
 <thead>
@@ -573,7 +573,7 @@
 </tr>
 <tr>
 <td>Rural postman, every network</td>
-<td>41</td>
+<td>44</td>
 <td>Exact equals enumeration on small windy, mixed and directed networks; bound ≤ exact ≤ heuristic; all-required cases equal the windy postman; measured results agree with their bounds and with published optima</td>
 </tr>
 <tr>
@@ -1251,7 +1251,7 @@ print(sol.summary())
 <tr>
 <td>Verification</td>
 <td>Manual checks</td>
-<td>421 automated tests in Python and 334 networks and 3,000 matchings re-checked in JavaScript, every tour validated</td>
+<td>424 automated tests in Python and 334 networks and 3,000 matchings re-checked in JavaScript, every tour validated</td>
 <td>Results checked on each run</td>
 </tr>
 </tbody>
@@ -1922,6 +1922,14 @@ print(sol.summary())
 <td>0.74%, 8.9%</td>
 </tr>
 <tr>
+<td>One-way, the 16 left open</td>
+<td>16</td>
+<td>211–792</td>
+<td>5 min</td>
+<td>14</td>
+<td>0.06%, 0.53%</td>
+</tr>
+<tr>
 <td>Mixed</td>
 <td>36</td>
 <td>884–2,678</td>
@@ -1955,8 +1963,74 @@ print(sol.summary())
 </tr>
 </tbody>
 </table></div>
-<p>On the 47 windy files of the sample with a published value, all optima, the best route is a mean 0.62% above the published value, with a worst case of 7.6%, and equals it on 32. The heuristic alone is a mean 1.66% above. The other 19 files of the sample are not in the list. No result falls below a published value. All 36 mixed files have a published optimum (<code>results/mrpp_published_values.csv</code>, copied from <code>MRPP.txt</code> on the instance page), and every value proved here equals it. With 20 seconds the best route is a mean 2.67% above the optimum, with a worst case of 12.4%, and equals it on 2. With 5 minutes it equals it on the 6 files of up to 1,326 streets, and is a mean 1.51% above on the 6 larger ones, with a worst case of 3.5%. No route or bound crosses a published value. The directed instances have no published values in this project, so their only test is the bound. The heuristic alone is weak on these two families: on the 45 proved directed cases it is a mean 8.4% above the optimum, with a worst case of 20%, and on the mixed files a mean 2.7%, with a worst case of 12%. Branch-and-cut does the work there.</p>
+<p>On the 47 windy files of the sample with a published value, all optima, the best route is a mean 0.62% above the published value, with a worst case of 7.6%, and equals it on 32. The heuristic alone is a mean 1.66% above. The other 19 files of the sample are not in the list. No result falls below a published value. All 36 mixed files have a published optimum (<code>results/mrpp_published_values.csv</code>, copied from <code>MRPP.txt</code> on the instance page), and every value proved here equals it. With 20 seconds the best route is a mean 2.67% above the optimum, with a worst case of 12.4%, and equals it on 2. With 5 minutes it equals it on the 6 files of up to 1,326 streets, and is a mean 1.51% above on the 6 larger ones, with a worst case of 3.5%. No route or bound crosses a published value. The 61 directed files have no published values in this project, so their test is the bound, and the related published sets below. With 5 minutes 14 of the 16 left open were proved (<code>results/rural_directed_long.csv</code>), which makes 59 of 61. The heuristic alone is weak on these two families: on the 45 directed cases proved in 20 seconds it is a mean 8.4% above the optimum, with a worst case of 20%, and on the mixed files a mean 2.7%, with a worst case of 12%. Branch-and-cut does the work there.</p>
 <p>The 25% of the 20-second table is mostly a weak bound: the same routes are at most 12.4% above the optimum. On the six files of up to 1,326 streets, 1 to 4 minutes proved the optimum.</p>
+<p><strong>Directed general routing and stacker crane.</strong> Two related directed sets from the same page do have published values (<code>results/dgrp_published_values.csv</code>, <code>results/scp_published_values.csv</code>). In the directed general routing problem some vertices must also be visited, which <code>RuralProblem.vertices</code> adds as further pieces. The stacker crane problem is a directed rural postman whose arcs to serve rarely touch. These are <code>results/directed_published.csv</code> and <code>results/dgrp_lap.csv</code>.</p>
+<p>The 36 DG files list no vertices to visit. Read literally they give routes below the published optima, and with every vertex required they give those optima, so that reading was adopted. It is an inference from the values, not a statement in the files.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Set</th>
+<th>Files</th>
+<th>Arcs</th>
+<th>Branch-and-cut limit</th>
+<th>Proved, each equal to the published optimum</th>
+<th>Best route above the optimum (mean, worst)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DG</td>
+<td>36</td>
+<td>1,166–3,177</td>
+<td>60 s</td>
+<td>31</td>
+<td>1.45%, 18.2%</td>
+</tr>
+<tr>
+<td>Stacker crane, random</td>
+<td>14</td>
+<td>3,824–59,901</td>
+<td>60–120 s</td>
+<td>14</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Stacker crane, grid, 100 arcs to serve</td>
+<td>10</td>
+<td>2,410–3,827</td>
+<td>60 s</td>
+<td>8</td>
+<td>0.47%, 3.0%</td>
+</tr>
+<tr>
+<td>Stacker crane, grid, 300 arcs to serve</td>
+<td>10</td>
+<td>8,625–13,246</td>
+<td>60 s</td>
+<td>0</td>
+<td>8.05%, 13.9%</td>
+</tr>
+<tr>
+<td>Stacker crane, grid, 500 arcs to serve</td>
+<td>10</td>
+<td>12,218–16,491</td>
+<td>60 s</td>
+<td>0</td>
+<td>2.42%, 5.5%</td>
+</tr>
+<tr>
+<td>Directed general routing, large</td>
+<td>70</td>
+<td>50,000</td>
+<td>120 s</td>
+<td>60</td>
+<td>0 on those 60; no route within the time on the other 10</td>
+</tr>
+</tbody>
+</table></div>
+<p>No route falls below a published optimum, no bound rises above one, and no value proved here differs from a published one. The method is weakest when the pieces are many and small, as on the grid files. The random crane files took at most 18 seconds each. The 60 large files proved took a median of about 7 seconds, on networks of 5,000 junctions. Above 10,000 links <code>solve</code> now runs branch-and-cut first, because on these networks the relaxation is often tight and the joining heuristic is slow. HiGHS sometimes overran its limit, by up to 23 minutes, so the last 23 large files had a hard limit of 5 minutes, which stopped 3 of them.</p>
+<p>Sixty of the 104 crane files were left out: all 40 of the 100 × 100 grid and the 20 of the 50 × 50 grid with 1,000 and 2,000 arcs to serve. Each has a header that counts more arcs than the file holds (16,269 against 15,535 on <code>Crane_grid50_1000_8_1</code>, for instance). On all 20 of the 50 × 50 files the linear bound is above the published optimum, which a complete network could not give, so the files are probably incomplete. This has not been confirmed with the authors.</p>
 <p><strong>Several postmen, published optima.</strong> The 144 instances of Benavent, Corberán, Plana and Sanchis (2009), with 2 to 6 postmen, give 705 cases: 629 with a published optimum and 76 open (<code>results/mmwrpp_published_values.csv</code>, <code>results/k_published.csv</code>). They have 10–184 links. The files do not name a depot, so vertex 1 was assumed. The assumption is not verified, but it fits: no route falls below a published optimum or bound, and 340 equal an optimum exactly. With 2 seconds of local search per case the heuristic took at most 5.2 seconds.</p>
 <div class="table-scroll"><table>
 <thead>
@@ -2075,7 +2149,7 @@ print(sol.summary())
 <td>NP-hard</td>
 <td>Branch-and-cut: 45 of 61 one-way in 20 s; 6 of 12 mixed in 5 min; 44 of 66 windy in 20 s</td>
 <td>Orientation, rebalancing and joining; no guarantee</td>
-<td>Best route mean 0.62%, worst 7.6% (47 published windy instances, 20 s); mean 0.76%, worst 3.5% (12 published mixed instances, 5 min)</td>
+<td>Best route mean 0.62%, worst 7.6% (47 published windy instances, 20 s); mean 0.76%, worst 3.5% (12 published mixed instances, 5 min); 113 of 150 related directed instances proved, each equal to the published optimum</td>
 </tr>
 <tr>
 <td>k postmen, on one-way, mixed or windy networks</td>

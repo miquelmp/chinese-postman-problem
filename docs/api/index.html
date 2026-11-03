@@ -207,12 +207,14 @@ heuristic&#x27;s. If it proves there is none, the heuristic&#x27;s tour is optim
 `(i, j) coste c_ij c_ji`. Costs of at least `forbidden` forbid that direction.</p>
 <h3><code>read_directed(path: str)</code></h3><p>Read a directed instance in the format of Campos et al., as distributed with OAR Lib: counts,
 then one line `tail, head, cost, required` for each arc.</p>
+<h3><code>read_directed_general(path: str)</code></h3><p>Read an instance of the directed general routing or stacker crane problem in the format of
+Corberan et al.: required arcs, the other arcs, then required vertices, with `(i, j) coste c`.</p>
 <h3><code>lower_bound(P: RuralProblem)</code></h3><p>The linear relaxation with a cut around each required piece. Returns (value, columns, x).</p>
 <h3><code>solve_exact(P: RuralProblem, time_limit: float=300.0, start=None)</code></h3><p>Solve the integer program with HiGHS, adding connectivity cuts between integer solutions.</p>
 <h3><code>solve_heuristic(P: RuralProblem, start=None, pre=None, local_seconds: float=30.0)</code></h3><p>Orient the required links from the relaxation or at their cheaper direction, rebalance, join
 the pieces, and improve the two best starts by reversals.</p>
 <h3><code>solve(P: RuralProblem, time_limit: float=300.0, start=None, local_seconds: float=6.0)</code></h3><p>Heuristic first, then branch-and-cut told to find a cheaper route. If it proves that there
-is none, the heuristic route is optimal.</p>
+is none, the heuristic route is optimal. Above 10,000 links branch-and-cut goes first.</p>
   </div>
 </main>
 <footer class="site-footer"><div class="inner"><p>Miquel Monserrat Pons. Final-year project, ETSEIB (Universitat Politècnica de Catalunya), 1997; revised 2026 with AI assistance (Claude, by Anthropic).</p><p>Code under the MIT licence; texts and figures under CC BY 4.0. <a href="https://github.com/miquelmp/chinese-postman-problem">Source on GitHub</a>.</p><p>Benchmark instances from the arc-routing literature, as collected in CARPData.jl (MIT). Street data © OpenStreetMap contributors (ODbL). The in-browser solver is written in JavaScript; the optional exact proof runs Python through Pyodide, with NetworkX and SciPy (HiGHS).</p></div></footer>

@@ -15,9 +15,13 @@ Every result file is in `results/`. Run the commands from the repository root, a
 | 10.7 Rural postman on every network | `rural_general.csv` | Instances in `data/wrpp`, `data/mrpp` and `data/drpp` (see below), then `python3 experiments.py rural_general` | hours |
 | 10.7 Several postmen, every network | `k_general.csv` | Same instances, then `python3 experiments.py k_general` | hours |
 | 10.7 Rural postman, mixed, longer limit | `rural_mixed_long.csv` | Same instances, then `python3 experiments.py rural_mixed_long` | an hour |
+| 10.7 Rural postman, directed, longer limit | `rural_directed_long.csv` | Same instances, then `python3 experiments.py rural_directed_long` | about an hour |
+| 10.7 DG and stacker crane | `directed_published.csv` | Instances in `data/dgrp` and `data/scp` (see below), then `python3 experiments.py directed_published` | hours; the 7 largest with `directed_published(120, 100000)` |
+| 10.7 Large directed general routing | `dgrp_lap.csv` | Instances in `data/dgrp`, then `python3 experiments.py dgrp_lap` | hours; it resumes if stopped |
 | 10.7 Several postmen, published optima | `k_published.csv` | Instances in `data/mmwrpp` (see below), then `python3 experiments.py k_published` | about an hour |
 | 10.6 Windy postman, combined method | `windy_published.csv` | `python3 experiments.py wpp` | over 2 hours; it resumes if stopped |
 | 10.6 Published values | `wpp_published_values.csv` | Copied from `WPP.txt` on the instance page of Corberán et al. | — |
+| 10.7 Published values, directed | `dgrp_published_values.csv`, `scp_published_values.csv` | Copied from `DGRP.txt` and `SCP.txt` on the instance page of Corberán et al. | — |
 | 10.7 Published values, mixed rural | `mrpp_published_values.csv` | Copied from `MRPP.txt` on the instance page of Corberán et al. | — |
 | 9.4 Real street networks | `mixed_osm.csv` | `python3 experiments.py osm` | minutes |
 | 7.4 Repeated timing | `timing_repeats.csv` | `bash native/build_lemon.sh`, then `python3 experiments.py timing`, alone on the machine | about 75 minutes |
@@ -47,6 +51,7 @@ They are not stored here, and uv.es may refuse scripts, so they are downloaded b
 - `data/wrpp`, `data/mrpp` and `data/mmwrpp`: the WRPP, MRPP and MM K-WRPP data files at
   [uv.es/corberan/instancias.htm](https://www.uv.es/corberan/instancias.htm), unzipped. Only the `P...` files
   of the MM K-WRPP archive go into `data/mmwrpp`.
+- `data/dgrp` and `data/scp`: the DGRP and SCP archives from the same page, unpacked.
 - `data/drpp`: `test_instances/DRPP_Instances_Campos` of
   [OAR Lib](https://github.com/Olibear/ArcRoutingLibrary).
 
