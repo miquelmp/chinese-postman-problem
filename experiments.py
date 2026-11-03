@@ -466,14 +466,20 @@ def rural_mixed_long(limit=300.0, step=3):
 
 def k_general(seconds=5.0, step=24):
     """Several postmen on windy, mixed and directed networks: a sample of the rural instances, with
-    2 to 5 postmen, against the lower bound. Writes results/k_general.csv."""
+    2 to 5 postmen, against the lower bound. Writes results/k_general.csv and resumes from it."""
     from chinese_postman.kpostmen import solve_k_postmen
     from chinese_postman.windyrural import read_directed, read_instance
     plan = [("directed", p, read_directed) for p in sorted(_campos())[::8]]
     plan += [("mixed", p, read_instance) for p in sorted(glob.glob("data/mrpp/*"))[::6]]
     plan += [("windy", p, read_instance) for p in sorted(glob.glob("data/wrpp/*"))[::step]]
     rows = []
+    if os.path.exists(f"{OUT}/k_general.csv"):
+        with open(f"{OUT}/k_general.csv", newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+    done = {r["instance"] for r in rows}
     for family, path, reader in plan:
+        if os.path.basename(path).replace(".DAT", "") in done:
+            continue
         P = reader(path)
         if not P.is_feasible():
             continue
