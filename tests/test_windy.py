@@ -1,7 +1,9 @@
 """The windy postman: agreement with enumeration and with its special cases."""
+import csv
 import itertools
 import random
 from collections import Counter
+from pathlib import Path
 
 import networkx as nx
 import numpy as np
@@ -119,3 +121,16 @@ def test_read_wpp(tmp_path):
     p.write_text("NOMBRE : t\nLISTA_ARISTAS_REQ :\n(   1,   2)   coste  3  5\n(2, 3) coste 99999999 7\n"
                  "(3, 1) coste 2 2\n", encoding="latin-1")
     assert read_wpp(p).links == [(1, 2, 3, 5), (2, 3, None, 7), (3, 1, 2, 2)]
+
+
+def test_measured_windy_results_agree_with_published_values():
+    root = Path(__file__).parent.parent / "results"
+    published = {r["instance"]: r for r in csv.DictReader(open(root / "wpp_published_values.csv"))}
+    assert len(published) == 120
+    for r in csv.DictReader(open(root / "windy_published.csv")):
+        p = published[r["instance"]]
+        assert float(r["best"]) >= float(p["lower_bound"]) - 1e-3
+        if p["status"] == "optimal":
+            assert float(r["bound"]) <= float(p["upper_bound"]) + 1e-3
+            if r["optimal"] == "True":
+                assert float(r["best"]) == float(p["upper_bound"])

@@ -1,7 +1,9 @@
 # Changelog
 
-## Unreleased
+## 2026.10.0 — 3 November 2026
 
+- Adds the windy postman: `chinese_postman/windy.py`, section 10.6 of the report, a section on the extensions page, and a hilly town in the solver.
+- Win's method is a mean 0.10% above the 99 published optima, with a worst case of 0.44%. Ten tours improve on the list of published bounds.
 - Section 6.8 mentions Route Crafter.
 - The page of the 1997 report says why branch-and-bound was chosen.
 - Removes from section 7.1 a description of the Delaunay towns that 2026.9.0 made obsolete.

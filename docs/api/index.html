@@ -167,6 +167,30 @@ strongly connected part is kept, so that a postman tour exists.</p>
 <h3><code>kind_of(inst)</code></h3><p>Classify an instance as undirected, directed or mixed.</p>
 <h3><code>solve(inst, time_limit: float=20.0, gap_tol: float=0.0)</code></h3><p>Solve a website instance and return the result as a JSON-ready dictionary.</p>
 <h3><code>solve_json(inst_json: str, time_limit: float=20.0, gap_tol: float=0.0)</code></h3><p>JSON-string wrapper of `solve`, for the in-browser proof.</p>
+<h2 id="windy">chinese_postman.windy</h2><p>Windy Postman Problem: every street can be driven both ways, at a different cost each way.</p>
+<h3><code>class WindyGraph</code></h3><p>A street network with one cost for each direction of each link.</p>
+<h3><code>WindyGraph.nodes(self)</code></h3><p>All vertices, sorted.</p>
+<h3><code>WindyGraph.directions(self, k)</code></h3><p>The allowed directions of link k, as (tail, head, cost).</p>
+<h3><code>WindyGraph.digraph(self)</code></h3><p>Every allowed direction of travel, keeping the cheapest parallel link.</p>
+<h3><code>WindyGraph.is_feasible(self)</code></h3><p>Return True if a tour exists: the network is strongly connected.</p>
+<h3><code>class WindySolution</code></h3><p>A windy tour with its cost, lower bound and whether it is proven optimal.</p>
+<h3><code>WindySolution.gap_to_bound_pct(self)</code></h3><p>Percentage by which the tour exceeds the lower bound, or None without a bound.</p>
+<h3><code>from_mixed(M: MixedGraph)</code></h3><p>The windy form of a mixed network: a one-way link forbids its reverse direction.</p>
+<h3><code>from_graph(G: nx.MultiGraph, asymmetry: float, seed: int=0)</code></h3><p>Give each edge costs c(1 + r) and c(1 - r), with r uniform in [-asymmetry, asymmetry],
+rounded to integers of at least 1, so that a round trip costs about the same as before.</p>
+<h3><code>read_wpp(path: str, forbidden: int=99999999)</code></h3><p>Read an instance in the format of Corberan et al.: `(i, j) coste c_ij c_ji`. Costs of at
+least `forbidden` forbid that direction.</p>
+<h3><code>bounds(W: WindyGraph)</code></h3><p>Two valid lower bounds: the linear relaxation (ignores parity) and the undirected CPP with
+each street at its cheaper direction (any tour pays at least that for each pass).
+Returns (best, lp, undirected, (columns, solution)).</p>
+<h3><code>solve_exact(W: WindyGraph, time_limit: float=300.0, start=None)</code></h3><p>Solve the integer program with HiGHS, with zero relative gap, within `time_limit`.</p>
+<h3><code>solve_win(W: WindyGraph, start=None)</code></h3><p>Win (1989), for networks where every link can be driven both ways. At most twice the
+optimum, and optimal when the network is already Eulerian.</p>
+<h3><code>solve_heuristic(W: WindyGraph, start=None, pre=None, local_seconds: float=60.0)</code></h3><p>Orient every link from the relaxation (two tie rules) or at its cheaper direction, complete
+each by an exact rebalance, improve the two best by reversals, and return the best tour found,
+Win&#x27;s among them when it applies.</p>
+<h3><code>solve_windy(W: WindyGraph, time_limit: float=300.0, start=None)</code></h3><p>Heuristic and bounds first, then branch-and-cut told to find a tour cheaper than the
+heuristic&#x27;s. If it proves there is none, the heuristic&#x27;s tour is optimal.</p>
   </div>
 </main>
 <footer class="site-footer"><div class="inner"><p>Miquel Monserrat Pons. Final-year project, ETSEIB (Universitat Politècnica de Catalunya), 1997; revised 2026 with AI assistance (Claude, by Anthropic).</p><p>Code under the MIT licence; texts and figures under CC BY 4.0. <a href="https://github.com/miquelmp/chinese-postman-problem">Source on GitHub</a>.</p><p>Benchmark instances from the arc-routing literature, as collected in CARPData.jl (MIT). Street data © OpenStreetMap contributors (ODbL). The in-browser solver is written in JavaScript; the optional exact proof runs Python through Pyodide, with NetworkX and SciPy (HiGHS).</p></div></footer>

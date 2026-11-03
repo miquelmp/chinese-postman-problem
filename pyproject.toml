@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chinese-postman"
-version = "2026.9.0"
+version = "2026.10.0"
 description = "Arc routing solvers: Chinese, mixed and rural postman, several postmen and capacitated fleets, with proofs of optimality or lower bounds"
 readme = "README.md"
 requires-python = ">=3.10"

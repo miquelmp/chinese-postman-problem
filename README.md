@@ -53,7 +53,7 @@ building blocks, Eulerian circuits and matchings, which this package uses.
 
 ```bash
 pip install -e ".[test]"
-pytest -q                            # 237 tests (296 once the optional LEMON library is built)
+pytest -q                            # 289 tests (348 once the optional LEMON library is built)
 ```
 
 ```python
@@ -87,6 +87,7 @@ print(team.route_costs, team.lower_bound)
 |---|---|
 | `chinese_postman/cpp.py` | Undirected CPP (Edmonds' method) and directed CPP (minimum-cost flow) |
 | `chinese_postman/mixed.py` | Mixed CPP: bounds, exact branch-and-cut, heuristic with local search, combined `solve_mixed` |
+| `chinese_postman/windy.py` | Windy postman: bounds, branch-and-cut, Win's method, local search, combined `solve_windy` |
 | `chinese_postman/rural.py` | Service and travel costs; rural postman: Frederickson, bounds, branch-and-cut, combined `solve_rural` |
 | `chinese_postman/fleet.py` | Several postmen (min-max k-postmen), exact model for small cases, capacitated fleets (CARP) |
 | `chinese_postman/sequence.py` | Routes as sequences of served streets: cost, best directions, insertion, local search |
@@ -98,6 +99,7 @@ print(team.route_costs, team.lower_bound)
 | `chinese_postman/io.py`, `instances.py` | File formats; test-network generators |
 | `experiments.py` | Reproduces the experiments of chapters 7 to 10 of the 2026 report; writes `results/*.csv` |
 | `tools/certify_matching.py`, `tools/match_sparse.mjs` | Repeats the large matchings with the JavaScript blossom code |
+| `tools/fetch_wpp.sh` | Downloads the published windy instances into `data/wpp/` (not stored here) |
 | `tools/fetch_mcpp.sh` | Downloads the published mixed instances into `data/mcpp/` (not stored here) |
 | `data/osm/` | Five OpenStreetMap extracts used in section 9.4 of the report (ODbL) |
 | `data/carp/` | Classical CARP benchmark instances (gdb, val, egl, Beullens, kshs) from [CARPData.jl](https://github.com/rafaelmartinelli/CARPData.jl) |

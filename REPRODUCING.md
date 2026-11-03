@@ -11,6 +11,9 @@ Every result file is in `results/`. Run the commands from the repository root, a
 | 7.3 Bound for fleets | `cpp_bound.csv` | `python3 experiments.py cpp_bound` | |
 | 7.4 Scaling, NetworkX | `scaling.csv` | `python3 experiments.py scaling` | |
 | 7.4 Scaling, LEMON | `scaling_lemon.csv` | `bash native/build_lemon.sh`, then `python3 experiments.py scaling_fast` | C++ compiler; 7 GB of RAM |
+| 10.6 Windy postman, Win on all instances | `windy_win.csv` | `sh tools/fetch_wpp.sh`, then `python3 experiments.py wpp_win` | minutes |
+| 10.6 Windy postman, combined method | `windy_published.csv` | `python3 experiments.py wpp` | over 2 hours; it resumes if stopped |
+| 10.6 Published values | `wpp_published_values.csv` | Copied from `WPP.txt` on the instance page of Corberán et al. | — |
 | 9.4 Real street networks | `mixed_osm.csv` | `python3 experiments.py osm` | minutes |
 | 7.4 Repeated timing | `timing_repeats.csv` | `bash native/build_lemon.sh`, then `python3 experiments.py timing`, alone on the machine | about 75 minutes |
 | 7.4 Certificates | `certificates.csv` | `python3 tools/certify_matching.py` | Node.js; 7 GB of RAM |

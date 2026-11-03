@@ -44,13 +44,14 @@
           <option value="delaunay">Organic town</option>
           <option value="oneway-grid">One-way grid</option>
           <option value="mixed-town">Town with one-way streets</option>
+          <option value="hilly-town">Hilly town (windy postman)</option>
           <option value="benchmark">Benchmark network</option>
           <option value="upload">Your file (.GRA)</option>
           <option value="osm">An area of OpenStreetMap</option>
         </select>
       </div>
 
-      <div class="field" data-for="grid oneway-grid mixed-town">
+      <div class="field" data-for="grid oneway-grid mixed-town hilly-town">
         <label for="side">Blocks per side</label>
         <input id="side" type="number" min="3" max="40" value="10">
       </div>
@@ -62,7 +63,7 @@
         <label for="oneway">Share of one-way streets: <output id="oneway-out">60%</output></label>
         <input id="oneway" type="range" min="0" max="1" step="0.05" value="0.6">
       </div>
-      <div class="field" data-for="grid delaunay oneway-grid mixed-town">
+      <div class="field" data-for="grid delaunay oneway-grid mixed-town hilly-town">
         <button class="text-button" id="reseed" type="button">Generate another town</button>
       </div>
       <div class="field" data-for="benchmark">
