@@ -27,7 +27,7 @@
 
   <section>
     <h2>What is solved</h2>
-    <p>Each row is a kind of street network, and each column a kind of service. Each case that is solved links to its section of the report.</p>
+    <p>Each row is a kind of street network, and each column a kind of service. Each case links to its section of the report.</p>
     <div class="table-scroll">
       <table class="coverage">
         <thead><tr><th>Network</th><th>Every street</th><th>Only some streets</th><th>Several postmen</th></tr></thead>
@@ -38,20 +38,20 @@
             <td class="hard"><a href="../report/#104-several-postmen"><strong>NP-hard</strong><br>Split one tour, local search</a></td></tr>
           <tr><th scope="row">One-way</th>
             <td class="easy"><a href="../report/#63-directed-graphs"><strong>Polynomial</strong><br>Minimum-cost flow</a></td>
-            <td class="open"><strong>Not yet</strong><br>Directed rural postman</td>
-            <td class="open"><strong>Not yet</strong><br>Directed k-postmen</td></tr>
+            <td class="hard"><a href="../report/#107-every-network-and-every-service"><strong>NP-hard</strong><br>Branch-and-cut, heuristic</a></td>
+            <td class="hard"><a href="../report/#107-every-network-and-every-service"><strong>NP-hard</strong><br>Split one tour, local search</a></td></tr>
           <tr><th scope="row">Mixed one-way and two-way</th>
             <td class="hard"><a href="../report/#9-the-mixed-chinese-postman-problem"><strong>NP-hard</strong><br>Branch-and-cut, heuristic</a></td>
-            <td class="open"><strong>Not yet</strong><br>Mixed rural postman</td>
-            <td class="open"><strong>Not yet</strong><br>Mixed k-postmen</td></tr>
+            <td class="hard"><a href="../report/#107-every-network-and-every-service"><strong>NP-hard</strong><br>Branch-and-cut, heuristic</a></td>
+            <td class="hard"><a href="../report/#107-every-network-and-every-service"><strong>NP-hard</strong><br>Split one tour, local search</a></td></tr>
           <tr><th scope="row">A cost for each way</th>
             <td class="hard"><a href="../report/#106-the-windy-postman"><strong>NP-hard</strong><br>Win, branch-and-cut</a></td>
-            <td class="open"><strong>Not yet</strong><br>Windy rural postman</td>
-            <td class="open"><strong>Not yet</strong><br>Windy k-postmen</td></tr>
+            <td class="hard"><a href="../report/#107-every-network-and-every-service"><strong>NP-hard</strong><br>Branch-and-cut, heuristic</a></td>
+            <td class="hard"><a href="../report/#107-every-network-and-every-service"><strong>NP-hard</strong><br>Split one tour, local search</a></td></tr>
         </tbody>
       </table>
     </div>
-    <p>“Not yet” means not implemented here, not impossible. Vehicles with a capacity (CARP) are a further case, on two-way networks: <a href="../report/#105-vehicles-with-a-capacity">section 10.5</a>.</p>
+    <p>Vehicles with a capacity (CARP) are a further case, on two-way networks: <a href="../report/#105-vehicles-with-a-capacity">section 10.5</a>.</p>
 
     <h2>Summary</h2>
     <div class="table-scroll">
@@ -118,7 +118,7 @@
   <section class="prose reading">
     <h2>Try them</h2>
     <p>On the <a href="../try/">solver page</a>, the <em>Service</em> settings choose which streets need service (every street, a random share, the main streets of an OpenStreetMap area, or those marked in a benchmark file) and how many postmen share the work. The page shows the routes, the lower bound and how far from it the answer can be. For a single postman with scattered streets to serve, it can also prove the optimum by branch-and-cut.</p>
-    <p>For one-way streets in OpenStreetMap, tick <em>On foot</em> to let the postmen walk them in both directions; the extensions above work on two-way networks.</p>
+    <p>For one-way streets in OpenStreetMap, tick <em>On foot</em> to let the postmen walk them in both directions.</p>
   </section>
 
   <section class="prose reading">

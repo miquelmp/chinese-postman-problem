@@ -1,6 +1,8 @@
 """Several postmen on windy, mixed and directed networks."""
+import csv
 import random
 from collections import Counter
+from pathlib import Path
 
 import networkx as nx
 import pytest
@@ -71,3 +73,23 @@ def test_web_solves_partial_service_on_one_way_streets():
              [(0, 1, 3, True), (1, 2, 4, False), (2, 0, 5, False), (0, 2, 7, True), (2, 1, 2, False), (1, 0, 2, False)]]
     r = web.solve(dict(name="t", nodes=[dict(id=i) for i in range(3)], links=links))
     assert r["optimal"] and r["kind"] == "rural" and r["total"] == 3 + 2 + 7 + 2 + 2
+
+
+def _csv(name):
+    path = Path(__file__).resolve().parent.parent / "results" / name
+    if not path.exists():
+        pytest.skip(f"{name} has not been produced")
+    with open(path, newline="", encoding="utf-8") as f:
+        return list(csv.DictReader(f))
+
+
+def test_published_min_max_runs_never_beat_the_published_bounds():
+    published = {(r["k"], r["instance"]): r for r in _csv("mmwrpp_published_values.csv")}
+    rows = _csv("k_published.csv")
+    assert rows
+    for r in rows:
+        p = published[(r["k"], r["instance"])]
+        longest = float(r["longest"])
+        assert float(r["bound"]) <= longest + 1e-6
+        if p["lower_bound"]:
+            assert longest >= float(p["lower_bound"]) - 1e-6, (r["k"], r["instance"])

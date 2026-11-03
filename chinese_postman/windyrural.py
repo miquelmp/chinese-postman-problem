@@ -186,39 +186,56 @@ def lower_bound(P: RuralProblem):
     return float(res.fun), cols, res.x
 
 
-def _branch_and_cut(P, time_limit, cutoff=None):
+def _branch_and_cut(P, time_limit, cutoff=None, repair=None):
     """Integer program with cuts added between solves. Returns (arcs, total, bound, proved, status),
-    where arcs is None if no connected solution was found."""
+    where arcs is None if no connected solution was found. `repair`, given an integer solution in
+    several pieces, returns a connected one as (total, arcs) or None. A repaired route better than
+    the cutoff becomes the new cutoff, and is returned if nothing better is proved."""
     t0 = time.perf_counter()
     cols, cost, cons = _base_model(P)
     pieces = P.required_pieces()
     sets = list(pieces) if len(pieces) > 1 else []
-    if cutoff is not None:
-        cons = cons + [LinearConstraint(cost.reshape(1, -1), -np.inf, cutoff)]
-    bound, rounds = None, 0
+    bound, rounds, best = None, 0, None
+
+    def finish(proved, status):
+        return (best[1], best[0], bound, proved, status) if best else (None, None, bound, proved, status)
+
     while True:
         left = time_limit - (time.perf_counter() - t0)
         if left <= 0:
-            return None, None, bound, False, "time limit"
+            return finish(False, "time limit")
         rounds += 1
         all_cons = cons + ([_cut(cols, sets)] if sets else [])
+        if cutoff is not None:
+            all_cons = all_cons + [LinearConstraint(cost.reshape(1, -1), -np.inf, cutoff)]
         res = milp(cost, constraints=all_cons, integrality=np.ones(len(cost)), bounds=Bounds(0, np.inf),
                    options={"time_limit": left, "mip_rel_gap": 0.0, "disp": False})
         dual = getattr(res, "mip_dual_bound", None)
         if dual is not None and not np.isnan(dual):
             bound = max(bound or 0.0, float(dual))
         if res.status == 2:
-            return None, None, bound, True, "infeasible"
+            return finish(True, "infeasible")
         if res.x is None:
-            return None, None, bound, False, "time limit"
+            return finish(False, "time limit")
         arcs = _arcs_of(cols, res.x)
         found = _pieces_of(arcs, P)
         if len(found) == 1:
             return arcs, float(round(res.fun, 6)), bound, res.status == 0, f"{rounds} rounds"
+        if repair is not None:
+            fixed = repair(arcs)
+            if fixed is not None and (best is None or fixed[0] < best[0] - 1e-9) and (
+                    cutoff is None or fixed[0] <= cutoff + 1e-9):
+                best = fixed
+                cutoff = fixed[0] - 1 if float(fixed[0]).is_integer() and _integral(P) else fixed[0] * (1 - 1e-9)
         new = [s for s in found if s not in sets]
         if not new:
-            return None, None, bound, False, "no new cut"
+            return finish(False, "no new cut")
         sets += new
+
+
+def _integral(P):
+    """True when every cost is a whole number."""
+    return all(float(c).is_integer() for l in P.links for c in l[2:4] if c is not None)
 
 
 def solve_exact(P: RuralProblem, time_limit: float = 300.0, start=None) -> RuralSolution:
@@ -418,19 +435,32 @@ def solve(P: RuralProblem, time_limit: float = 300.0, start=None, local_seconds:
     t0 = time.perf_counter()
     pre = lower_bound(P)
     he = solve_heuristic(P, start=start, pre=pre, local_seconds=local_seconds)
-    integral = all(float(c).is_integer() for l in P.links for c in l[2:4] if c is not None)
+    integral = _integral(P)
     lb = float(np.ceil(pre[0] - 1e-6)) if integral else pre[0]
     info = dict(he.info, heuristic=he.total_cost)
     if he.total_cost <= lb + 1e-9:
         return RuralSolution("heuristic", he.total_cost, lb, True, he.circuit, time.perf_counter() - t0, info)
     cutoff = he.total_cost - 1 if integral else he.total_cost * (1 - 1e-9)
     left = max(1.0, time_limit - (time.perf_counter() - t0))
-    arcs, total, bound, proved, status = _branch_and_cut(P, left, cutoff)
+    W = P.windy
+    bal, paths = _Balancer(W), _Paths(P)
+
+    def repair(arcs):
+        """Join the pieces of an integer solution, keeping the arcs it drives."""
+        forced = [(a, b, c) for a, b, c, n in arcs for _ in range(n)]
+        total, joined, _, _ = _complete(P, forced, bal, paths, keep=2)
+        return float(total), joined
+
+    arcs, total, bound, proved, status = _branch_and_cut(P, left, cutoff, repair)
     seconds = time.perf_counter() - t0
     info["status"] = status
-    if status == "infeasible":
+    if status == "infeasible" and arcs is None:
         return RuralSolution("heuristic, proved", he.total_cost, he.total_cost, True, he.circuit, seconds, info)
+    if status == "infeasible":
+        c = _circuit(arcs, start or P.depot)
+        return RuralSolution("branch-and-cut, repaired, proved", total, total, True, c, seconds, info)
     bound = lb if bound is None else max(lb, float(np.ceil(bound - 1e-6)) if integral else bound)
     if arcs is not None and total < he.total_cost - 1e-9:
-        return RuralSolution("branch-and-cut", total, bound, proved, _circuit(arcs, start or P.depot), seconds, info)
+        return RuralSolution("branch-and-cut", total, min(bound, total), proved,
+                             _circuit(arcs, start or P.depot), seconds, info)
     return RuralSolution("heuristic", he.total_cost, min(bound, he.total_cost), False, he.circuit, seconds, info)

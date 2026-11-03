@@ -1,6 +1,8 @@
 """The rural postman on windy, mixed and directed networks."""
+import csv
 import random
 from collections import Counter
+from pathlib import Path
 
 import networkx as nx
 import numpy as np
@@ -132,3 +134,27 @@ def test_readers(tmp_path):
     q = tmp_path / "d"
     q.write_text("3\n1\n2\n1\n2\n1, 2, 37 ,1\n2, 1, 8 ,0\n", encoding="latin-1")
     assert read_directed(q).links == [(1, 2, 37, None, True), (2, 1, 8, None, False)]
+
+
+def _csv(name):
+    path = Path(__file__).resolve().parent.parent / "results" / name
+    if not path.exists():
+        pytest.skip(f"{name} has not been produced")
+    with open(path, newline="", encoding="utf-8") as f:
+        return list(csv.DictReader(f))
+
+
+def test_measured_runs_agree_with_their_bounds_and_with_published_values():
+    published = {r["instance"].lower(): r for r in _csv("wrpp_published_values.csv")}
+    rows = _csv("rural_general.csv")
+    assert rows
+    for r in rows:
+        best, bound = float(r["best"]), float(r["bound"])
+        assert bound <= best + 1e-6 and best <= float(r["heuristic"]) + 1e-6
+        if r["optimal"] == "True":
+            assert abs(best - bound) <= 1e-6 * max(1.0, best) + 0.51
+        p = published.get(r["instance"].lower())
+        if r["family"] == "windy" and p:
+            assert best >= float(p["lower_bound"]) - 1e-6
+            if r["optimal"] == "True" and p["status"] == "optimal":
+                assert abs(best - float(p["upper_bound"])) < 1e-6
