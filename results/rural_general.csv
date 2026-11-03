@@ -91,3 +91,7 @@ mixed,RD522,2361,655,166,33000.0,undirected,33000.0,heuristic,False,26863.0,137.
 mixed,RD525,2361,655,166,37426.0,undirected,37426.0,heuristic,False,33243.0,164.339
 mixed,RD527,2361,655,166,48355.0,lp-0,48355.0,heuristic,False,47564.0,255.167
 mixed,RD552,2643,1338,21,51959.0,undirected,51959.0,heuristic,False,45840.0,99.559
+mixed,RD555,2643,1338,21,58372.0,undirected,58372.0,heuristic,False,53708.0,108.532
+mixed,RD557,2643,1338,21,81425.0,lp-0,81425.0,heuristic,False,79547.0,303.46
+mixed,RD572,2678,2035,1,71608.0,undirected,71608.0,heuristic,False,64893.0,40.226
+mixed,RD575,2678,2035,1,82565.0,undirected,82565.0,heuristic,False,77280.0,46.626
