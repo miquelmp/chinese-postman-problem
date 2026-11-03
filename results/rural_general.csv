@@ -100,3 +100,45 @@ windy,A3101,174,83,33,10762.0,undirected,10433.0,branch-and-cut,False,10421.0,20
 windy,A3109,174,83,33,13480.0,undirected,13132.0,branch-and-cut,True,13132.0,12.419
 windy,A3205,174,89,28,10288.0,undirected,10053.0,branch-and-cut,True,10053.0,10.993
 windy,A5101,174,99,18,11130.0,undirected,11032.0,"branch-and-cut, repaired, proved",True,11032.0,10.532
+windy,A5109,174,99,18,14247.0,undirected,14144.0,"branch-and-cut, repaired, proved",True,14144.0,10.923
+windy,A5205,174,98,21,10799.0,undirected,10582.0,branch-and-cut,True,10582.0,9.324
+windy,A7101,174,129,7,12015.0,undirected,12015.0,"heuristic, proved",True,12015.0,9.086
+windy,A7109,174,129,7,16088.0,undirected,16086.0,branch-and-cut,True,16086.0,6.849
+windy,A7205,174,114,8,10888.0,undirected,10888.0,"heuristic, proved",True,10888.0,7.008
+windy,B321,630,222,100,18569.0,undirected,18569.0,heuristic,False,12685.0,52.844
+windy,B451,1055,548,23,27314.0,undirected,27314.0,heuristic,False,22448.0,46.212
+windy,B571,1326,994,1,47981.0,undirected,47981.0,heuristic,False,42910.0,20.347
+windy,C321,1013,362,152,22817.0,undirected,22817.0,heuristic,False,15961.0,83.521
+windy,C451,1605,836,41,35320.0,undirected,35320.0,heuristic,False,29142.0,124.428
+windy,C571,2005,1509,1,58603.0,undirected,58603.0,heuristic,False,52106.0,25.235
+windy,D321,1297,469,202,25623.0,undirected,25623.0,heuristic,False,17836.0,69.641
+windy,D451,2161,1163,32,40688.0,undirected,40688.0,heuristic,False,33694.0,290.86
+windy,D571,2678,2035,1,66955.0,undirected,66955.0,heuristic,False,59916.0,44.2
+windy,M3101,316,154,42,17736.0,undirected,17509.0,branch-and-cut,False,17159.0,20.052
+windy,M3109,316,154,42,20022.0,undirected,19452.0,branch-and-cut,False,19415.0,20.181
+windy,M3205,316,152,47,18096.0,undirected,17430.0,branch-and-cut,False,17163.0,20.053
+windy,M5101,316,176,28,18760.0,undirected,18730.0,branch-and-cut,False,18387.0,20.887
+windy,M5109,316,176,28,21778.0,undirected,21337.0,branch-and-cut,False,21201.0,20.022
+windy,M5205,316,181,22,18835.0,undirected,18499.0,branch-and-cut,False,18422.0,20.534
+windy,M7101,316,230,5,21495.0,undirected,21495.0,"heuristic, proved",True,21495.0,11.894
+windy,M7109,316,230,5,25150.0,undirected,24872.0,branch-and-cut,True,24872.0,14.763
+windy,M7205,316,228,8,21697.0,undirected,21652.0,branch-and-cut,True,21652.0,12.633
+windy,P02110,33,12,4,154.0,undirected,151.0,branch-and-cut,True,151.0,0.536
+windy,P0318,57,26,4,75.0,undirected,74.0,branch-and-cut,True,74.0,0.57
+windy,P042200,35,22,3,2538.0,undirected,2538.0,"heuristic, proved",True,2538.0,0.174
+windy,P06110,46,20,7,104.0,undirected,99.0,branch-and-cut,True,99.0,0.273
+windy,P0718,47,24,3,86.0,undirected,86.0,"heuristic, proved",True,86.0,0.23
+windy,P082200,40,24,2,2049.0,lp-0,2049.0,"heuristic, proved",True,2049.0,0.143
+windy,P10110,20,10,4,70.0,lp-0,70.0,"heuristic, proved",True,70.0,0.283
+windy,P1118,14,7,3,17.0,lp-0,17.0,"heuristic, proved",True,17.0,0.121
+windy,P122200,18,5,3,586.0,lp-1,586.0,"heuristic, proved",True,586.0,0.097
+windy,P14110,79,31,6,192.0,undirected,183.0,branch-and-cut,True,183.0,1.193
+windy,P1518,37,19,8,382.0,undirected,382.0,"heuristic, proved",True,382.0,1.54
+windy,P162200,94,34,7,2824.0,undirected,2824.0,"heuristic, proved",True,2824.0,0.42
+windy,P18110,37,16,8,143.0,lp-0,141.0,branch-and-cut,True,141.0,0.968
+windy,P1918,54,29,7,208.0,undirected,203.0,branch-and-cut,True,203.0,2.203
+windy,P202200,98,63,7,6587.0,undirected,6587.0,"heuristic, proved",True,6587.0,0.845
+windy,P22110,184,74,6,578.0,undirected,559.0,branch-and-cut,True,559.0,1.778
+windy,P2318,158,78,6,353.0,undirected,351.0,branch-and-cut,True,351.0,3.12
+windy,P242200,125,55,7,4970.0,undirected,4909.0,branch-and-cut,True,4909.0,1.442
+windy,a1015751,1656,1289,16,836692.0,undirected,836692.0,heuristic,False,670836.0,401.891
