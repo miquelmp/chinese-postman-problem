@@ -217,7 +217,7 @@ Fleury's rule, discussed in the 1997 report, also works but must test at each st
 
 ## 6. Implementation
 
-The solver is a small Python 3 package, `chinese_postman`, built on NetworkX and covered by 348 automated tests (289 when the optional LEMON library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with eleven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).
+The solver is a small Python 3 package, `chinese_postman`, built on NetworkX and covered by 419 automated tests (360 when the optional LEMON library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with eleven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).
 
 ### 6.1 Modules
 
@@ -294,7 +294,7 @@ The project website, [miquelmp.github.io/chinese-postman-problem](https://miquel
 | Directed and mixed streets | `site/assets/cpp.js` | Minimum-cost flow; lower bounds and the mixed heuristic of chapter 9, with its starting orientations, balancing and local search |
 | Tour | `site/assets/cpp.js` | Hierholzer's algorithm, as in chapter 5 |
 | Networks | `site/assets/networks.js` | Built-in examples, `.GRA` and CARP readers, OpenStreetMap import through the Overpass API |
-| Extensions | `site/assets/extensions.js` | Rural postman and several postmen (chapter 10): Frederickson's heuristic, local search, optimal split into routes, lower bounds |
+| Extensions | `site/assets/extensions.js` | Rural postman and several postmen on every network (chapter 10): Frederickson's heuristic, local search, optimal split into routes, lower bounds |
 
 The port is checked against the Python package. On 243 networks, from classic graphs to benchmark files and mixed towns, it returns the same optimum in every undirected and directed case, stays a mean 0.25% above the optimum on mixed ones, and always returns a valid closed tour; on 3,000 random matchings it agreed with NetworkX every time. The page is ready to solve in under a second.
 
@@ -430,7 +430,7 @@ The 2026 version keeps the structure of the 1997 method and improves each of its
 | Eulerian circuit | Cycle splicing over adjacency queues | Hierholzer with one pointer per vertex | Linear time |
 | Directed streets | Future work | Minimum-cost flow | Polynomial (Edmonds and Johnson, 1973) |
 | Platform | Turbo C, 16-bit integers, 640 KB memory model | Python 3, unbounded integers, automatic memory | No size limits on costs or data |
-| Verification | Manual checks | 348 automated tests in Python and 334 networks and 3,000 matchings re-checked in JavaScript, every tour validated | Results checked on each run |
+| Verification | Manual checks | 419 automated tests in Python and 334 networks and 3,000 matchings re-checked in JavaScript, every tour validated | Results checked on each run |
 
 ### 8.2 The 1997 branch-and-bound
 
@@ -740,7 +740,7 @@ The 5-minute run shows that the 25% of the 20-second table belongs to the time l
 
 On the 76 open cases it improves on no published upper bound, staying a mean 6.5% above. These are heuristic results and the worst cases are far from the optimum, so this method gives a good route quickly, without any promise on a given network.
 
-**Several postmen, one-way and mixed.** No published values were available for these, so each was measured against the lower bound with 2 to 5 postmen and 5 seconds of local search (`results/k_general.csv`). The run reached its 2-hour limit after 8 directed and 3 mixed instances, of 211–1,318 links, and before the windy ones, which the table above covers. The longest route is a mean 32% above the bound on directed instances and 35% on mixed ones, with worst cases of 52% and 64%. The windy results suggest that much of this distance belongs to the bound, which assumes that the work divides perfectly among the postmen, but on these networks that is not proved. On the mixed instances the split gives almost all the result, since the local search stops within its time at this size.
+**Several postmen, one-way and mixed.** No published values were available for these, so each was measured against the lower bound with 2 to 5 postmen and 5 seconds of local search (`results/k_general.csv`). The run reached its 2-hour limit after 8 directed and 3 mixed instances, of 211–1,318 links, and before the windy ones, which the table above covers. The longest route is a mean 32% above the bound on directed instances and 35% on mixed ones, with worst cases of 52% and 64%. The windy results suggest that much of this distance belongs to the bound, which assumes that the work divides perfectly among the postmen, but on these networks that is not proved. On the mixed instances the local search improved on the split by less than 1% in the time given.
 
 The website solves these problems in the browser with a simpler heuristic in JavaScript, and for one postman offers the proof of this section through Python running in the page.
 

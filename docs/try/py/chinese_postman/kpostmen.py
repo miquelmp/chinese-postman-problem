@@ -2,7 +2,8 @@
 
 The method is that of `fleet.solve_k_postmen`, with directed distances. One route serves every
 required link; a dynamic programme cuts it into at most k pieces, each driven from the depot and
-back; a local search then moves links out of the longest route. The min-max problem is NP-hard. The
+back; a local search then moves links out of the longest route, and random moves of short runs of links
+restart it while time remains. The min-max problem is NP-hard. The
 lower bound is the larger of the longest single job and a k-th of the bound for one route.
 """
 from __future__ import annotations
@@ -103,6 +104,55 @@ def _split(paths, depot, tasks, k):
     return routes[::-1]
 
 
+def _reorder(P, paths, depot, route):
+    """Reinsert each task of a route at its best place and direction while that shortens the route."""
+    W = P.windy
+    cost = _route_cost(paths, depot, route)
+    improved = True
+    while improved and len(route) > 1:
+        improved = False
+        for i in range(len(route)):
+            rest = route[:i] + route[i + 1:]
+            k = route[i][3]
+            for a, b, c in W.directions(k):
+                for q in range(len(rest) + 1):
+                    trial = rest[:q] + [(a, b, c, k)] + rest[q:]
+                    t = _route_cost(paths, depot, trial)
+                    if t < cost - 1e-9:
+                        route, cost, improved = trial, t, True
+                        break
+                if improved:
+                    break
+            if improved:
+                break
+    return route, cost
+
+
+def _perturb(P, paths, depot, routes, rng):
+    """Move a random run of tasks from one route into the place in another that costs least."""
+    W = P.windy
+    used = [r for r in range(len(routes)) if routes[r]]
+    src = used[rng.integers(len(used))] if rng.random() < 0.5 else max(
+        used, key=lambda r: _route_cost(paths, depot, routes[r]))
+    dst = (src + 1 + int(rng.integers(len(routes) - 1))) % len(routes)
+    n = len(routes[src])
+    size = 1 + int(rng.integers(max(1, min(8, n // 3))))
+    at = int(rng.integers(max(1, n - size + 1)))
+    run = routes[src][at:at + size]
+    routes = [list(r) for r in routes]
+    routes[src] = routes[src][:at] + routes[src][at + size:]
+    for task in run:
+        best = None
+        for a, b, c in W.directions(task[3]):
+            for q in range(len(routes[dst]) + 1):
+                new = routes[dst][:q] + [(a, b, c, task[3])] + routes[dst][q:]
+                t = _route_cost(paths, depot, new)
+                if best is None or t < best[0]:
+                    best = (t, new)
+        routes[dst] = best[1]
+    return routes
+
+
 def _improve(P, paths, depot, routes, seconds):
     """Move a task out of the longest route to its best place in another, in either direction, while
     that lowers the longest route, or keeps it and lowers the total."""
@@ -132,8 +182,8 @@ def _improve(P, paths, depot, routes, seconds):
                 break
         if best and best[0][0] < costs[worst] - 1e-9:
             _, _, r, new, shorter, c0, c1 = best
-            routes[r], routes[worst] = new, shorter
-            costs[r], costs[worst] = c1, c0
+            routes[r], costs[r] = _reorder(P, paths, depot, new) if len(new) <= 60 else (new, c1)
+            routes[worst], costs[worst] = _reorder(P, paths, depot, shorter) if len(shorter) <= 60 else (shorter, c0)
             moves += 1
             improved = True
     return routes, costs, moves
@@ -160,9 +210,30 @@ def solve_k_postmen(P: RuralProblem, k: int, local_seconds: float = 5.0) -> KSol
     single = solve_heuristic(P, pre=pre, local_seconds=min(local_seconds, 5.0))
     paths = _Paths(P)
     tasks = _tasks_of(P, single.circuit)
-    routes = _split(paths, P.depot, tasks, k)
-    split_longest = max(_route_cost(paths, P.depot, r) for r in routes)
-    routes, costs, moves = _improve(P, paths, P.depot, routes, local_seconds)
+    n = len(tasks)
+    candidates = []
+    for shift in range(0, n, max(1, n // 8)):            # cuts depend on where the cycle is opened
+        routes = _split(paths, P.depot, tasks[shift:] + tasks[:shift], k)
+        candidates.append((max(_route_cost(paths, P.depot, r) for r in routes), routes))
+    candidates.sort(key=lambda c: c[0])
+    split_longest = candidates[0][0]
+    best = None
+    moves = 0
+    for _, routes in candidates[:2]:
+        routes, costs, m = _improve(P, paths, P.depot, routes, local_seconds / 4)
+        moves += m
+        if best is None or max(costs) < max(best[1]):
+            best = (routes, costs)
+    routes, costs = best
+    kicks = 0
+    if len(routes) > 1 and n <= 600:
+        rng = np.random.default_rng(1)
+        ends = time.perf_counter() + local_seconds / 2
+        while time.perf_counter() < ends:
+            kicks += 1
+            trial, c, _ = _improve(P, paths, P.depot, _perturb(P, paths, P.depot, routes, rng), local_seconds / 8)
+            if (max(c), sum(c)) < (max(costs), sum(costs)):
+                routes, costs = trial, c
     routes_used = [(r, c) for r, c in zip(routes, costs) if r]
     W = P.windy
     i, D = paths.idx, paths.dist
@@ -171,4 +242,4 @@ def solve_k_postmen(P: RuralProblem, k: int, local_seconds: float = 5.0) -> KSol
     bound = max(far, pre[0] / k)
     return KSolution([_vertices(paths, P.depot, r) for r, _ in routes_used], [c for _, c in routes_used],
                      float(bound), single.total_cost, time.perf_counter() - t0,
-                     {"split_longest": split_longest, "moves": moves})
+                     {"split_longest": split_longest, "moves": moves, "kicks": kicks})
