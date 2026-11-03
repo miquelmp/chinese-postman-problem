@@ -142,3 +142,4 @@ windy,P22110,184,74,6,578.0,undirected,559.0,branch-and-cut,True,559.0,1.778
 windy,P2318,158,78,6,353.0,undirected,351.0,branch-and-cut,True,351.0,3.12
 windy,P242200,125,55,7,4970.0,undirected,4909.0,branch-and-cut,True,4909.0,1.442
 windy,a1015751,1656,1289,16,836692.0,undirected,836692.0,heuristic,False,670836.0,401.891
+windy,a1020508,2131,1079,26,676381.0,undirected,676381.0,heuristic,False,552210.0,523.948
