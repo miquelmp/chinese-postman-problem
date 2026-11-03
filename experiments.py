@@ -465,9 +465,9 @@ def rural_mixed_long(limit=300.0, step=3):
 
 
 def directed_published(limit=60.0, max_links=25000):
-    """Published directed instances: the DG files, then the stacker crane files whose bound does not
-    exceed the published value. Writes results/directed_published.csv and resumes from it."""
-    from chinese_postman.windyrural import lower_bound, read_directed_general, solve
+    """Published directed instances: the DG files, then the stacker crane files with every arc their
+    header counts. Writes results/directed_published.csv and resumes from it."""
+    from chinese_postman.windyrural import read_directed_general, solve
 
     def values(name):
         with open(f"{OUT}/{name}_published_values.csv", newline="", encoding="utf-8") as f:
@@ -488,6 +488,9 @@ def directed_published(limit=60.0, max_links=25000):
     for family, path, name, known in plan:
         if name in done:
             continue
+        with open(path, encoding="latin-1") as f:
+            if "finales" in f.read(200):       # the header counts more arcs than the file holds
+                continue
         P = read_directed_general(path)
         if len(P.links) > max_links:
             print("too large:", name, len(P.links), flush=True)
@@ -495,13 +498,9 @@ def directed_published(limit=60.0, max_links=25000):
         row = dict(family=family, instance=name, links=len(P.links), required=sum(l[4] for l in P.links),
                    vertices=len(P.vertices), pieces=len(P.required_pieces()), status=known[name]["status"],
                    published=known[name]["upper_bound"])
-        lp = lower_bound(P)[0]
-        if lp > float(known[name]["upper_bound"]) + 1e-6:
-            row.update(heuristic="", best="", bound=lp, optimal="", seconds=0)
-        else:
-            sol = solve(P, time_limit=limit)
-            row.update(heuristic=sol.info.get("heuristic", sol.total_cost), best=sol.total_cost,
-                       bound=sol.lower_bound, optimal=sol.optimal, seconds=round(sol.seconds, 2))
+        sol = solve(P, time_limit=limit)
+        row.update(heuristic=sol.info.get("heuristic", sol.total_cost), best=sol.total_cost,
+                   bound=sol.lower_bound, optimal=sol.optimal, seconds=round(sol.seconds, 2))
         rows.append(row)
         print(row, flush=True)
         save("directed_published", rows)
