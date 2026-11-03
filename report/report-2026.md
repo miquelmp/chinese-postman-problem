@@ -429,6 +429,10 @@ The 2026 version keeps the structure of the 1997 method and improves each of its
 
 ### 8.2 The 1997 branch-and-bound
 
+The choice of branch-and-bound in 1997 was deliberate. The project was an academic exercise. Its report presents and proves Edmonds and Johnson's algorithm in chapter 3, and then proposes "a method less specific and conceptually simpler": to treat the pairing as a general combinatorial problem. As its author recalls, the practical interest lay in large cases, where the search reached fairly good solutions quickly, while the exact method took much longer on the computers of the time.
+
+Branch-and-bound is itself exact when it runs to completion, and it becomes a heuristic only when a time or memory limit stops it, still with a bound on its error. Its cost can grow exponentially where the blossom algorithm is polynomial, but it needs no matching theory, and it carries over to problems with no polynomial method, such as the mixed CPP of chapter 9.
+
 Each node of the search tree fixed some pairs of odd vertices as taken and others as rejected. Branching took the cheapest pair still available and created two children: take it or reject it. The lower bound of a node was c₁ + c₂, where c₂ is the cost of the pairs already taken and c₁ estimates the cost of completing the matching from the cheapest available pair at each remaining vertex. Nodes were explored lowest bound first while the tree was small, and deepest first afterwards, which gives good solutions early and makes the method a natural time-limited heuristic.
 
 ### 8.3 A tightened lower bound
