@@ -9,7 +9,8 @@ traversals of a link in that direction:
          every link: x(u->v) + x(v->u) >= 1
          x integer >= 0
 
-It is NP-hard in general (Brucker 1981; Guan 1984). Three methods share the model.
+It is NP-hard in general (Guan 1984), and polynomial on Eulerian graphs (Win 1989). Several
+methods share the model.
 
 * `bounds`          — the linear relaxation, and the undirected CPP on the cheaper direction.
 * `solve_exact`     — the integer program, solved by HiGHS branch-and-cut.
@@ -336,8 +337,8 @@ def solve_windy(W: WindyGraph, time_limit: float = 300.0, start=None) -> WindySo
     seconds = time.perf_counter() - t0
     if res.status == 2:                # infeasible: nothing beats the heuristic's tour
         return WindySolution("heuristic, proved", he.total_cost, he.total_cost, True, he.circuit, seconds, info)
-    dual = float(getattr(res, "mip_dual_bound", np.nan))
-    bound = max(lb, float(np.ceil(dual - 1e-6)) if integral else dual) if not np.isnan(dual) else lb
+    dual = getattr(res, "mip_dual_bound", None)
+    bound = lb if dual is None or np.isnan(dual) else max(lb, float(np.ceil(dual - 1e-6)) if integral else float(dual))
     if res.x is not None and res.fun < he.total_cost - 1e-9:
         arcs = [(a, b, c, int(round(t))) for (_, a, b, c), t in zip(cols, res.x)]
         return WindySolution("branch-and-cut", float(round(res.fun, 6)), bound, res.status == 0,
