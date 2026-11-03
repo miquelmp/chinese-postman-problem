@@ -158,3 +158,15 @@ def test_measured_runs_agree_with_their_bounds_and_with_published_values():
             assert best >= float(p["lower_bound"]) - 1e-6
             if r["optimal"] == "True" and p["status"] == "optimal":
                 assert abs(best - float(p["upper_bound"])) < 1e-6
+
+
+@pytest.mark.parametrize("name", ["rural_general.csv", "rural_mixed_long.csv"])
+def test_mixed_results_agree_with_the_published_optima(name):
+    published = {r["instance"]: float(r["upper_bound"]) for r in _csv("mrpp_published_values.csv")}
+    rows = [r for r in _csv(name) if r["instance"] in published and r.get("family", "mixed") == "mixed"]
+    assert rows
+    for r in rows:
+        optimum = published[r["instance"]]
+        assert float(r["bound"]) <= optimum + 1e-6 <= float(r["best"]) + 2e-6
+        if r["optimal"] == "True":
+            assert float(r["best"]) == optimum
