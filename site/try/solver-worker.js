@@ -12,8 +12,9 @@ self.onmessage = e => {
     else if (cmd === "query") out = Networks.overpassQuery(args.s, args.w, args.n, args.e);
     else if (cmd === "solve") {
       const I = args.inst, k = args.k || 1, opts = { maxSeconds: args.maxSeconds || 4, depot: I.depot };
-      if (k > 1) out = Extensions.postmen(I, k, opts);
-      else if (I.links.some(l => l.req === false)) out = Extensions.rural(I, opts);
+      const plain = CPP.kindOf(I) === "undirected";
+      if (k > 1) out = plain ? Extensions.postmen(I, k, opts) : Extensions.general(I, k, opts);
+      else if (I.links.some(l => l.req === false)) out = plain ? Extensions.rural(I, opts) : Extensions.general(I, 1, opts);
       else out = CPP.solve(I, opts);
     }
     else throw new Error("Unknown command " + cmd);

@@ -408,6 +408,11 @@ def wpp_win():
     save("windy_win", rows)
 
 
+def _campos():
+    """The instance files of Campos et al., without the archives stored beside them."""
+    return [p for p in glob.glob("data/drpp/*") if not p.endswith((".zip", ".gz", ".tar", ".rar", ".7z"))]
+
+
 def rural_general(limit=20.0, step=8):
     """Rural postman on windy, mixed and directed networks: every `step`-th published windy file,
     and all mixed and directed files. Resumes from results/rural_general.csv."""
@@ -418,7 +423,7 @@ def rural_general(limit=20.0, step=8):
         with open(f"{OUT}/rural_general.csv", newline="", encoding="utf-8") as f:
             rows = list(csv.DictReader(f))
     done = {r["instance"] for r in rows}
-    plan = [("directed", p, read_directed) for p in sorted(glob.glob("data/drpp/*"))]
+    plan = [("directed", p, read_directed) for p in sorted(_campos())]
     plan += [("mixed", p, read_instance) for p in sorted(glob.glob("data/mrpp/*"))]
     plan += [("windy", p, read_instance) for p in sorted(glob.glob("data/wrpp/*"))[::step]]
     for family, path, reader in plan:
@@ -443,7 +448,7 @@ def k_general(seconds=5.0, step=24):
     2 to 5 postmen, against the lower bound. Writes results/k_general.csv."""
     from chinese_postman.kpostmen import solve_k_postmen
     from chinese_postman.windyrural import read_directed, read_instance
-    plan = [("directed", p, read_directed) for p in sorted(glob.glob("data/drpp/*"))[::8]]
+    plan = [("directed", p, read_directed) for p in sorted(_campos())[::8]]
     plan += [("mixed", p, read_instance) for p in sorted(glob.glob("data/mrpp/*"))[::6]]
     plan += [("windy", p, read_instance) for p in sorted(glob.glob("data/wrpp/*"))[::step]]
     rows = []

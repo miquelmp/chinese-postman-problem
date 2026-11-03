@@ -31,3 +31,11 @@ directed,240-30-2.2_3,711,144,30,28828.0,cheaper,24315.0,branch-and-cut,True,243
 directed,240-30-2.3_3,796,119,30,30146.0,cheaper,27535.0,branch-and-cut,True,27535.0,11.837
 directed,240-30-3.0,697,167,30,26084.0,cheaper,26084.0,heuristic,False,22951.0,20.018
 directed,240-30-3.1,801,104,30,30185.0,cheaper,28410.0,branch-and-cut,True,28410.0,5.683
+directed,240-30-3.1_3,705,163,30,28239.0,cheaper,28239.0,heuristic,False,25756.0,20.033
+directed,240-30-3.2_3,716,162,30,26074.0,cheaper,25413.0,branch-and-cut,True,25413.0,4.518
+directed,240-30-3.3_3,801,119,30,30027.0,cheaper,29488.0,branch-and-cut,True,29488.0,2.343
+directed,240-30-4.0,699,162,30,25888.0,cheaper,25888.0,heuristic,False,21885.0,20.043
+directed,240-30-4.1,792,93,30,25802.0,cheaper,25802.0,heuristic,False,23676.0,20.057
+directed,240-30-4.1_3,708,142,30,25862.0,cheaper,25862.0,heuristic,False,24022.0,20.02
+directed,240-30-4.2_3,716,134,30,25032.0,cheaper,23702.0,branch-and-cut,True,23702.0,2.779
+directed,240-30-4.3_3,792,105,30,27414.0,cheaper,25758.0,branch-and-cut,True,25758.0,6.524
