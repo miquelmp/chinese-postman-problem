@@ -7,3 +7,4 @@ dist/
 native/liblemon_match.so
 results/*.log
 data/mcpp/
+data/wpp/

@@ -364,6 +364,38 @@ def osm(limit=300.0):
         save("mixed_osm", rows)
 
 
+def wpp(limit=120.0, step=4):
+    """Published windy instances of Corberan et al., 2012, in data/wpp: every instance of 500 and
+    1,000 junctions, so that density and asymmetry vary independently, then every `step`-th file
+    of the larger sizes, smallest first. Resumes from results/windy_published.csv."""
+    from chinese_postman.windy import read_wpp, solve_win, solve_windy
+    record_environment()
+    rows = []
+    if os.path.exists(f"{OUT}/windy_published.csv"):
+        with open(f"{OUT}/windy_published.csv", newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+    done = {r["instance"] for r in rows}
+    files = sorted(glob.glob("data/wpp/W*"))
+    small = [p for p in files if os.path.basename(p)[2:4] in ("05", "10")]
+    large = sorted([p for p in files if os.path.basename(p)[2:4] not in ("05", "10")][::step],
+                   key=lambda p: os.path.basename(p)[2:4])
+    for path in sorted(small, key=lambda p: os.path.basename(p)[2:4]) + large:
+        name = os.path.basename(path)
+        if name in done:
+            continue
+        W = read_wpp(path)
+        t = time.perf_counter()
+        win = solve_win(W)
+        win_s = time.perf_counter() - t
+        sol = solve_windy(W, time_limit=limit)
+        rows.append(dict(family="wpp-" + name[:2], instance=name, vertices=len(W.nodes), links=len(W.links),
+                         win=win.total_cost, win_s=round(win_s, 3), heuristic=sol.info.get("heuristic", sol.total_cost),
+                         winner=sol.info.get("winner", ""), best=sol.total_cost, method=sol.method,
+                         optimal=sol.optimal, bound=sol.lower_bound, seconds=round(sol.seconds, 3)))
+        print(rows[-1], flush=True)
+        save("windy_published", rows)
+
+
 def mixed(limit=300.0):
     from chinese_postman.mixed import from_graph
     mixed_towns(limit)
