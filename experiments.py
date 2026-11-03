@@ -408,7 +408,7 @@ def wpp_win():
     save("windy_win", rows)
 
 
-def rural_general(limit=20.0, step=6):
+def rural_general(limit=20.0, step=8):
     """Rural postman on windy, mixed and directed networks: every `step`-th published windy file,
     and all mixed and directed files. Resumes from results/rural_general.csv."""
     from chinese_postman.windyrural import read_directed, read_instance, solve
@@ -436,6 +436,29 @@ def rural_general(limit=20.0, step=6):
                          optimal=sol.optimal, bound=sol.lower_bound, seconds=round(sol.seconds, 3)))
         print(rows[-1], flush=True)
         save("rural_general", rows)
+
+
+def k_general(seconds=5.0, step=24):
+    """Several postmen on windy, mixed and directed networks: a sample of the rural instances, with
+    2 to 5 postmen, against the lower bound. Writes results/k_general.csv."""
+    from chinese_postman.kpostmen import solve_k_postmen
+    from chinese_postman.windyrural import read_directed, read_instance
+    plan = [("directed", p, read_directed) for p in sorted(glob.glob("data/drpp/*"))[::8]]
+    plan += [("mixed", p, read_instance) for p in sorted(glob.glob("data/mrpp/*"))[::6]]
+    plan += [("windy", p, read_instance) for p in sorted(glob.glob("data/wrpp/*"))[::step]]
+    rows = []
+    for family, path, reader in plan:
+        P = reader(path)
+        if not P.is_feasible():
+            continue
+        for k in (2, 3, 4, 5):
+            sol = solve_k_postmen(P, k, local_seconds=seconds)
+            rows.append(dict(family=family, instance=os.path.basename(path).replace(".DAT", ""), k=k,
+                             links=len(P.links), required=sum(l[4] for l in P.links), single=sol.single_route,
+                             split_longest=sol.info["split_longest"], longest=sol.longest, bound=sol.lower_bound,
+                             gap_pct=round(sol.gap_pct, 2), seconds=round(sol.seconds, 2)))
+        print(rows[-1], flush=True)
+        save("k_general", rows)
 
 
 def mixed(limit=300.0):
