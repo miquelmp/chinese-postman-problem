@@ -466,6 +466,31 @@ def k_general(seconds=5.0, step=24):
         save("k_general", rows)
 
 
+def k_published(seconds=2.0):
+    """Several postmen on the published min-max windy instances in data/mmwrpp, with the depot at
+    vertex 1 and 2 to 6 postmen. Writes results/k_published.csv and resumes from it."""
+    from chinese_postman.kpostmen import solve_k_postmen
+    from chinese_postman.windyrural import RuralProblem, read_instance
+    with open(f"{OUT}/mmwrpp_published_values.csv", newline="", encoding="utf-8") as f:
+        wanted = [(int(r["k"]), r["instance"]) for r in csv.DictReader(f)]
+    rows = []
+    if os.path.exists(f"{OUT}/k_published.csv"):
+        with open(f"{OUT}/k_published.csv", newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+    done = {(int(r["k"]), r["instance"]) for r in rows}
+    for k, name in wanted:
+        if (k, name) in done:
+            continue
+        P = read_instance(f"data/mmwrpp/{name}")
+        sol = solve_k_postmen(RuralProblem(P.links, 1), k, local_seconds=seconds)
+        rows.append(dict(k=k, instance=name, links=len(P.links), required=sum(l[4] for l in P.links),
+                         split_longest=sol.info["split_longest"], longest=sol.longest, bound=sol.lower_bound,
+                         seconds=round(sol.seconds, 2)))
+        if len(rows) % 20 == 0:
+            save("k_published", rows)
+    save("k_published", rows)
+
+
 def mixed(limit=300.0):
     from chinese_postman.mixed import from_graph
     mixed_towns(limit)

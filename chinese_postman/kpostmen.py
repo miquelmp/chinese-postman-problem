@@ -103,6 +103,25 @@ def _split(paths, depot, tasks, k):
     return routes[::-1]
 
 
+def _reorder(paths, depot, route):
+    """Reinsert each task of a route at its best place while that shortens the route."""
+    cost = _route_cost(paths, depot, route)
+    improved = True
+    while improved and len(route) > 2:
+        improved = False
+        for i in range(len(route)):
+            rest = route[:i] + route[i + 1:]
+            for q in range(len(rest) + 1):
+                trial = rest[:q] + [route[i]] + rest[q:]
+                c = _route_cost(paths, depot, trial)
+                if c < cost - 1e-9:
+                    route, cost, improved = trial, c, True
+                    break
+            if improved:
+                break
+    return route, cost
+
+
 def _improve(P, paths, depot, routes, seconds):
     """Move a task out of the longest route to its best place in another, in either direction, while
     that lowers the longest route, or keeps it and lowers the total."""
@@ -132,8 +151,8 @@ def _improve(P, paths, depot, routes, seconds):
                 break
         if best and best[0][0] < costs[worst] - 1e-9:
             _, _, r, new, shorter, c0, c1 = best
-            routes[r], routes[worst] = new, shorter
-            costs[r], costs[worst] = c1, c0
+            routes[r], costs[r] = _reorder(paths, depot, new) if len(new) <= 60 else (new, c1)
+            routes[worst], costs[worst] = _reorder(paths, depot, shorter) if len(shorter) <= 60 else (shorter, c0)
             moves += 1
             improved = True
     return routes, costs, moves
@@ -160,9 +179,21 @@ def solve_k_postmen(P: RuralProblem, k: int, local_seconds: float = 5.0) -> KSol
     single = solve_heuristic(P, pre=pre, local_seconds=min(local_seconds, 5.0))
     paths = _Paths(P)
     tasks = _tasks_of(P, single.circuit)
-    routes = _split(paths, P.depot, tasks, k)
-    split_longest = max(_route_cost(paths, P.depot, r) for r in routes)
-    routes, costs, moves = _improve(P, paths, P.depot, routes, local_seconds)
+    n = len(tasks)
+    candidates = []
+    for shift in range(0, n, max(1, n // 8)):            # cuts depend on where the cycle is opened
+        routes = _split(paths, P.depot, tasks[shift:] + tasks[:shift], k)
+        candidates.append((max(_route_cost(paths, P.depot, r) for r in routes), routes))
+    candidates.sort(key=lambda c: c[0])
+    split_longest = candidates[0][0]
+    best = None
+    moves = 0
+    for _, routes in candidates[:3]:
+        routes, costs, m = _improve(P, paths, P.depot, routes, local_seconds / 3)
+        moves += m
+        if best is None or max(costs) < max(best[1]):
+            best = (routes, costs)
+    routes, costs = best
     routes_used = [(r, c) for r, c in zip(routes, costs) if r]
     W = P.windy
     i, D = paths.idx, paths.dist

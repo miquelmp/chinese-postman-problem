@@ -78,3 +78,5 @@ mixed,RB557,1318,684,7,57291.0,lp-0,57291.0,heuristic,False,56166.0,72.659
 mixed,RB572,1326,994,1,50976.0,undirected,50976.0,heuristic,False,45898.0,20.088
 mixed,RB575,1326,994,1,58799.0,undirected,57880.0,branch-and-cut,True,57880.0,19.282
 mixed,RB577,1326,994,1,72261.0,lp-0,71769.0,branch-and-cut,True,71769.0,19.878
+mixed,RD422,1867,549,188,30277.0,undirected,30277.0,heuristic,False,23857.0,88.708
+mixed,RD425,1867,549,188,34907.0,lp-0,34907.0,heuristic,False,32051.0,95.68
