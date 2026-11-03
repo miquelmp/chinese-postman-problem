@@ -506,7 +506,7 @@ def directed_published(limit=60.0, max_links=25000):
         save("directed_published", rows)
 
 
-def dgrp_lap(limit=120.0):
+def dgrp_lap(limit=120.0, only=None):
     """The large published directed general routing files, with branch-and-cut alone: on these
     networks the joining heuristic is slow. Writes results/dgrp_lap.csv and resumes from it."""
     from chinese_postman.windyrural import _branch_and_cut, read_directed_general
@@ -519,7 +519,7 @@ def dgrp_lap(limit=120.0):
     done = {r["instance"] for r in rows}
     for path in sorted(glob.glob("data/dgrp/DGRP_LAP*")):
         name = os.path.basename(path).rsplit(".", 1)[0]
-        if name in done:
+        if name in done or (only and name != only):
             continue
         P = read_directed_general(path)
         t = time.perf_counter()
