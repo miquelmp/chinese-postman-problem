@@ -43,6 +43,13 @@
       pairs.get(key).push(i);
     });
     const paths = [];
+    // A street's cost, or for a windy street its cost each way, with arrows as drawn on screen
+    const costText = l => {
+      if (l.w2 === undefined || l.w2 === l.w) return `${l.w}`;
+      const [x1, y1] = P(l.u), [x2, y2] = P(l.v), dx = x2 - x1, dy = y2 - y1;
+      const [go, back] = Math.abs(dx) >= Math.abs(dy) ? (dx >= 0 ? ["→", "←"] : ["←", "→"]) : (dy >= 0 ? ["↓", "↑"] : ["↑", "↓"]);
+      return `${go} ${l.w}  ${back} ${l.w2}`;
+    };
     pairs.forEach(list => {
       list.forEach((i, k) => {
         const l = inst.links[i];
@@ -59,6 +66,7 @@
         const p = el("path", { d, class: "street" + (l.oneway ? " oneway" : "") + (l.req === false ? " optional" : ""),
                                "stroke-width": l.req === false ? streetW * 0.6 : streetW }, gStreets);
         p.dataset.base = streetW;
+        el("title", {}, p).textContent = `${costText(l)}${inst.units ? " " + inst.units : ""}`;
         paths[i] = p;
       });
     });
@@ -84,7 +92,7 @@
         const p = paths[i], L = p.getTotalLength(), m = p.getPointAtLength(L / 2), m2 = p.getPointAtLength(L / 2 + 1);
         const dx = m2.x - m.x, dy = m2.y - m.y, len = Math.hypot(dx, dy) || 1;
         const t = el("text", { x: m.x - dy / len * 11, y: m.y + dx / len * 11 + 4, class: "weight", "text-anchor": "middle" }, gText);
-        t.textContent = l.w;
+        t.textContent = costText(l);
       });
     }
     const deg = new Map();
