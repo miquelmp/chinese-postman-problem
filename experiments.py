@@ -443,6 +443,27 @@ def rural_general(limit=20.0, step=8):
         save("rural_general", rows)
 
 
+def rural_mixed_long(limit=300.0, step=3):
+    """Every `step`-th published mixed rural file with a longer limit. Writes rural_mixed_long.csv."""
+    from chinese_postman.windyrural import read_instance, solve
+    rows = []
+    if os.path.exists(f"{OUT}/rural_mixed_long.csv"):
+        with open(f"{OUT}/rural_mixed_long.csv", newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+    done = {r["instance"] for r in rows}
+    for path in sorted(glob.glob("data/mrpp/*"))[::step]:
+        name = os.path.basename(path)
+        if name in done:
+            continue
+        P = read_instance(path)
+        sol = solve(P, time_limit=limit)
+        rows.append(dict(instance=name, links=len(P.links), required=sum(l[4] for l in P.links),
+                         heuristic=sol.info.get("heuristic", sol.total_cost), best=sol.total_cost,
+                         bound=sol.lower_bound, optimal=sol.optimal, seconds=round(sol.seconds, 1)))
+        print(rows[-1], flush=True)
+        save("rural_mixed_long", rows)
+
+
 def k_general(seconds=5.0, step=24):
     """Several postmen on windy, mixed and directed networks: a sample of the rural instances, with
     2 to 5 postmen, against the lower bound. Writes results/k_general.csv."""
