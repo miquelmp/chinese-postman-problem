@@ -1,0 +1,4 @@
+instance,links,required,vertices,published,best,bound,optimal,status,seconds
+DGRP_LAP_0_3000_1,50000,3000,0,261810,261810.0,261810.0,True,1 rounds,1.85
+DGRP_LAP_0_3000_2,50000,3000,0,264793,264793.0,264793.0,True,1 rounds,2.62
+DGRP_LAP_0_3000_3,50000,3000,0,265799,265799.0,265799.0,True,1 rounds,1.52
