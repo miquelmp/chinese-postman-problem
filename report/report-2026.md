@@ -784,6 +784,10 @@ The natural continuation is a stronger lower bound for several postmen, real slo
 - Chen, Y., Hao, J.-K. and Glover, F. (2016). A hybrid metaheuristic approach for the capacitated arc routing problem. *European Journal of Operational Research* 253(1), 25–39.
 - Guan, M. G. (1984). On the windy postman problem. *Discrete Applied Mathematics* 9(1), 41–46.
 - Win, Z. (1989). On the windy postman problem on Eulerian graphs. *Mathematical Programming* 44(1), 97–112.
+- Campos, V. and Savall, J. V. (1995). A computational study of several heuristics for the DRPP. *Computational Optimization and Applications* 4(1), 67–77.
+- Benavent, E., Corberán, Á., Piñana, E., Plana, I. and Sanchis, J. M. (2005). New heuristic algorithms for the windy rural postman problem. *Computers & Operations Research* 32(12), 3111–3128.
+- Corberán, Á., Plana, I. and Sanchis, J. M. (2007). A branch & cut algorithm for the windy general routing problem and special cases. *Networks* 49(4), 245–257.
+- Benavent, E., Corberán, Á., Plana, I. and Sanchis, J. M. (2009). Min-max K-vehicles windy rural postman problem. *Networks* 54(4), 216–226.
 - Ulusoy, G. (1985). The fleet size and mix problem for capacitated arc routing. *European Journal of Operational Research* 22(3), 329–337.
 - Ghiani, G. and Laporte, G. (2000). A branch-and-cut algorithm for the undirected rural postman problem. *Mathematical Programming* 87(3), 467–481.
 

@@ -12,6 +12,9 @@ Every result file is in `results/`. Run the commands from the repository root, a
 | 7.4 Scaling, NetworkX | `scaling.csv` | `python3 experiments.py scaling` | |
 | 7.4 Scaling, LEMON | `scaling_lemon.csv` | `bash native/build_lemon.sh`, then `python3 experiments.py scaling_fast` | C++ compiler; 7 GB of RAM |
 | 10.6 Windy postman, Win on all instances | `windy_win.csv` | `sh tools/fetch_wpp.sh`, then `python3 experiments.py wpp_win` | minutes |
+| 10.7 Rural postman on every network | `rural_general.csv` | Instances in `data/wrpp`, `data/mrpp` and `data/drpp` (see below), then `python3 experiments.py rural_general` | hours |
+| 10.7 Several postmen, every network | `k_general.csv` | Same instances, then `python3 experiments.py k_general` | hours |
+| 10.7 Several postmen, published optima | `k_published.csv` | Instances in `data/mmwrpp` (see below), then `python3 experiments.py k_published` | about an hour |
 | 10.6 Windy postman, combined method | `windy_published.csv` | `python3 experiments.py wpp` | over 2 hours; it resumes if stopped |
 | 10.6 Published values | `wpp_published_values.csv` | Copied from `WPP.txt` on the instance page of Corberán et al. | — |
 | 9.4 Real street networks | `mixed_osm.csv` | `python3 experiments.py osm` | minutes |
@@ -34,3 +37,15 @@ interrupted: delete their result file to start again.
 
 Results from the same code and seeds give the same optima. The heuristics of chapter 10 stop on a
 time limit, so their costs can change slightly with the speed of the machine.
+
+## Instances of section 10.7
+
+They are not stored here, and uv.es may refuse scripts, so they are downloaded by hand.
+
+- `data/wrpp`, `data/mrpp` and `data/mmwrpp`: the WRPP, MRPP and MM K-WRPP data files at
+  [uv.es/corberan/instancias.htm](https://www.uv.es/corberan/instancias.htm), unzipped. Only the `P...` files
+  of the MM K-WRPP archive go into `data/mmwrpp`.
+- `data/drpp`: `test_instances/DRPP_Instances_Campos` of
+  [OAR Lib](https://github.com/Olibear/ArcRoutingLibrary).
+
+The published values are in `results/wrpp_published_values.csv` and `results/mmwrpp_published_values.csv`.

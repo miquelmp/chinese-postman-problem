@@ -44,3 +44,4 @@ directed,P80-10-4.2_3,252,62,10,10987.0,cheaper,10797.0,branch-and-cut,True,1079
 directed,P80-10-4.3_3,277,43,10,8614.0,cheaper,8407.0,branch-and-cut,True,8407.0,0.699
 mixed,RB575,1326,994,1,58799.0,undirected,57880.0,branch-and-cut,True,57880.0,19.282
 mixed,RB577,1326,994,1,72261.0,lp-0,71769.0,branch-and-cut,True,71769.0,19.878
+directed,160-20-1.0,440,104,20,16588.0,cheaper,15303.0,branch-and-cut,False,14683.0,20.059
