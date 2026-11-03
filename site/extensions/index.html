@@ -65,6 +65,8 @@
           <tr><td>Every street, a cost for each way (windy postman)</td><td>NP-hard; polynomial if Eulerian</td><td>Branch-and-cut: 5 of 61 published instances in two minutes</td><td>Win (1989), at most 2 times the optimum</td><td>Mean 0.10%, worst 0.44% (99 published optima)</td></tr>
           <tr><td>Only some streets (rural postman)</td><td>NP-hard; polynomial when the streets to serve form one piece</td><td>Branch-and-cut: {{RURAL_EXACT}}</td><td>Frederickson: never above 3/2 of the optimum; then local search</td><td>{{RURAL_GAP}}</td></tr>
           <tr><td>Several postmen, shortest longest route</td><td>NP-hard</td><td>Branch-and-cut on small networks only</td><td>Split one tour: never above 2 − 1/k of the optimum; then local search</td><td>{{K_GAP}}</td></tr>
+          <tr><td>Only some streets, on one-way, mixed or windy networks</td><td>NP-hard</td><td>Branch-and-cut: 45 of 61 one-way and 44 of 66 windy instances in 20 s, 6 of 12 mixed in 5 min</td><td>Orientation, rebalancing and joining. No guarantee is proved</td><td>Best route mean 0.62%, worst 7.6% (47 published windy instances)</td></tr>
+          <tr><td>Several postmen, on one-way, mixed or windy networks</td><td>NP-hard</td><td>Not attempted</td><td>Split one route, then local search. No guarantee is proved</td><td>Mean 2.15%, worst 17.2% (629 published optima, depot assumed)</td></tr>
           <tr><td>Fleet with vehicle capacity (CARP)</td><td>NP-hard</td><td>Not attempted here; the literature uses branch-cut-and-price</td><td>Split one tour by capacity (Ulusoy), then moves between routes</td><td>{{CARP_GAP}}</td></tr>
         </tbody>
       </table>
@@ -116,6 +118,12 @@
   </section>
 
   <section class="prose reading">
+    <h2>Every network and every service</h2>
+    <p>Partial service and several postmen also work on one-way, mixed and windy networks. All six combinations are NP-hard. For some streets, a heuristic orients the streets to serve, rebalances by minimum-cost flow and joins the pieces, and branch-and-cut then tries to beat it, repairing each solution that falls apart into a valid route. For several postmen, one route is cut into k and a local search shortens the longest.</p>
+    <p>On 47 published windy rural instances the best route, in 20 seconds of branch-and-cut, is a mean 0.62% above the optimum, with a worst case of 7.6%. Mixed instances of up to 1,326 streets were proved optimal in 1 to 4 minutes; on larger ones 5 minutes end 0.5–4.8% above the bound. On 629 published optima with 2 to 6 postmen the heuristic is a mean 2.15% above the optimum, with a worst case of 17.2%, assuming the depot at vertex 1, which the files do not state. <a href="../report/#107-every-network-and-every-service">Section 10.7 of the report</a> gives the details.</p>
+  </section>
+
+  <section class="prose reading">
     <h2>Try them</h2>
     <p>On the <a href="../try/">solver page</a>, the <em>Service</em> settings choose which streets need service (every street, a random share, the main streets of an OpenStreetMap area, or those marked in a benchmark file) and how many postmen share the work. The page shows the routes, the lower bound and how far from it the answer can be. For a single postman with scattered streets to serve, it can also prove the optimum by branch-and-cut.</p>
     <p>For one-way streets in OpenStreetMap, tick <em>On foot</em> to let the postmen walk them in both directions.</p>
@@ -125,6 +133,8 @@
     <h2>References</h2>
     <ul class="refs">
       <li>Benavent, E., Campos, V., Corberán, Á. and Mota, E. (1985). Análisis de heurísticos para el problema del cartero rural. <em>Trabajos de Estadística y de Investigación Operativa</em> 36, 27–38.</li>
+      <li>Benavent, E., Corberán, Á., Piñana, E., Plana, I. and Sanchis, J. M. (2005). New heuristic algorithms for the windy rural postman problem. <em>Computers &amp; Operations Research</em> 32(12), 3111–3128.</li>
+      <li>Benavent, E., Corberán, Á., Plana, I. and Sanchis, J. M. (2009). Min-max K-vehicles windy rural postman problem. <em>Networks</em> 54(4), 216–226.</li>
       <li>Clay Mathematics Institute (2000). The Millennium Prize Problems: P vs NP. <a href="https://www.claymath.org/millennium/p-vs-np/">claymath.org</a>.</li>
       <li>Cook, S. A. (1971). The complexity of theorem-proving procedures. <em>Proceedings of the 3rd Annual ACM Symposium on Theory of Computing</em>, 151–158.</li>
       <li>Frederickson, G. N. (1979). Approximation algorithms for some postman problems. <em>Journal of the ACM</em> 26(3), 538–554.</li>
