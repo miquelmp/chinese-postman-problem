@@ -2,6 +2,7 @@
 import csv
 import importlib.util
 import itertools
+import json
 import random
 import shutil
 from pathlib import Path
@@ -102,3 +103,15 @@ def test_measured_mixed_results_agree_with_published_values():
             assert exact >= low - 1e-3 and float(r["exact_bound"]) <= high + 1e-3
             if r["exact_optimal"] == "True":
                 assert round(exact) == round(high) if p["status"] == "optimal" else exact <= high
+
+
+def test_osm_extracts_give_the_measured_networks():
+    from chinese_postman import web
+    rows = list(csv.DictReader(open(ROOT / "results" / "mixed_osm.csv")))
+    assert len(rows) == 5
+    for r in rows:
+        data = json.load(open(ROOT / "data" / "osm" / f"{r['instance']}_2026.json", encoding="utf-8"))
+        inst = web.from_osm(data, max_nodes=10 ** 6)
+        assert len(inst["nodes"]) == int(r["vertices"])
+        assert sum(l["oneway"] for l in inst["links"]) == int(r["one_way"])
+        assert sum(l["w"] for l in inst["links"]) == int(r["original"])

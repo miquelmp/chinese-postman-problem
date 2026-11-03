@@ -13,4 +13,5 @@ Third-party material keeps its own licence:
   papers listed in the report when using them.
 - Street data fetched by the website from OpenStreetMap: © OpenStreetMap contributors,
   Open Database Licence (ODbL).
+- OpenStreetMap extracts, in `data/osm`: © OpenStreetMap contributors, Open Database Licence (ODbL) 1.0; see the `README.md` there.
 - LEMON (optional fast backend), in `native/lemon_src`: Boost Software License 1.0; see the `LICENSE` file there.

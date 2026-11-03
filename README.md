@@ -53,7 +53,7 @@ building blocks, Eulerian circuits and matchings, which this package uses.
 
 ```bash
 pip install -e ".[test]"
-pytest -q                            # 235 tests (294 once the optional LEMON library is built)
+pytest -q                            # 236 tests (295 once the optional LEMON library is built)
 ```
 
 ```python
@@ -99,6 +99,7 @@ print(team.route_costs, team.lower_bound)
 | `experiments.py` | Reproduces the experiments of chapters 7 to 10 of the 2026 report; writes `results/*.csv` |
 | `tools/certify_matching.py`, `tools/match_sparse.mjs` | Repeats the large matchings with the JavaScript blossom code |
 | `tools/fetch_mcpp.sh` | Downloads the published mixed instances into `data/mcpp/` (not stored here) |
+| `data/osm/` | Five OpenStreetMap extracts used in section 9.4 of the report (ODbL) |
 | `data/carp/` | Classical CARP benchmark instances (gdb, val, egl, Beullens, kshs) from [CARPData.jl](https://github.com/rafaelmartinelli/CARPData.jl) |
 | `examples/example_1997.gra` | The worked example of the 1997 report |
 | `report/` | 2026 report (Markdown source and PDF) and the 1997 report (PDF) |

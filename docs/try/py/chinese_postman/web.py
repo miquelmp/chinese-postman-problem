@@ -184,6 +184,7 @@ def from_osm(data, name: str = "OpenStreetMap area", max_nodes: int = 1500) -> d
         if not one:
             D.add_edge(v, u)
     comp = max(nx.strongly_connected_components(D), key=len)
+    all_links = len(links)
     links = [l for l in links if l[0] in comp and l[1] in comp]
     if len(comp) > max_nodes:
         raise ValueError(f"{len(comp)} junctions: zoom in (the browser version accepts up to {max_nodes})")
@@ -192,7 +193,7 @@ def from_osm(data, name: str = "OpenStreetMap area", max_nodes: int = 1500) -> d
     pos = {v: (p[0] - x0, p[1] - y0) for v, p in pts.items()}
     inst = _inst(name, pos, links, units="m",
                  note="Street data © OpenStreetMap contributors (ODbL).")
-    ids = {v: i for i, v in enumerate(pos)}
+    inst["links_before_filter"] = all_links
     for v, nd in zip(pos, inst["nodes"]):
         nd["lat"], nd["lon"] = nodes[v]
     return inst
