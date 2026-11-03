@@ -51,6 +51,7 @@
           <tr><td>Every street, one-way</td><td>Polynomial</td><td>Minimum-cost flow, in polynomial time</td><td>Not needed</td><td>0: always optimal</td></tr>
           <tr><td>Every street, mixed one-way and two-way</td><td>NP-hard</td><td>Branch-and-cut: proved on every benchmark network, all towns of up to 400 junctions and 8 of 10 at 900 and 1,600</td><td>Orientation + balancing + local search. No guarantee is proved for this variant; the related heuristics of Frederickson are within 5/3, and Raghavachari and Veerasamy's within 3/2</td><td>Heuristic: mean 0.41%, worst 4.76% (121 networks solved exactly)</td></tr>
           <tr><td>Every street, first pass dearer than the next</td><td>Polynomial</td><td>Matching on the cost of later passes</td><td>Not needed</td><td>0: always optimal</td></tr>
+          <tr><td>Every street, a cost for each way (windy postman)</td><td>NP-hard; polynomial if Eulerian</td><td>Branch-and-cut: 5 of 61 published instances in two minutes</td><td>Win (1989), at most 2 times the optimum</td><td>Mean 0.10%, worst 0.44% (99 published optima)</td></tr>
           <tr><td>Only some streets (rural postman)</td><td>NP-hard; polynomial when the streets to serve form one piece</td><td>Branch-and-cut: proved on all 57 benchmark networks and 10 of 18 synthetic towns within two minutes</td><td>Frederickson: never above 3/2 of the optimum; then local search</td><td>Frederickson: mean 2.63%, worst 8.33%; after local search: mean 0.66%, worst 4.75%</td></tr>
           <tr><td>Several postmen, shortest longest route</td><td>NP-hard</td><td>Branch-and-cut on small networks only</td><td>Split one tour: never above 2 − 1/k of the optimum; then local search</td><td>Small networks, against the exact optimum: split alone mean 2.91%, after local search mean 0.02%, worst 1.25%</td></tr>
           <tr><td>Fleet with vehicle capacity (CARP)</td><td>NP-hard</td><td>Not attempted here; the literature uses branch-cut-and-price</td><td>Split one tour by capacity (Ulusoy), then moves between routes</td><td>Against the best known solutions: median 5.78%, mean 5.50%, worst 14.78%</td></tr>
@@ -66,6 +67,11 @@
     <p>When every street is one-way, the problem stays polynomial: each junction must be left as often as it is entered, and the cheapest extra passes that balance every junction are a minimum-cost flow. The directed version therefore needs no heuristic at all.</p>
     <p>Real towns mix one-way and two-way streets, and this mixed problem is NP-hard (Papadimitriou, 1976). Branch-and-cut proves the optimum on every one of the 92 benchmark networks, in at most 5.8 seconds, on all 20 towns of up to 400 junctions and on 8 of the 10 towns of 900 and 1,600 junctions. A heuristic orients the two-way streets, balances the junctions exactly, and improves the result by reversing streets; on the benchmarks and towns where the optimum is proven, it averages 0.41% above it, and on a published test set, 2.09%, with a worst case of 5.8% where few streets are one-way. All 39 optima proved on that set equal the published values. On five real street networks from OpenStreetMap, the optimum is proved in at most 34 seconds and the heuristic is at most 3.1% above it. The method follows the orient-then-balance idea of Frederickson (1979), whose heuristic is never more than 5/3 of the optimum (3/2 on planar networks); Raghavachari and Veerasamy (1999) reached 3/2 on any network.</p>
     <p><a href="../report/#9-the-mixed-chinese-postman-problem">Chapter 9 of the 2026 report</a> gives the details.</p>
+  </section>
+
+  <section class="prose reading">
+    <h2>Different costs each way</h2>
+    <p>On a slope or against the wind, a street costs more one way than the other. This is the windy postman problem, which is NP-hard (Guan, 1984). Win (1989) solves an undirected postman on the average costs, then the problem exactly on the resulting network with all even junctions. On the 99 published optima of Corberán et al. (2012) the result is a mean 0.10% above the optimum, with a worst case of 0.44%, in seconds. On 10 of the 21 open instances it improves on the list on their page, read on 3 November 2026. Proving the optimum is the hard part here: branch-and-cut with HiGHS proves 5 of 61 instances in two minutes. <a href="../report/#106-the-windy-postman">Section 10.6 of the 2026 report</a> gives the details, and <a href="../try/">the solver</a> offers a hilly town.</p>
   </section>
 
   <section class="prose reading">
@@ -113,6 +119,9 @@
       <li>Frederickson, G. N. (1979). Approximation algorithms for some postman problems. <em>Journal of the ACM</em> 26(3), 538–554.</li>
       <li>Frederickson, G. N., Hecht, M. S. and Kim, C. E. (1978). Approximation algorithms for some routing problems. <em>SIAM Journal on Computing</em> 7(2), 178–193.</li>
       <li>Ghiani, G. and Laporte, G. (2000). A branch-and-cut algorithm for the undirected rural postman problem. <em>Mathematical Programming</em> 87(3), 467–481.</li>
+      <li>Corberán, Á., Oswald, M., Plana, I., Reinelt, G. and Sanchis, J. M. (2012). New results on the Windy Postman Problem. <em>Mathematical Programming</em> 132(1), 309–332.</li>
+      <li>Guan, M. G. (1984). On the windy postman problem. <em>Discrete Applied Mathematics</em> 9(1), 41–46.</li>
+      <li>Win, Z. (1989). On the windy postman problem on Eulerian graphs. <em>Mathematical Programming</em> 44(1), 97–112.</li>
       <li>Golden, B. L. and Wong, R. T. (1981). Capacitated arc routing problems. <em>Networks</em> 11(3), 305–315.</li>
       <li>Lenstra, J. K. and Rinnooy Kan, A. H. G. (1976). On general routing problems. <em>Networks</em> 6(3), 273–280.</li>
       <li>Levin, L. A. (1973). Universal sequential search problems. <em>Problemy Peredachi Informatsii</em> 9(3), 115–116 (in Russian).</li>

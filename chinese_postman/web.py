@@ -202,6 +202,8 @@ def from_osm(data, name: str = "OpenStreetMap area", max_nodes: int = 1500) -> d
 # ------------------------------------------------------------------ solving
 def kind_of(inst) -> str:
     """Classify an instance as undirected, directed or mixed."""
+    if any("w2" in l and l["w2"] != l["w"] for l in inst["links"]):
+        return "windy"
     ow = [bool(l.get("oneway")) for l in inst["links"]]
     return "directed" if all(ow) else "mixed" if any(ow) else "undirected"
 
@@ -214,7 +216,14 @@ def solve(inst, time_limit: float = 20.0, gap_tol: float = 0.0) -> dict:
     kind = kind_of(inst)
     links = [(l["u"], l["v"], l["w"], bool(l.get("oneway"))) for l in inst["links"]]
     out = {"kind": kind, "original": sum(w for _, _, w, _ in links)}
-    if kind == "undirected" and any(l.get("req") is False for l in inst["links"]):
+    if kind == "windy":
+        from .windy import WindyGraph, solve_windy
+        W = WindyGraph([(l["u"], l["v"], l["w"], l.get("w2", l["w"])) for l in inst["links"]])
+        s = solve_windy(W, time_limit=time_limit)
+        out.update(total=s.total_cost, circuit=s.circuit, optimal=bool(s.optimal), lower_bound=s.lower_bound,
+                   gap_pct=round(s.gap_to_bound_pct or 0.0, 3), method=s.method,
+                   heuristic=s.info.get("heuristic"), original=sum(min(l["w"], l.get("w2", l["w"])) for l in inst["links"]))
+    elif kind == "undirected" and any(l.get("req") is False for l in inst["links"]):
         from . import rural
         G = nx.MultiGraph()
         for l in inst["links"]:

@@ -3,6 +3,7 @@ import json
 import pytest
 
 from chinese_postman import web
+from chinese_postman.windy import WindyGraph, solve_exact
 
 
 def walk_ok(inst, res):
@@ -98,3 +99,13 @@ def test_from_osm():
 def test_overpass_query_is_bbox():
     q = web.overpass_query(41.2, 1.7, 41.21, 1.71)
     assert "(41.2,1.7,41.21,1.71)" in q and q.startswith("[out:json]")
+
+
+def test_windy_instances_are_solved():
+    links = [dict(u=u, v=v, w=w, w2=w2, oneway=False) for u, v, w, w2 in
+             [(0, 1, 3, 9), (1, 2, 3, 9), (2, 0, 3, 9), (0, 2, 5, 5)]]
+    inst = dict(name="t", nodes=[dict(id=i) for i in range(3)], links=links)
+    assert web.kind_of(inst) == "windy"
+    r = web.solve(inst)
+    assert r["optimal"] and r["total"] == solve_exact(WindyGraph(
+        [(l["u"], l["v"], l["w"], l["w2"]) for l in links])).total_cost

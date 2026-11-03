@@ -158,6 +158,23 @@
 
   /** Town where each whole street is one-way with probability `share`, in a random direction;
       streets that break strong connectivity are turned back into two-way streets. */
+  /** Hilly town: a grid town on a smooth surface. A street costs more uphill than downhill, in
+      proportion to its slope, so each direction has its own cost (the windy postman). */
+  function hillyTown(s, seed) {
+    const G = grid(Math.max(3, s), seed), r = rng(seed * 257 + s);
+    const p1 = r() * 6.28, p2 = r() * 6.28, height = (x, y) => 12 * Math.sin(x / 2.3 + p1) + 12 * Math.cos(y / 2.9 + p2);
+    const at = new Map(G.nodes.map(nd => [nd.id, nd]));
+    G.links.forEach(l => {
+      const a = at.get(l.u), b = at.get(l.v), rise = height(b.x, b.y) - height(a.x, a.y);
+      const base = l.w, extra = Math.max(-0.6 * base, Math.min(0.6 * base, 6 * rise));
+      l.w = Math.max(1, Math.round(base + extra));
+      l.w2 = Math.max(1, Math.round(base - extra));
+    });
+    G.name = `Hilly town ${Math.max(3, s)}×${Math.max(3, s)}`;
+    G.note = "A street costs more uphill than downhill, so each direction has its own cost.";
+    return G;
+  }
+
   function mixedTown(s, share, seed) {
     s = Math.max(3, Math.min(s, 40));
     const r = rng(seed * 131 + s * 7 + Math.round(share * 100)), id = (row, col) => row * s + col;
@@ -328,6 +345,7 @@
       case "delaunay": return delaunay(size || 150, seed);
       case "oneway-grid": return onewayGrid(size || 10, seed);
       case "mixed-town": return mixedTown(size || 10, share === undefined ? 0.6 : share, seed);
+      case "hilly-town": return hillyTown(size || 10, seed);
       default: throw new Error(`Unknown example ${name}`);
     }
   }

@@ -31,8 +31,8 @@
   let busy = false, inst = null, base = null, result = null, view = null, seed = 0, shareSeed = 1, map = null;
   const speeds = [0.5, 1, 2, 4, 8, 16];
   const status = (text, error) => { $("status").textContent = text; $("status").classList.toggle("error", !!error); };
-  const kindOf = I => { const o = I.links.map(l => l.oneway); return o.every(Boolean) ? "directed" : o.some(Boolean) ? "mixed" : "undirected"; };
-  const kindName = k => ({ undirected: "two-way streets only", directed: "one-way streets only", mixed: "one-way and two-way streets" }[k]);
+  const kindOf = I => { if (I.links.some(l => l.w2 !== undefined && l.w2 !== l.w)) return "windy"; const o = I.links.map(l => l.oneway); return o.every(Boolean) ? "directed" : o.some(Boolean) ? "mixed" : "undirected"; };
+  const kindName = k => ({ undirected: "two-way streets only", directed: "one-way streets only", mixed: "one-way and two-way streets", windy: "a different cost each way" }[k]);
   const fmtLen = v => {                // one unit per network: km when the streets add up to 10 km or more
     if (!inst || inst.units !== "m") return (Math.round(v * 100) / 100).toLocaleString("en");
     const total = inst.links.reduce((s, l) => s + l.w, 0);
@@ -141,7 +141,7 @@
     const src = $("source").value, token = ++loadToken;
     const show = I => { if (token === loadToken) { base = I; applyService(); } };
     try {
-      if (["example1997", "konigsberg", "petersen", "grid", "delaunay", "oneway-grid", "mixed-town"].includes(src)) {
+      if (["example1997", "konigsberg", "petersen", "grid", "delaunay", "oneway-grid", "mixed-town", "hilly-town"].includes(src)) {
         setBusy(true); status("Building the network…");
         const size = src === "delaunay" ? +$("junctions").value : +$("side").value;
         show(await js.call("example", { name: src, size, share: +$("oneway").value, seed }));
@@ -191,7 +191,7 @@
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) view.finish();
     legend(res.kind === "postmen" ? "postmen" : "single");
     renderRoutes(res);
-    const needProof = (res.kind === "mixed" || res.kind === "rural") && !res.optimal;
+    const needProof = ["mixed", "rural", "windy"].includes(res.kind) && !res.optimal;
     $("proof").hidden = !needProof;
     $("proof-status").textContent = "";
     $("proof-status").classList.remove("error");
@@ -258,7 +258,7 @@
     $("stats").innerHTML = items.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
     $("stats").hidden = false;
     let m = `Method: ${r.method}.`;
-    if (r.kind === "mixed") m += ` Proven lower bound: ${fmtLen(r.lower_bound)}.`;
+    if (r.kind === "mixed" || r.kind === "windy") m += ` Proven lower bound: ${fmtLen(r.lower_bound)}.`;
     $("method").textContent = m;
   }
 

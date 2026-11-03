@@ -606,8 +606,67 @@
              method: "heuristic: orientation + min-cost rebalance + local search; bound from LP and undirected CPP" };
   }
 
+  // ------------------------------------------------------------------ windy postman
+  /** Win (1989), with a lower bound (as chinese_postman.windy): an undirected CPP on the sum of
+      both costs gives an Eulerian multigraph, and the windy postman on that graph is a min-cost
+      flow. Each copy is driven the cheaper way; reversing it costs (hi - lo) for two units. */
+  function windy(inst) {
+    const { ids, idx, n } = indexNodes(inst);
+    const L = inst.links.map(l => {
+      const a = idx.get(l.u), b = idx.get(l.v), f = l.w, r = l.w2 === undefined ? l.w : l.w2;
+      return f <= r ? [a, b, f, r] : [b, a, r, f];    // [tail of the cheaper way, head, lo, hi]
+    });
+    const allowed = L.flatMap(([a, b, lo, hi]) => [[a, b, lo], [b, a, hi]]);
+    const adj = simpleAdjacency(n, allowed);
+    if (scc(adj).ncomp > 1) throw new Error("The network is not connected");
+    const deadhead = [];
+    for (let v = 0; v < n; v++) for (let e = adj.start[v]; e < adj.start[v + 1]; e++) deadhead.push([v, adj.to[e], Infinity, adj.wt[e]]);
+    const flowFor = copies => {
+      const sup = new Float64Array(n), arcs = deadhead.slice(), rev = [];
+      L.forEach(([a, b, lo, hi], k) => {
+        sup[a] -= copies[k]; sup[b] += copies[k];
+        rev.push(arcs.length); arcs.push([b, a, 2 * copies[k], (hi - lo) / 2]);
+      });
+      return { f: minCostFlow(n, arcs, sup), rev };
+    };
+    const base = copies => L.reduce((s, l, k) => s + l[2] * copies[k], 0);
+    const lpBound = (() => { const one = L.map(() => 1); return base(one) + flowFor(one).f.cost; })();
+    const pairKey = (a, b) => Math.min(a, b) * n + Math.max(a, b);
+    const named = links => ({ nodes: inst.nodes, links });
+    const lowest = undirected(named(inst.links.map(l => ({ u: l.u, v: l.v, w: Math.min(l.w, l.w2 === undefined ? l.w : l.w2), oneway: false }))));
+    const lb = Math.ceil(Math.max(lpBound, lowest.total) - 1e-9);
+    const average = undirected(named(inst.links.map(l => ({ u: l.u, v: l.v, w: l.w + (l.w2 === undefined ? l.w : l.w2), oneway: false }))));
+    const seq = average.circuit.map(v => idx.get(v)), passes = new Map(), group = new Map();
+    for (let i = 0; i + 1 < seq.length; i++) { const key = pairKey(seq[i], seq[i + 1]); passes.set(key, (passes.get(key) || 0) + 1); }
+    L.forEach(([a, b, lo, hi], k) => {
+      const key = pairKey(a, b);
+      if (!group.has(key)) group.set(key, []);
+      group.get(key).push(k);
+    });
+    const copies = L.map(() => 1);
+    for (const [key, ks] of group) {
+      ks.sort((x, y) => L[x][2] + L[x][3] - L[y][2] - L[y][3]);
+      copies[ks[0]] += (passes.get(key) || 0) - ks.length;
+    }
+    const { f, rev } = flowFor(copies);
+    const total = base(copies) + f.cost;
+    const edges = [];
+    L.forEach(([a, b], k) => {
+      const back = Math.round(f.flow[rev[k]] / 2);
+      for (let c = 0; c < copies[k]; c++) edges.push(c < back ? [b, a] : [a, b]);
+    });
+    deadhead.forEach(([a, b], k) => { for (let r = 0; r < f.flow[k]; r++) edges.push([a, b]); });
+    const circuit = eulerianCircuit(n, edges, true, edges[0][0]).map(v => ids[v]);
+    const original = L.reduce((s, l) => s + l[2], 0);
+    const gap = Math.max(0, (total - lb) / lb * 100);
+    return { kind: "windy", original, added: total - original, total, lower_bound: lb, optimal: total <= lb + 1e-9,
+             gap_pct: Math.round(gap * 1000) / 1000, circuit, heuristic: total, lp_bound: lpBound, undirected_bound: lowest.total,
+             method: "Win (1989): postman on average costs, then a min-cost flow; bound from LP and undirected CPP" };
+  }
+
   // ------------------------------------------------------------------ entry point
   function kindOf(inst) {
+    if (inst.links.some(l => l.w2 !== undefined && l.w2 !== l.w)) return "windy";
     const o = inst.links.map(l => !!l.oneway);
     return o.every(Boolean) ? "directed" : o.some(Boolean) ? "mixed" : "undirected";
   }
@@ -616,14 +675,14 @@
     const t0 = Date.now();
     if (!inst.links.length) throw new Error("The network has no streets");
     const k = kindOf(inst);
-    const r = k === "undirected" ? undirected(inst) : k === "directed" ? directed(inst) : mixed(inst, opts);
+    const r = k === "windy" ? windy(inst) : k === "undirected" ? undirected(inst) : k === "directed" ? directed(inst) : mixed(inst, opts);
     r.added_pct = r.original ? Math.round(10000 * r.added / r.original) / 100 : 0;
     r.steps = r.circuit.length - 1;
     r.seconds = (Date.now() - t0) / 1000;
     return r;
   }
 
-  const API = { solve, kindOf, undirected, directed, mixed, maxWeightMatching, minWeightPerfectMatching,
+  const API = { solve, kindOf, undirected, directed, mixed, windy, maxWeightMatching, minWeightPerfectMatching,
                 minCostFlow, dijkstra, simpleAdjacency, scc, eulerianCircuit, Heap };
   if (typeof module !== "undefined" && module.exports) module.exports = API;
   else root.CPP = API;
