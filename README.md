@@ -53,7 +53,7 @@ building blocks, Eulerian circuits and matchings, which this package uses.
 
 ```bash
 pip install -e ".[test]"
-pytest -q                            # 236 tests (295 once the optional LEMON library is built)
+pytest -q                            # 237 tests (296 once the optional LEMON library is built)
 ```
 
 ```python
@@ -137,7 +137,7 @@ To try the site locally, serve `docs/` with any static server, for example
 ## Fast backend (optional)
 
 `solve_undirected(G, backend="auto")` uses LEMON's matching code when it has been built:
-a 40,000-junction network with 12,066 odd junctions solves in a median 110 seconds, against about 800 odd
+a 40,000-junction network with 12,066 odd junctions solves in a median 110 seconds, against about 750 odd
 junctions in the same time in pure Python. Every result is checked by a dual certificate, and
 `python3 tools/certify_matching.py` repeats those optima with a second blossom code.
 

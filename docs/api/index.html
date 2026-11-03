@@ -76,8 +76,9 @@ Costs are 1 per bridge, so the answer counts bridge crossings.</p>
 <h3><code>dodecahedron()</code></h3><p>The dodecahedral graph with unit costs.</p>
 <h3><code>manhattan(rows: int, cols: int, block: int=80, avenue: int=270, drop: float=0.0, seed: int=0)</code></h3><p>Grid street plan: short blocks along streets, long ones along avenues (metres).
 `drop` removes a fraction of segments (parks, closed streets), keeping connectivity.</p>
-<h3><code>delaunay_town(n: int, seed: int=0, keep: float=0.75)</code></h3><p>Organic street network: Delaunay triangulation of random points in a 1 km square,
-thinned to `keep` of its edges (shortest first kept), Euclidean lengths in metres.</p>
+<h3><code>delaunay_town(n: int, seed: int=0, keep: float=0.75, spacing: float=100.0)</code></h3><p>Organic street network: Delaunay triangulation of random points, thinned to `keep` of its
+edges (shortest first kept), Euclidean lengths in metres, at least 1. The square grows with n,
+with a side of spacing * sqrt(n), so the density of junctions stays the same at any size.</p>
 <h3><code>one_way_grid(rows: int, cols: int, block: int=80, seed: int=0)</code></h3><p>Directed grid: inner streets and avenues are one-way with alternating directions
 (like Manhattan); the outer ring and every fourth street are two-way.</p>
 <h2 id="io">chinese_postman.io</h2><p>Graph file formats.</p>

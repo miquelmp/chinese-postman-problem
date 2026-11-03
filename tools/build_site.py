@@ -94,8 +94,8 @@ def chart_scaling():
     lx = math.log10
     X = lambda o: x0 + (lx(o) - lx(30)) / (lx(20000) - lx(30)) * (x1 - x0)
     Y = lambda s: y1 - (lx(s) + 2) / (lx(300) + 2) * (y1 - y0)
-    out = [f'<svg viewBox="0 0 {W} {H}" role="img" aria-label="With LEMON, two minutes covers 12,000 odd junctions instead of 800">',
-           '<text x="0" y="22" font-size="17" font-weight="800" fill="var(--ink)">With LEMON, two minutes now covers 12,000 odd junctions instead of 800</text>']
+    out = [f'<svg viewBox="0 0 {W} {H}" role="img" aria-label="With LEMON, two minutes covers 12,000 odd junctions instead of about 750">',
+           '<text x="0" y="22" font-size="17" font-weight="800" fill="var(--ink)">With LEMON, two minutes now covers 12,000 odd junctions instead of about 750</text>']
     for t in (0.01, 0.1, 1, 10, 100):
         out.append(f'<line x1="{x0}" x2="{x1}" y1="{Y(t):.1f}" y2="{Y(t):.1f}" stroke="var(--rule)"/>'
                    f'<text x="{x0 - 8}" y="{Y(t) + 4:.1f}" text-anchor="end" font-size="12" fill="var(--ink-soft)">{t:g} s</text>')

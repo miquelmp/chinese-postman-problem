@@ -120,11 +120,13 @@
     return [...E].map(k => [Math.floor(k / n), k % n]);
   }
 
-  /** Organic town: Delaunay triangulation of random junctions in a 1 km square, thinned to 75%
-      of its edges (spanning tree first, then shortest edges), lengths in metres. */
+  /** Organic town: Delaunay triangulation of random junctions, thinned to 75% of its edges
+      (spanning tree first, then shortest edges), lengths in metres. The square has a side of
+      100 m × sqrt(n), so the density of junctions stays the same at any size. */
   function delaunay(n, seed) {
     n = Math.max(10, Math.min(n, MAX_NODES));
-    const r = rng(seed * 104729 + n), pts = Array.from({ length: n }, () => [r() * 1000, r() * 1000]);
+    const side = 100 * Math.sqrt(n);
+    const r = rng(seed * 104729 + n), pts = Array.from({ length: n }, () => [r() * side, r() * side]);
     const E = delaunayEdges(pts).map(([a, b]) => [a, b, Math.hypot(pts[a][0] - pts[b][0], pts[a][1] - pts[b][1])]);
     E.sort((x, y) => x[2] - y[2]);
     const parent = Int32Array.from({ length: n }, (_, i) => i);

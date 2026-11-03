@@ -52,7 +52,7 @@
 <p><em>The 2026 revision was prepared with AI assistance (Claude, by Anthropic). The 1997 project was not.</em></p>
 <h2 id="abstract">Abstract</h2>
 <p>This report revises a 1997 final-year project on the Chinese Postman Problem: find the cheapest closed route that covers every street of a network at least once. The method is unchanged in outline: pair the odd-degree junctions by shortest paths at minimum total cost, duplicate those paths, and walk the resulting Eulerian circuit. The 1997 branch-and-bound for the pairing step is replaced by Edmonds' blossom algorithm, which is exact and polynomial; shortest paths use Dijkstra, the circuit uses Hierholzer's linear-time algorithm, the directed version is added through minimum-cost flow, and the mixed version, with one-way and two-way streets together and NP-hard, through branch-and-cut and a new heuristic.</p>
-<p>The new Python implementation was tested on classic graphs, on 92 benchmark networks from the arc-routing literature (including real road networks in Lancashire and Flanders), and on synthetic towns of up to 40,000 junctions. Every instance was solved to proven optimality. With a second backend that runs the LEMON library on a sparse candidate graph, adds pairs by dual pricing and checks a dual certificate, a network with 12,066 odd vertices solves in a median 110 seconds, against about 800 odd vertices in the same time in pure Python, and one with 19,942 in 266 seconds. On 63 benchmarks where every street needs service, the single-postman tour costs a median 95.1% of the best known multi-vehicle solution, but as little as 47.5% when capacity is scarce: the CPP is a close bound for fleet routing only while vehicles have capacity to spare. For mixed networks, branch-and-cut proves the optimum on every benchmark network within 5.8 seconds, on all 20 towns of up to 400 junctions and on 8 of the 10 towns of 900 and 1,600 junctions, and on 17 of a sample of 30 published instances of 500 to 3,000 junctions within two minutes. All 39 optima proved on published instances equal the published values, and five real street networks from OpenStreetMap, of up to 1,154 junctions, are proved in at most 34 seconds. The heuristic averages 0.12% above the optimum on the benchmarks, 1.35% on the towns and 2.09% on that sample, with a worst case of 5.8% where few streets are one-way. The report closes by following the paths left open in 1997: streets whose first pass costs more than the next, streets that need no service (the rural postman problem) and several postmen sharing a district, each with its complexity, an exact method or a heuristic with a proven bound, and the measured distance from the optimum.</p>
+<p>The new Python implementation was tested on classic graphs, on 92 benchmark networks from the arc-routing literature (including real road networks in Lancashire and Flanders), and on synthetic towns of up to 40,000 junctions. Every instance was solved to proven optimality. With a second backend that runs the LEMON library on a sparse candidate graph, adds pairs by dual pricing and checks a dual certificate, a network with 12,066 odd vertices solves in a median 110 seconds, against about 750 odd vertices in the same time in pure Python, and one with 19,942 in 250 seconds. On 63 benchmarks where every street needs service, the single-postman tour costs a median 95.1% of the best known multi-vehicle solution, but as little as 47.5% when capacity is scarce: the CPP is a close bound for fleet routing only while vehicles have capacity to spare. For mixed networks, branch-and-cut proves the optimum on every benchmark network within 5.8 seconds, on all 20 towns of up to 400 junctions and on 8 of the 10 towns of 900 and 1,600 junctions, and on 17 of a sample of 30 published instances of 500 to 3,000 junctions within two minutes. All 39 optima proved on published instances equal the published values, and five real street networks from OpenStreetMap, of up to 1,154 junctions, are proved in at most 34 seconds. The heuristic averages 0.12% above the optimum on the benchmarks, 1.35% on the towns and 2.09% on that sample, with a worst case of 5.8% where few streets are one-way. The report closes by following the paths left open in 1997: streets whose first pass costs more than the next, streets that need no service (the rural postman problem) and several postmen sharing a district, each with its complexity, an exact method or a heuristic with a proven bound, and the measured distance from the optimum.</p>
 <p>A JavaScript port of the solver runs in the web browser, so anyone can solve their own street network, from a file or straight from OpenStreetMap, at <a href="https://miquelmp.github.io/chinese-postman-problem/">miquelmp.github.io/chinese-postman-problem</a>.</p>
 <h2 id="1-introduction">1. Introduction</h2>
 <p>The Chinese Postman Problem (CPP) asks for the cheapest closed walk that traverses every edge of a graph at least once. The 1997 project solved it by duplicating edges until every vertex has even degree, choosing those duplicates with a custom branch-and-bound (B&amp;B) search. This revision keeps the same overall method but replaces the B&amp;B with an exact, polynomial-time matching algorithm, and tests the result on a much wider set of instances. The polynomial algorithms used here were all published before 1997; that project set out to study a branch-and-bound alternative. What has changed since is the engineering: implementations such as Blossom V and LEMON, compiled libraries and integer-programming solvers reach far larger networks.</p>
@@ -103,7 +103,7 @@
 <tr>
 <td>Practical limit</td>
 <td>About 20 odd vertices to proven optimality</td>
-<td>About 12,000 odd vertices (40,000 junctions) in under two minutes with LEMON; about 800 in pure Python</td>
+<td>About 12,000 odd vertices (40,000 junctions) in under two minutes with LEMON; about 750 in pure Python</td>
 </tr>
 <tr>
 <td>Mixed streets (one-way and two-way)</td>
@@ -281,7 +281,7 @@
 <li>Pricing: scan all pairs (u, v) not in the graph and add those with negative reduced cost, d(u, v) &lt; y(u) + y(v), counting blossom prices. Re-solve and repeat.</li>
 <li>When no pair has negative reduced cost, the duals are feasible for the whole complete graph, so the matching is optimal for it too.</li>
 </ol>
-<p>This is column generation applied to matching, the strategy of Cook and Rohe (1999), which Blossom V also uses for geometric instances. On the test networks the first candidate graph comes very close: at most 49 pairs had to be added, in up to two pricing rounds, followed by a last round that confirms optimality. Related ideas reach even further: the sparse blossom algorithm of Higgott and Gidney (2025), developed for quantum error correction, matches millions of vertices without ever building distances between all pairs.</p>
+<p>This is column generation applied to matching, the strategy of Cook and Rohe (1999), which Blossom V also uses for geometric instances. On the test networks the first candidate graph comes very close: at most 83 pairs had to be added, in up to two pricing rounds, followed by a last round that confirms optimality. Related ideas reach even further: the sparse blossom algorithm of Higgott and Gidney (2025), developed for quantum error correction, matches millions of vertices without ever building distances between all pairs.</p>
 <p>Earlier versions used Blossom V at this step. It may be used for evaluation and non-commercial research only and may not be redistributed, so a reader could not freely repeat those runs. LEMON has a permissive licence (Boost), so the part it needs ships with the package and is compiled by one script. NetworkX stays the default when it has not been built, or when costs are not integers.</p>
 <p>A result should be checkable without trusting the solver. Every run of the fast backend therefore ends by checking a certificate: vertex prices and blossom prices such that, with w = C − d,</p>
 <div class="math-display">u_i + u_j + \sum_{B \ni i,j} z_B \ge w_{ij} \;\; \forall i, j, \qquad z_B \ge 0, \qquad w(M) = \sum_i u_i + \sum_B z_B \left\lfloor |B|/2 \right\rfloor .</div>
@@ -411,7 +411,7 @@
 <p>Each vertex keeps a pointer into its adjacency list that only moves forward, and each edge is marked used once. The total work is therefore O(n + m). This per-vertex pointer is the refinement that makes the 2026 implementation strictly linear in the size of the graph.</p>
 <p>Fleury's rule, discussed in the 1997 report, also works but must test at each step whether an edge is a bridge of the remaining graph. Even with modern dynamic connectivity structures this is slower and more complicated than Hierholzer, so it is no longer used in practice.</p>
 <h2 id="6-implementation">6. Implementation</h2>
-<p>The solver is a small Python 3 package, <code>chinese_postman</code>, built on NetworkX and covered by 295 automated tests (236 when the optional LEMON library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with eleven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).</p>
+<p>The solver is a small Python 3 package, <code>chinese_postman</code>, built on NetworkX and covered by 296 automated tests (237 when the optional LEMON library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with eleven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).</p>
 <h3 id="61-modules">6.1 Modules</h3>
 <div class="table-scroll"><table>
 <thead>
@@ -523,7 +523,7 @@
 </tr>
 <tr>
 <td>Structure</td>
-<td>4</td>
+<td>5</td>
 <td>Parallel edges, generated cities and directed grids give valid closed tours</td>
 </tr>
 <tr>
@@ -700,7 +700,7 @@ print(sol.summary())
 </tr>
 <tr>
 <td>Delaunay town</td>
-<td>Random junctions, Delaunay triangulation thinned to 75%</td>
+<td>Random junctions at a constant density (a square of side 100 m × √n), Delaunay triangulation thinned to 75%, lengths of at least 1 m</td>
 <td>12</td>
 <td>100–40,000</td>
 <td>214–89,977</td>
@@ -969,9 +969,9 @@ print(sol.summary())
 </table></div>
 <p>The mean is 90.3%; 19 instances fall below 90% and 10 below 80%, while 9 reach 100%, where capacity adds nothing to the postman's tour. On each of the 10 val networks the bound weakens steadily as capacity shrinks and vehicles are added: val2 goes from 95.6% with 2 vehicles to 47.5% with 8, because every vehicle must drive out from and back to the depot. Vehicle count does not explain everything: the lowest kshs and gdb values are kshs1 (65.6%, 4 vehicles) and gdb8 (71.8%, 10 vehicles), while gdb23 stays at 95.7% with 10 vehicles. In all 63 files the published lower and upper bounds coincide, so these fleet costs are proven optima.</p>
 <h3 id="74-scaling">7.4 Scaling</h3>
-<p>With the LEMON backend, a network with 40,000 junctions and 12,066 odd vertices solves to proven optimality in a median 110 seconds, against about 800 odd vertices in the same time with NetworkX. These two figures come from different families; within one family, LEMON reaches 12,066 odd vertices in 110 s on grids, against 660 in 54 s with NetworkX, and 10,006 in 61 s on Delaunay towns, against 806 in 114 s. Grid cities and Delaunay towns were generated with up to 40,000 junctions; both backends were run, NetworkX until a case passed 90 seconds.</p>
-<figure class="chart"><svg viewBox="0 0 760 400" role="img" aria-label="With LEMON, two minutes covers 12,000 odd junctions instead of 800">
-<text x="0" y="22" font-size="17" font-weight="800" fill="var(--ink)">With LEMON, two minutes now covers 12,000 odd junctions instead of 800</text>
+<p>With the LEMON backend, a network with 40,000 junctions and 12,066 odd vertices solves to proven optimality in a median 110 seconds, against about 750 odd vertices in the same time with NetworkX. These two figures come from different families; within one family, LEMON reaches 12,066 odd vertices in 110 s on grids, against 660 in 54 s with NetworkX, and 10,006 in 57 s on Delaunay towns, against 806 in 136 s. Grid cities and Delaunay towns were generated with up to 40,000 junctions; both backends were run, NetworkX until a case passed 90 seconds.</p>
+<figure class="chart"><svg viewBox="0 0 760 400" role="img" aria-label="With LEMON, two minutes covers 12,000 odd junctions instead of about 750">
+<text x="0" y="22" font-size="17" font-weight="800" fill="var(--ink)">With LEMON, two minutes now covers 12,000 odd junctions instead of about 750</text>
 <line x1="70" x2="730" y1="330.0" y2="330.0" stroke="var(--rule)"/><text x="62" y="334.0" text-anchor="end" font-size="12" fill="var(--ink-soft)">0.01 s</text>
 <line x1="70" x2="730" y1="269.7" y2="269.7" stroke="var(--rule)"/><text x="62" y="273.7" text-anchor="end" font-size="12" fill="var(--ink-soft)">0.1 s</text>
 <line x1="70" x2="730" y1="209.4" y2="209.4" stroke="var(--rule)"/><text x="62" y="213.4" text-anchor="end" font-size="12" fill="var(--ink-soft)">1 s</text>
@@ -995,27 +995,27 @@ print(sol.summary())
 <circle cx="344.0" cy="136.1" r="4" fill="var(--street)"><title>1,225 junctions, 446 odd: 16.44 s</title></circle>
 <circle cx="363.0" cy="120.3" r="4" fill="var(--street)"><title>1,600 junctions, 538 odd: 30.03 s</title></circle>
 <circle cx="383.7" cy="104.8" r="4" fill="var(--street)"><title>2,025 junctions, 660 odd: 54.17 s</title></circle>
-<path d="M117.7 286.8L200.0 225.4L266.5 183.3L302.4 157.4L339.3 132.0L380.6 101.7L404.0 85.2" fill="none" stroke="var(--street)" stroke-width="2.5" stroke-dasharray="6 4"/>
-<circle cx="117.7" cy="286.8" r="4" fill="var(--street)"><title>100 junctions, 48 odd: 0.05 s</title></circle>
-<circle cx="200.0" cy="225.4" r="4" fill="var(--street)"><title>225 junctions, 108 odd: 0.54 s</title></circle>
-<circle cx="266.5" cy="183.3" r="4" fill="var(--street)"><title>400 junctions, 208 odd: 2.71 s</title></circle>
-<circle cx="302.4" cy="157.4" r="4" fill="var(--street)"><title>625 junctions, 296 odd: 7.28 s</title></circle>
-<circle cx="339.3" cy="132.0" r="4" fill="var(--street)"><title>900 junctions, 426 odd: 19.22 s</title></circle>
-<circle cx="380.6" cy="101.7" r="4" fill="var(--street)"><title>1,225 junctions, 640 odd: 60.95 s</title></circle>
-<circle cx="404.0" cy="85.2" r="4" fill="var(--street)"><title>1,600 junctions, 806 odd: 114.41 s</title></circle>
+<path d="M117.7 284.6L200.0 226.0L266.5 180.0L302.4 154.3L339.3 125.6L380.6 96.9L404.0 80.7" fill="none" stroke="var(--street)" stroke-width="2.5" stroke-dasharray="6 4"/>
+<circle cx="117.7" cy="284.6" r="4" fill="var(--street)"><title>100 junctions, 48 odd: 0.06 s</title></circle>
+<circle cx="200.0" cy="226.0" r="4" fill="var(--street)"><title>225 junctions, 108 odd: 0.53 s</title></circle>
+<circle cx="266.5" cy="180.0" r="4" fill="var(--street)"><title>400 junctions, 208 odd: 3.07 s</title></circle>
+<circle cx="302.4" cy="154.3" r="4" fill="var(--street)"><title>625 junctions, 296 odd: 8.20 s</title></circle>
+<circle cx="339.3" cy="125.6" r="4" fill="var(--street)"><title>900 junctions, 426 odd: 24.50 s</title></circle>
+<circle cx="380.6" cy="96.9" r="4" fill="var(--street)"><title>1,225 junctions, 640 odd: 73.26 s</title></circle>
+<circle cx="404.0" cy="80.7" r="4" fill="var(--street)"><title>1,600 junctions, 806 odd: 135.93 s</title></circle>
 <path d="M383.7 244.0L469.5 199.6L544.7 160.0L607.6 124.6L678.7 86.2" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-dasharray="none"/>
 <circle cx="383.7" cy="244.0" r="4" fill="var(--ink)"><title>2,025 junctions, 660 odd: 0.27 s</title></circle>
 <circle cx="469.5" cy="199.6" r="4" fill="var(--ink)"><title>4,900 junctions, 1,536 odd: 1.45 s</title></circle>
 <circle cx="544.7" cy="160.0" r="4" fill="var(--ink)"><title>10,000 junctions, 3,224 odd: 6.59 s</title></circle>
 <circle cx="607.6" cy="124.6" r="4" fill="var(--ink)"><title>19,600 junctions, 5,988 odd: 25.49 s</title></circle>
 <circle cx="678.7" cy="86.2" r="4" fill="var(--ink)"><title>40,000 junctions, 12,066 odd: 110.43 s</title></circle>
-<path d="M426.5 216.9L519.3 175.5L590.7 139.1L659.7 101.6L729.7 63.2" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-dasharray="6 4"/>
-<circle cx="426.5" cy="216.9" r="4" fill="var(--ink)"><title>2,025 junctions, 1,006 odd: 0.75 s</title></circle>
-<circle cx="519.3" cy="175.5" r="4" fill="var(--ink)"><title>5,000 junctions, 2,510 odd: 3.64 s</title></circle>
-<circle cx="590.7" cy="139.1" r="4" fill="var(--ink)"><title>10,000 junctions, 5,072 odd: 14.63 s</title></circle>
-<circle cx="659.7" cy="101.6" r="4" fill="var(--ink)"><title>20,000 junctions, 10,006 odd: 61.27 s</title></circle>
-<circle cx="729.7" cy="63.2" r="4" fill="var(--ink)"><title>40,000 junctions, 19,942 odd: 265.57 s</title></circle>
-<text x="394.0" y="73.2" text-anchor="end" font-size="13" fill="var(--ink-soft)">Pure Python: 806 odd, 114 s</text>
+<path d="M426.5 221.2L519.3 179.9L590.7 143.0L659.7 103.3L729.7 64.7" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-dasharray="6 4"/>
+<circle cx="426.5" cy="221.2" r="4" fill="var(--ink)"><title>2,025 junctions, 1,006 odd: 0.64 s</title></circle>
+<circle cx="519.3" cy="179.9" r="4" fill="var(--ink)"><title>5,000 junctions, 2,510 odd: 3.09 s</title></circle>
+<circle cx="590.7" cy="143.0" r="4" fill="var(--ink)"><title>10,000 junctions, 5,072 odd: 12.62 s</title></circle>
+<circle cx="659.7" cy="103.3" r="4" fill="var(--ink)"><title>20,000 junctions, 10,006 odd: 57.33 s</title></circle>
+<circle cx="729.7" cy="64.7" r="4" fill="var(--ink)"><title>40,000 junctions, 19,942 odd: 250.26 s</title></circle>
+<text x="394.0" y="68.7" text-anchor="end" font-size="13" fill="var(--ink-soft)">Pure Python: 806 odd, 136 s</text>
 <text x="668.7" y="72.2" text-anchor="end" font-size="13" font-weight="700" fill="var(--ink)">LEMON: 12,066 odd, 110 s</text>
 <text x="730" y="320" text-anchor="end" font-size="12" fill="var(--ink-soft)">solid: grid cities; dashed: organic towns</text>
 </svg><figcaption>results/timing_repeats.csv: medians of five runs (NetworkX, 15 networks; LEMON, 10 networks) · 100–40,000 junctions</figcaption></figure>
@@ -1064,11 +1064,11 @@ print(sol.summary())
 <td>Delaunay town</td>
 <td>10,000</td>
 <td>5,072</td>
-<td>8.9 s</td>
+<td>7.7 s</td>
 <td>1.1 s</td>
-<td>4.5 s</td>
-<td>14.6 s</td>
-<td>13.1–14.8 s</td>
+<td>4.0 s</td>
+<td>12.6 s</td>
+<td>12.5–13.6 s</td>
 <td>2</td>
 <td>not measured separately</td>
 </tr>
@@ -1088,11 +1088,11 @@ print(sol.summary())
 <td>Delaunay town</td>
 <td>20,000</td>
 <td>10,006</td>
-<td>36.9 s</td>
-<td>5.3 s</td>
-<td>18.9 s</td>
-<td>61.3 s</td>
-<td>53.4–63.0 s</td>
+<td>34.5 s</td>
+<td>5.1 s</td>
+<td>17.9 s</td>
+<td>57.3 s</td>
+<td>56.3–59.6 s</td>
 <td>2</td>
 <td>not measured separately</td>
 </tr>
@@ -1106,25 +1106,25 @@ print(sol.summary())
 <td>110 s</td>
 <td>99–111 s</td>
 <td>3</td>
-<td>2.1 GB</td>
+<td>2.0 GB</td>
 </tr>
 <tr>
 <td>Delaunay town</td>
 <td>40,000</td>
 <td>19,942</td>
-<td>161 s</td>
-<td>24.0 s</td>
-<td>78.4 s</td>
-<td>266 s</td>
-<td>240–446 s</td>
+<td>150 s</td>
+<td>25.1 s</td>
+<td>75.7 s</td>
+<td>250 s</td>
+<td>249–261 s</td>
 <td>3</td>
-<td>2.9 GB</td>
+<td>2.8 GB</td>
 </tr>
 </tbody>
 </table></div>
-<p>Each network was run five times, in a cycle over all the networks, with nothing else on the machine (<code>results/timing_repeats.csv</code>). The table gives medians. The matching column includes pricing and the certificate. Every repeat gave the same optimum. For networks taking a second or more, the range is typically 18% of the median. The largest town had one slow run of 446 s, all of it in the matching step (214 s against about 24 s), and the other four took 240–270 s. The input was the same, and the cause was not identified. Peak memory comes from a single run.</p>
-<p>On the 660-odd-vertex grid the fast backend is about 200 times faster than NetworkX, and the matching itself takes 0.04 s instead of 50 s. Starting from 10 nearest neighbours, one to three rounds were always enough, the last of them only confirming optimality; nine of the ten networks needed extra pairs, at most 49. The matching is no longer the bottleneck on large networks: shortest paths take about 60% of the time and building the tour about 30%, both still written in Python around compiled kernels and both easy to speed up further. Memory is dominated by the table of distances between odd vertices, which grows with their square, so networks much bigger than these would mean never storing that table, as the sparse blossom method does.</p>
-<p>The certificates of section 4.4 confirm these results a second way. <code>tools/certify_matching.py</code> repeats all ten networks with the JavaScript blossom code instead of LEMON, and gives exactly the same optimum on each (<code>results/certificates.csv</code>). It is slower, 122 s of matching against 9 s on the largest grid and 613 s against 24 s on the largest town, but two unrelated implementations agree.</p>
+<p>Each network was run five times, in a cycle over all the networks, with nothing else on the machine (<code>results/timing_repeats.csv</code>). The table gives medians. The matching column includes pricing and the certificate. Every repeat gave the same optimum. For networks taking a second or more, the range is typically 14% of the median. The grids and the towns were timed on consecutive days, on the same kind of machine, and the towns were rerun after the generator changed. Peak memory comes from a single run.</p>
+<p>On the 660-odd-vertex grid the fast backend is about 200 times faster than NetworkX, and the matching itself takes 0.04 s instead of 50 s. Starting from 10 nearest neighbours, one to three rounds were always enough, the last of them only confirming optimality; nine of the ten networks needed extra pairs, at most 83. The matching is no longer the bottleneck on large networks: shortest paths take about 60% of the time and building the tour about 30%, both still written in Python around compiled kernels and both easy to speed up further. Memory is dominated by the table of distances between odd vertices, which grows with their square, so networks much bigger than these would mean never storing that table, as the sparse blossom method does.</p>
+<p>The certificates of section 4.4 confirm these results a second way. <code>tools/certify_matching.py</code> repeats all ten networks with the JavaScript blossom code instead of LEMON, and gives exactly the same optimum on each (<code>results/certificates.csv</code>). It is slower, 117 s of matching against 9 s on the largest grid and 200 s against 25 s on the largest town, but two unrelated implementations agree.</p>
 <p>For the NetworkX backend, time grows roughly with the cube of the number of odd vertices, as expected from the O(n³) matching, which takes over 85% of the time above 200 odd vertices.</p>
 <p>The repeated distance settles at 12–15% of the network on both families, lower than on the benchmark networks because grids and triangulations are denser.</p>
 <h3 id="75-directed-networks">7.5 Directed networks</h3>
@@ -1235,12 +1235,14 @@ print(sol.summary())
 <tr>
 <td>Verification</td>
 <td>Manual checks</td>
-<td>289 automated tests in Python and 334 networks and 3,000 matchings re-checked in JavaScript, every tour validated</td>
+<td>296 automated tests in Python and 334 networks and 3,000 matchings re-checked in JavaScript, every tour validated</td>
 <td>Results checked on each run</td>
 </tr>
 </tbody>
 </table></div>
 <h3 id="82-the-1997-branch-and-bound">8.2 The 1997 branch-and-bound</h3>
+<p>The choice of branch-and-bound in 1997 was deliberate. The project was an academic exercise. Its report presents and proves Edmonds and Johnson's algorithm in chapter 3, and then proposes "a method less specific and conceptually simpler": to treat the pairing as a general combinatorial problem. As its author recalls, the practical interest lay in large cases, where the search reached fairly good solutions quickly, while the exact method took much longer on the computers of the time.</p>
+<p>Branch-and-bound is itself exact when it runs to completion, and it becomes a heuristic only when a time or memory limit stops it, still with a bound on its error. Its cost can grow exponentially where the blossom algorithm is polynomial, but it needs no matching theory, and it carries over to problems with no polynomial method, such as the mixed CPP of chapter 9.</p>
 <p>Each node of the search tree fixed some pairs of odd vertices as taken and others as rejected. Branching took the cheapest pair still available and created two children: take it or reject it. The lower bound of a node was c₁ + c₂, where c₂ is the cost of the pairs already taken and c₁ estimates the cost of completing the matching from the cheapest available pair at each remaining vertex. Nodes were explored lowest bound first while the tree was small, and deepest first afterwards, which gives good solutions early and makes the method a natural time-limited heuristic.</p>
 <h3 id="83-a-tightened-lower-bound">8.3 A tightened lower bound</h3>
 <p>Every matched pair is reached from both of its ends, so the cost of any perfect matching M is half the sum, over all odd vertices, of the pair each one belongs to. That gives the bound</p>
@@ -1882,7 +1884,7 @@ print(sol.summary())
 <td>NP-hard</td>
 <td>Not attempted</td>
 <td>Ulusoy split and relocations</td>
-<td>Median 5.8% above the best known</td>
+<td>Median 5.8% above the best known, number of vehicles free</td>
 </tr>
 </tbody>
 </table></div>
@@ -1893,11 +1895,11 @@ print(sol.summary())
 <p>The Chinese Postman Problem has been solvable in polynomial time since 1973, and today's implementations make that practical on any network a single service crew would plausibly cover. The 2026 version keeps the method of 1997 (pair the odd vertices by shortest paths, duplicate those paths, walk the Eulerian circuit) and improves every stage of it.</p>
 <ol>
 <li><strong>Exact matching.</strong> Edmonds' blossom algorithm, through NetworkX, gives the proven optimum on every instance tested: 4 classic graphs, 92 benchmark networks, 53 of them from real roads in the UK and Belgium, and 15 synthetic towns.</li>
-<li><strong>Practical size.</strong> With the LEMON backend, a 40,000-junction network with 12,066 odd vertices solves in a median 110 seconds, and one with 19,942 in 266 seconds; in pure Python the first time covers about 800 odd vertices. Every benchmark network solves in under 2.5 seconds. Every optimum of the fast backend carries a checked dual certificate, and a second blossom code gives the same ten optima.</li>
+<li><strong>Practical size.</strong> With the LEMON backend, a 40,000-junction network with 12,066 odd vertices solves in a median 110 seconds, and one with 19,942 in 250 seconds; in pure Python the first time covers about 750 odd vertices. Every benchmark network solves in under 2.5 seconds. Every optimum of the fast backend carries a checked dual certificate, and a second blossom code gives the same ten optima.</li>
 <li><strong>Directed streets.</strong> The directed CPP, proposed as future work in 1997, is solved by minimum-cost flow in under half a second on a 3,600-junction one-way grid.</li>
 <li><strong>A bound for fleets that depends on capacity.</strong> On 63 benchmark instances where every street needs service, the single-postman tour costs a median 95.1% of the best known multi-vehicle solution, from 100% down to 47.5%. The CPP is a quick estimate and a close lower bound when vehicles have capacity to spare, and a weak one when they do not.</li>
 <li><strong>Mixed streets.</strong> The mixed CPP, NP-hard, is solved exactly by branch-and-cut on every benchmark network (at most 5.8 s), on all 20 towns of up to 400 junctions and on 8 of the 10 of 900 and 1,600 junctions. Beyond that, five minutes of branch-and-cut end within about 1% of a proven bound, and a polynomial heuristic with dual-guided local search gives a tour 1% to 2.4% above that result in about a minute. On a published test set the optima proved here all equal the published ones, but the picture for the heuristic is less favourable: it is up to 5.8% above the optimum where few streets are one-way, and slower. On five real street networks every optimum is proved in at most 34 seconds, and the heuristic is at most 3.1% above it. Separation and bounding, the core of the 1997 work, is exactly what makes this possible.</li>
-<li><strong>The paths left open in 1997.</strong> A first pass dearer than the next keeps the problem polynomial when every street needs service. When only some streets do (the rural postman problem, NP-hard), branch-and-cut proves the optimum on all 57 benchmark networks that mark them, and the heuristic averages 0.66% above it. Several postmen sharing a district (NP-hard) are planned by the best split of one tour and a local search, optimal in 61 of 62 small cases where the optimum is known; with vehicle capacities, the same idea comes within a median 5.8% of the best published solutions.</li>
+<li><strong>The paths left open in 1997.</strong> A first pass dearer than the next keeps the problem polynomial when every street needs service. When only some streets do (the rural postman problem, NP-hard), branch-and-cut proves the optimum on all 57 benchmark networks that mark them, and the heuristic averages 0.66% above it. Several postmen sharing a district (NP-hard) are planned by the best split of one tour and a local search, optimal in 61 of 62 small cases where the optimum is known; with vehicle capacities, the same idea comes within a median 5.8% of the best published costs, with the number of vehicles left free.</li>
 <li><strong>Open to everyone.</strong> The code, the results, this report and the 1997 original are published at github.com/miquelmp/chinese-postman-problem, and the website solves street networks of up to 2,500 junctions in the browser, from a file or from OpenStreetMap, in seconds.</li>
 </ol>
 <p>The two observations of 1997 about practice still hold. Routine services such as refuse collection or mail delivery are bounded by a working shift, so the networks involved stay moderate in size; and for one-off emergencies such as snow clearing, a fast near-optimal answer can be worth more than a slow proven one. For the CPP itself, thanks to the matching theory of the 1960s and 1970s and to today's implementations, a fast answer and a proven one are the same answer.</p>

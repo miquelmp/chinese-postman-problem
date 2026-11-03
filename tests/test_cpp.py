@@ -114,6 +114,13 @@ def test_gdb_cpp_below_carp_bound(path):
     assert sol.total_cost <= inst.lower_bound
 
 
+def test_delaunay_towns_keep_their_density_and_positive_costs():
+    small = [w for *_, w in I.delaunay_town(100, seed=1).edges(data="weight")]
+    large = [w for *_, w in I.delaunay_town(10000, seed=1).edges(data="weight")]
+    assert min(small) >= 1 and min(large) >= 1
+    assert 0.8 < (sum(large) / len(large)) / (sum(small) / len(small)) < 1.2
+
+
 # ---------------------------------------------------------------- LEMON backend
 from chinese_postman import fast
 
