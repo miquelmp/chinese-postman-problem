@@ -217,7 +217,7 @@ Fleury's rule, discussed in the 1997 report, also works but must test at each st
 
 ## 6. Implementation
 
-The solver is a small Python 3 package, `chinese_postman`, built on NetworkX and covered by 295 automated tests (236 when the optional LEMON library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with eleven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).
+The solver is a small Python 3 package, `chinese_postman`, built on NetworkX and covered by 296 automated tests (237 when the optional LEMON library is not built). It replaces the six Turbo C modules of 1997 (about 1,000 lines plus custom tree, list and matrix structures) with eleven modules of plain Python and an optional compiled matching library. A JavaScript port of the same solver runs the interactive website (section 6.6).
 
 ### 6.1 Modules
 
@@ -259,7 +259,7 @@ For a directed graph the imbalance of each vertex, out-degree minus in-degree, p
 | Classic graphs | 3 | Königsberg, Petersen and dodecahedron give the known optimum |
 | Brute force | 30 | Random graphs with up to 8 odd vertices: same cost as enumerating every pairing |
 | Benchmark bound | 23 | On gdb, where every edge is required, the CPP never exceeds the published CARP lower bound |
-| Structure | 4 | Parallel edges, generated cities and directed grids give valid closed tours |
+| Structure | 5 | Parallel edges, generated cities and directed grids give valid closed tours |
 | LEMON backend | 59 | Same optimum as NetworkX on 51 benchmark files, on towns where a one-neighbour start forces several pricing rounds, and with the certificate checked |
 | Mixed CPP | 41 | Exact equals brute-force enumeration on 25 random networks; bound ≤ optimum ≤ heuristic; all-two-way and all-one-way cases equal the pure CPPs; the combined strategy proves optimality, including through the cutoff |
 | Branch-and-bound | 36 | Bounds of the 1997 worked example; same optimum as blossom on 30 random cases (10 for each of the three variants); strict node limit |
@@ -326,7 +326,7 @@ Every instance tested, 92 distinct benchmark networks (53 of them from real road
 | egl | Li and Eglese (1996), Brandão and Eglese (2008): winter-gritting roads in Lancashire, UK | 3 | 77–255 | 98–375 | 50–190 |
 | Beullens C, E (D, F share their networks) | Beullens et al. (2003): road network of Flanders, Belgium | 50 | 26–97 | 35–142 | 14–54 |
 | Grid city | Square grid, short blocks and long avenues, 10% of segments closed | 12 | 100–40,000 | 161–71,752 | 42–12,066 |
-| Delaunay town | Random junctions, Delaunay triangulation thinned to 75% | 12 | 100–40,000 | 214–89,977 | 48–19,942 |
+| Delaunay town | Random junctions at a constant density (a square of side 100 m × √n), Delaunay triangulation thinned to 75%, lengths of at least 1 m | 12 | 100–40,000 | 214–89,977 | 48–19,942 |
 | One-way grid | Directed grid, alternating one-way streets, two-way outer ring | 5 | 48–3,600 | 113–8,142 arcs | 18–204 unbalanced |
 
 Benchmark files that share a road network and differ only in demands (for example val1A, val1B and val1C) were solved once, leaving 92 distinct networks out of 254 files. Families A and B in the same repository, of unknown origin, were left out. Delaunay towns are drawn in a 1 km square whatever their size, so the largest have unrealistically short streets, about 6 m on average at 20,000 junctions. Lengths are rounded to whole metres, which gives 152 of those 44,974 streets a cost of 0.
@@ -425,7 +425,7 @@ The 2026 version keeps the structure of the 1997 method and improves each of its
 | Eulerian circuit | Cycle splicing over adjacency queues | Hierholzer with one pointer per vertex | Linear time |
 | Directed streets | Future work | Minimum-cost flow | Polynomial (Edmonds and Johnson, 1973) |
 | Platform | Turbo C, 16-bit integers, 640 KB memory model | Python 3, unbounded integers, automatic memory | No size limits on costs or data |
-| Verification | Manual checks | 289 automated tests in Python and 334 networks and 3,000 matchings re-checked in JavaScript, every tour validated | Results checked on each run |
+| Verification | Manual checks | 296 automated tests in Python and 334 networks and 3,000 matchings re-checked in JavaScript, every tour validated | Results checked on each run |
 
 ### 8.2 The 1997 branch-and-bound
 
@@ -677,7 +677,7 @@ On 96 of the 97 instances in the first two rows the file gives the fewest vehicl
 | Every street, mixed | NP-hard | Branch-and-cut, all benchmark networks and towns of up to 400 junctions; most up to 1,600 | Orientation, balancing and local search | Mean 0.41%, worst 4.8% (121 benchmarks and towns); mean 2.09%, worst 5.8% (29 published instances) |
 | Some streets (rural postman) | NP-hard; polynomial with one piece | Branch-and-cut, all 57 benchmark networks and 10 of the 12 towns of up to 400 junctions | Frederickson, at most 3/2; local search | Mean 0.66%, worst 4.8% (16 proved cases) |
 | k postmen, min-max | NP-hard | Branch-and-cut, small networks | Best split, at most 2 − 1/k; local search | Mean 0.02%, worst 1.3% (62 small cases) |
-| Capacitated fleet (CARP) | NP-hard | Not attempted | Ulusoy split and relocations | Median 5.8% above the best known |
+| Capacitated fleet (CARP) | NP-hard | Not attempted | Ulusoy split and relocations | Median 5.8% above the best known, number of vehicles free |
 
 ### 10.7 Still open
 
@@ -694,7 +694,7 @@ The Chinese Postman Problem has been solvable in polynomial time since 1973, and
 3. **Directed streets.** The directed CPP, proposed as future work in 1997, is solved by minimum-cost flow in under half a second on a 3,600-junction one-way grid.
 4. **A bound for fleets that depends on capacity.** On 63 benchmark instances where every street needs service, the single-postman tour costs a median 95.1% of the best known multi-vehicle solution, from 100% down to 47.5%. The CPP is a quick estimate and a close lower bound when vehicles have capacity to spare, and a weak one when they do not.
 5. **Mixed streets.** The mixed CPP, NP-hard, is solved exactly by branch-and-cut on every benchmark network (at most 5.8 s), on all 20 towns of up to 400 junctions and on 8 of the 10 of 900 and 1,600 junctions. Beyond that, five minutes of branch-and-cut end within about 1% of a proven bound, and a polynomial heuristic with dual-guided local search gives a tour 1% to 2.4% above that result in about a minute. On a published test set the optima proved here all equal the published ones, but the picture for the heuristic is less favourable: it is up to 5.8% above the optimum where few streets are one-way, and slower. On five real street networks every optimum is proved in at most 34 seconds, and the heuristic is at most 3.1% above it. Separation and bounding, the core of the 1997 work, is exactly what makes this possible.
-6. **The paths left open in 1997.** A first pass dearer than the next keeps the problem polynomial when every street needs service. When only some streets do (the rural postman problem, NP-hard), branch-and-cut proves the optimum on all 57 benchmark networks that mark them, and the heuristic averages 0.66% above it. Several postmen sharing a district (NP-hard) are planned by the best split of one tour and a local search, optimal in 61 of 62 small cases where the optimum is known; with vehicle capacities, the same idea comes within a median 5.8% of the best published solutions.
+6. **The paths left open in 1997.** A first pass dearer than the next keeps the problem polynomial when every street needs service. When only some streets do (the rural postman problem, NP-hard), branch-and-cut proves the optimum on all 57 benchmark networks that mark them, and the heuristic averages 0.66% above it. Several postmen sharing a district (NP-hard) are planned by the best split of one tour and a local search, optimal in 61 of 62 small cases where the optimum is known; with vehicle capacities, the same idea comes within a median 5.8% of the best published costs, with the number of vehicles left free.
 7. **Open to everyone.** The code, the results, this report and the 1997 original are published at github.com/miquelmp/chinese-postman-problem, and the website solves street networks of up to 2,500 junctions in the browser, from a file or from OpenStreetMap, in seconds.
 
 The two observations of 1997 about practice still hold. Routine services such as refuse collection or mail delivery are bounded by a working shift, so the networks involved stay moderate in size; and for one-off emergencies such as snow clearing, a fast near-optimal answer can be worth more than a slow proven one. For the CPP itself, thanks to the matching theory of the 1960s and 1970s and to today's implementations, a fast answer and a proven one are the same answer.

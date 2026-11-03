@@ -51,12 +51,14 @@ def manhattan(rows: int, cols: int, block: int = 80, avenue: int = 270, drop: fl
     return M
 
 
-def delaunay_town(n: int, seed: int = 0, keep: float = 0.75) -> nx.MultiGraph:
-    """Organic street network: Delaunay triangulation of random points in a 1 km square,
-    thinned to `keep` of its edges (shortest first kept), Euclidean lengths in metres."""
+def delaunay_town(n: int, seed: int = 0, keep: float = 0.75, spacing: float = 100.0) -> nx.MultiGraph:
+    """Organic street network: Delaunay triangulation of random points, thinned to `keep` of its
+    edges (shortest first kept), Euclidean lengths in metres, at least 1. The square grows with n,
+    with a side of spacing * sqrt(n), so the density of junctions stays the same at any size."""
     from scipy.spatial import Delaunay
     rnd = random.Random(seed)
-    pts = [(rnd.random() * 1000, rnd.random() * 1000) for _ in range(n)]
+    side = spacing * math.sqrt(n)
+    pts = [(rnd.random() * side, rnd.random() * side) for _ in range(n)]
     tri = Delaunay(pts)
     E = set()
     for s in tri.simplices:
@@ -79,7 +81,7 @@ def delaunay_town(n: int, seed: int = 0, keep: float = 0.75) -> nx.MultiGraph:
             m += 1
     M = nx.MultiGraph()
     for a, b in G.edges:
-        M.add_edge(a + 1, b + 1, weight=round(L[min(a, b), max(a, b)]))
+        M.add_edge(a + 1, b + 1, weight=max(1, round(L[min(a, b), max(a, b)])))
     for v in M:
         M.nodes[v]["pos"] = pts[v - 1]
     return M
