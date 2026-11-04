@@ -158,6 +158,16 @@
       });
     }
 
+    // With onJunction, clicking a junction chooses it. These targets lie above the streets.
+    if (opts.onJunction && n <= 1500) {
+      const gPick = el("g", {}, svg), hitR = Math.max(r + 3, 6);
+      inst.nodes.forEach(nd => {
+        const [x, y] = P(nd.id);
+        el("circle", { cx: x, cy: y, r: hitR, class: "junction-hit" }, gPick)
+          .addEventListener("click", () => opts.onJunction(nd.id));
+      });
+    }
+
     const postman = el("circle", { r: big ? 4 : 7, class: "postman", visibility: "hidden" }, svg);
     let crew = [];                       // one dot per postman in several-postmen mode
 
