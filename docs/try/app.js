@@ -177,6 +177,7 @@
     $("empty").classList.add("hidden");
     const twoWay = kindOf(inst) === "undirected", partial = inst.links.some(l => l.req === false);
     const showDepot = partial || +$("postmen").value > 1;
+    $("net").classList.toggle("picking", $("serve").value === "pick");
     view = Postman.draw($("net"), inst, { labels: "auto", weights: "auto",
                                           odd: twoWay && !partial && inst.nodes.length <= 400,
                                           depot: showDepot ? inst.depot : undefined,

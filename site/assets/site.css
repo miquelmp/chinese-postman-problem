@@ -149,6 +149,7 @@ p { margin: 0 0 1rem; }
 .problem-card p { margin: 0; font-size: 0.9rem; color: var(--ink-soft); }
 .net .hit { stroke: transparent; stroke-width: 12; fill: none; pointer-events: stroke; }
 .net .hit.pickable { cursor: pointer; }
+.net.picking .street:not(.optional):not(.done):not(.twice) { stroke: var(--ink); }
 .net .tip { pointer-events: none; }
 .net .tip rect { fill: var(--ink); }
 .net .tip text { font-family: var(--sans); fill: #fff; }
