@@ -250,60 +250,70 @@
     $("proof-status").classList.remove("error");
     $("proof-controls").hidden = false;
     if (needProof) {
+      const windy = asymmetric();
       const why = res.kind === "rural"
         ? `The streets to serve lie in ${res.pieces} separate pieces, and choosing how to join them is what makes the exact problem hard`
-        : "Streets that mix one-way and two-way traffic make the exact problem hard";
+        : windy
+          ? "Each street costs a different amount in each direction, and choosing the direction of every pass is what makes the exact problem hard"
+          : "Streets that mix one-way and two-way traffic make the exact problem hard";
       $("proof-text").textContent =
-        `This tour is at most ${res.gap_pct.toFixed(2)}% longer than the best possible one, and usually much closer. ` +
+        `This ${windy ? "tour costs" : "tour is"} at most ${res.gap_pct.toFixed(2)}% ${windy ? "more" : "longer"} than the best possible one, and usually much closer. ` +
         `${why}, so proving the optimum needs a branch-and-cut solver: the page can download Python with it ` +
-        `(about 37 MB the first time) and search for a shorter tour.`;
+        `(about 37 MB the first time) and search for a ${windy ? "cheaper" : "shorter"} tour.`;
     }
   }
+
+  // On a windy network a street costs more one way than the other, so results are costs, not lengths.
+  const asymmetric = () => !!inst && kindOf(inst) === "windy";
+  const fmtVal = v => asymmetric() ? (Math.round(v * 100) / 100).toLocaleString("en") : fmtLen(v);
 
   function renderRoutes(r) {
     const ul = $("routes");
     if (r.kind !== "postmen") { ul.hidden = true; return; }
     ul.innerHTML = r.routes.map((rt, k) =>
-      `<li><i style="background:${view.colorOf(k)}"></i>Postman ${k + 1}: ${fmtLen(rt.cost)}, ${rt.streets} streets</li>`).join("");
+      `<li><i style="background:${view.colorOf(k)}"></i>Postman ${k + 1}: ${fmtVal(rt.cost)}, ${rt.streets} streets</li>`).join("");
     ul.hidden = false;
   }
 
   function renderStats(r) {
     const quality = r.optimal ? "Proven optimal" : `Within ${r.gap_pct.toFixed(2)}%`;
+    const windy = asymmetric();
     if (r.kind === "postmen") {
       const items = [
         ["Postmen", String(r.k)],
-        ["Longest route", fmtLen(r.longest)],
-        ["All routes together", fmtLen(r.total)],
-        ["Lower bound, longest route", fmtLen(r.lower_bound)],
+        [windy ? "Costliest route" : "Longest route", fmtVal(r.longest)],
+        ["All routes together", fmtVal(r.total)],
+        [windy ? "Lower bound, costliest route" : "Lower bound, longest route", fmtVal(r.lower_bound)],
         ["Quality", quality],
         ["Time", `${r.seconds.toFixed(2)} s`],
       ];
       $("stats").innerHTML = items.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
       $("stats").hidden = false;
-      $("method").textContent = `Method: ${r.method}. One postman alone would walk ${fmtLen(r.single)}; ` +
-        `the best split of that tour gave a longest route of ${fmtLen(r.split_longest)} before streets were moved between routes.`;
+      $("method").textContent = windy
+        ? `Method: ${r.method}. One postman alone would cost ${fmtVal(r.single)}; the best split of that route gave a costliest route of ${fmtVal(r.split_longest)} before streets were moved between routes.`
+        : `Method: ${r.method}. One postman alone would walk ${fmtLen(r.single)}; ` +
+          `the best split of that tour gave a longest route of ${fmtLen(r.split_longest)} before streets were moved between routes.`;
       return;
     }
     if (r.kind === "rural") {
       const items = [
-        ["Streets to serve", fmtLen(r.served)],
-        ["Postman's route", fmtLen(r.total)],
-        ["Walked without serving", `${fmtLen(r.deadhead)} (${(100 * r.deadhead / r.served).toFixed(1)}%)`],
+        [windy ? "Minimum one-pass cost" : "Streets to serve", fmtVal(r.served)],
+        [windy ? "Route cost" : "Postman's route", fmtVal(r.total)],
+        [windy ? "Additional cost above baseline" : "Walked without serving", `${fmtVal(r.deadhead)} (${(100 * r.deadhead / r.served).toFixed(1)}%)`],
         ["Pieces to join", String(r.pieces)],
         ["Quality", quality],
         ["Time", `${r.seconds.toFixed(2)} s`],
       ];
       $("stats").innerHTML = items.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
       $("stats").hidden = false;
-      $("method").textContent = `Method: ${r.method}.` + (r.optimal ? "" : ` Proven lower bound: ${fmtLen(r.lower_bound)}.`);
+      $("method").textContent = `Method: ${r.method}.` + (r.optimal ? "" : ` Proven lower bound: ${fmtVal(r.lower_bound)}.`);
       return;
     }
     const extraWalks = r.steps - inst.links.length;
     const items = [
-      ["Streets, once each", fmtLen(r.original)],
-      ["Postman's tour", fmtLen(r.total)],
-      ["Extra distance", `${fmtLen(r.added)} (${r.added_pct.toFixed(1)}%)`],
+      [windy ? "Minimum one-pass cost" : "Streets, once each", fmtVal(r.original)],
+      [windy ? "Tour cost" : "Postman's tour", fmtVal(r.total)],
+      [windy ? "Additional cost above baseline" : "Extra distance", `${fmtVal(r.added)} (${r.added_pct.toFixed(1)}%)`],
       ["Streets walked again", extraWalks.toLocaleString("en")],
       ["Quality", quality],
       ["Time", `${r.seconds.toFixed(2)} s`],
@@ -311,7 +321,8 @@
     $("stats").innerHTML = items.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
     $("stats").hidden = false;
     let m = `Method: ${r.method}.`;
-    if (r.kind === "mixed" || r.kind === "windy") m += ` Proven lower bound: ${fmtLen(r.lower_bound)}.`;
+    if (r.kind === "mixed" || r.kind === "windy") m += ` Proven lower bound: ${fmtVal(r.lower_bound)}.`;
+    if (windy) m += " The baseline adds each street at its cheaper direction, which a closed tour cannot always use.";
     $("method").textContent = m;
   }
 
@@ -340,7 +351,7 @@
       }
       await pyReady;
       const limit = +$("time-limit").value;
-      stage = `Branch-and-cut: searching for a shorter tour (up to ${limit} s)…`;
+      stage = `Branch-and-cut: searching for a ${asymmetric() ? "cheaper" : "shorter"} tour (up to ${limit} s)…`;
       const res = JSON.parse(await py.call("solve", { inst: JSON.stringify(inst), timeLimit: limit, gapTol: 0 }));
       if (!res.ok) throw new Error(res.error);
       if (target !== inst) return;
@@ -349,9 +360,12 @@
       showResult(res);
       $("proof").hidden = false;
       if (res.optimal) {
+        const windy = asymmetric();
         $("proof-text").textContent = res.total < before
-          ? `Branch-and-cut found a tour ${fmtLen(before - res.total)} shorter than the heuristic one and proved that no shorter tour exists.`
-          : "Branch-and-cut proved that the heuristic tour was already the shortest possible.";
+          ? (windy
+            ? `Branch-and-cut found a tour costing ${fmtVal(before - res.total)} less than the heuristic one and proved that no cheaper tour exists.`
+            : `Branch-and-cut found a tour ${fmtLen(before - res.total)} shorter than the heuristic one and proved that no shorter tour exists.`)
+          : `Branch-and-cut proved that the heuristic tour was already the ${windy ? "cheapest" : "shortest"} possible.`;
         $("proof-controls").hidden = true;
       } else {
         $("proof-text").textContent = `The time limit was reached: the tour is now within ${res.gap_pct.toFixed(2)}% of the optimum. A longer time limit may prove it.`;

@@ -52,7 +52,7 @@ building blocks, Eulerian circuits and matchings, which this package uses.
 
 ```bash
 pip install -e ".[test]"
-pytest -q                            # 365 tests (424 once the optional LEMON library is built)
+pytest -q                            # 366 tests (425 once the optional LEMON library is built)
 ```
 
 ```python
