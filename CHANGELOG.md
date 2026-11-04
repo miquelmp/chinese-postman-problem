@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The abstract is split by problem, method, contributions, results and conclusions, and limits its claims of optimality and guarantees. No result changes.
+- Section 10.1 separates a lower bound on one solution from an approximation guarantee, and the README states the type of guarantee of each method, with its assumptions.
 - On windy networks the solver reports costs, not distances: the labels, units and proof text now say so, and the proof text no longer blames one-way streets.
 - `results/dgrp_lap.csv` holds all 70 large files, including the 3 stopped by the 5-minute limit.
 - The abstract covers the windy postman and the rural and several-postmen problems on every network.
