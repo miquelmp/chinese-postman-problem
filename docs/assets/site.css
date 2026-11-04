@@ -148,6 +148,7 @@ p { margin: 0 0 1rem; }
 .chip.off { background: var(--panel); color: var(--ink-soft); }
 .problem-card p { margin: 0; font-size: 0.9rem; color: var(--ink-soft); }
 .net .hit { stroke: transparent; stroke-width: 12; fill: none; pointer-events: stroke; }
+.net .hit.pickable { cursor: pointer; }
 .net .tip { pointer-events: none; }
 .net .tip rect { fill: var(--ink); }
 .net .tip text { font-family: var(--sans); fill: #fff; }
@@ -262,6 +263,11 @@ blockquote.quote1997 p { font-family: var(--serif); font-style: italic; font-siz
 .refs li { margin-bottom: 0.5rem; }
 
 .table-note { font-size: var(--step--1); color: var(--ink-soft); margin-top: -0.75rem; }
+
+/* Solver page: streets chosen on the map */
+#pick-field .hint { font-size: 0.85rem; color: var(--ink-soft); margin: 0 0 0.25rem; }
+#pick-field .pick-count { font-weight: 600; margin: 0 0 0.25rem; }
+.pick-buttons { display: flex; gap: 1rem; }
 
 /* Home page */
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

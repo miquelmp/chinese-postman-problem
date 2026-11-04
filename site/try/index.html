@@ -71,6 +71,7 @@
         <select id="serve">
           <option value="all">Every street</option>
           <option value="share">A share of the streets</option>
+          <option value="pick">Choose on the map</option>
           <option value="main">Main streets only</option>
           <option value="marked">As marked in the file</option>
         </select>
@@ -79,6 +80,14 @@
         <label for="serve-share">Share to serve: <output id="serve-out">40%</output></label>
         <input id="serve-share" type="range" min="0.1" max="0.9" step="0.05" value="0.4">
         <button class="text-button" id="reshare" type="button">Choose other streets</button>
+      </div>
+      <div class="field" id="pick-field" hidden>
+        <p class="hint">Click or tap a street to add or remove it.</p>
+        <p class="pick-count" id="pick-count" role="status" aria-live="polite"></p>
+        <div class="pick-buttons">
+          <button class="text-button" id="pick-all" type="button">Select all</button>
+          <button class="text-button" id="pick-none" type="button">Clear</button>
+        </div>
       </div>
       <div class="field">
         <label for="postmen">Postmen</label>
