@@ -738,7 +738,7 @@ The 36 DG files list no vertices to visit. Read literally they give routes below
 | Stacker crane, random | 14 | 3,824–59,901 | 60–120 s | 14 | 0 |
 | Stacker crane, grid, 100 arcs to serve | 10 | 2,410–3,827 | 60 s | 8 | 0.47%, 3.0% |
 | Stacker crane, grid, 300 arcs to serve | 10 | 8,625–13,246 | 60 s | 0 | 8.05%, 13.9% |
-| Stacker crane, grid, 500 arcs to serve | 10 | 12,218–16,491 | 60 s | 0 | 2.42%, 5.5% |
+| Stacker crane, grid, 500 arcs to serve | 10 | 12,218–16,491 | 60 s | 0 | 2.42%, 5.4% |
 | Directed general routing, large | 70 | 50,000 | 120 s | 60 | 0 on those 60; no route on the other 10 |
 
 No route falls below a published optimum, no bound rises above one, and no value proved here differs from a published one. The method is weakest when the pieces are many and small, as on the grid files. The random crane files took at most 18 seconds each. The 60 large files proved took a median of 6.5 seconds, on networks of 5,000 junctions. Above 10,000 links `solve` now runs branch-and-cut first, because on these networks the relaxation is often tight and the joining heuristic is slow. HiGHS sometimes overran its limit, by up to 23 minutes, so the last 23 large files had a hard limit of 5 minutes. It stopped 3 of them, which `results/dgrp_lap.csv` records with no route and the bound of the relaxation. The other 7 of the 10 unproved files ended their time limit with no connected route.
