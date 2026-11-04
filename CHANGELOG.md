@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The solver has a new service setting, Choose on the map: click streets to add or remove them, with Select all, Clear and a count.
 - The home page describes the whole 2026 scope, offers three routes (Understand, Try, Research), and replaces the long comparison table with four indicators and five advances that separate proved guarantees from measurements. The animated example and the citation section are unchanged.
 - The abstract is split by problem, method, contributions, results and conclusions, and limits its claims of optimality and guarantees. No result changes.
 - Section 10.1 separates a lower bound on one solution from an approximation guarantee, and the README states the type of guarantee of each method, with its assumptions.

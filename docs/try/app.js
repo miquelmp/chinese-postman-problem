@@ -29,6 +29,7 @@
 
   // ---------------------------------------------------------------- state
   let busy = false, inst = null, base = null, result = null, view = null, seed = 0, shareSeed = 1, map = null;
+  const picked = new Set();             // streets chosen on the map, by position in base.links
   const speeds = [0.5, 1, 2, 4, 8, 16];
   const status = (text, error) => { $("status").textContent = text; $("status").classList.toggle("error", !!error); };
   const kindOf = I => { if (I.links.some(l => l.w2 !== undefined && l.w2 !== l.w)) return "windy"; const o = I.links.map(l => l.oneway); return o.every(Boolean) ? "directed" : o.some(Boolean) ? "mixed" : "undirected"; };
@@ -57,31 +58,43 @@
   function derive() {                   // the network as it will be solved: who serves what
     const mode = $("serve").value, onFoot = $("source").value === "osm" && $("on-foot").checked;
     const r = rng(shareSeed), share = +$("serve-share").value;
-    const links = base.links.map(l => {
+    const links = base.links.map((l, i) => {
       const c = Object.assign({}, l);
       if (onFoot) c.oneway = false;
       delete c.req;
       if (mode === "share") c.req = r() < share;
+      else if (mode === "pick") c.req = picked.has(i);
       else if (mode === "main") c.req = !!l.main;
       else if (mode === "marked") c.req = l.marked !== false;
       return c;
     });
-    if (links.length && !links.some(l => l.req !== false)) links[0].req = true;
+    if (mode !== "pick" && links.length && !links.some(l => l.req !== false)) links[0].req = true;
     return Object.assign({}, base, { links, depot: pickDepot(base) });
   }
   function serveOptions() {
-    const has = { all: true, share: true, main: base && base.links.some(l => l.main) && base.links.some(l => !l.main),
+    const has = { all: true, share: true, pick: !!base, main: base && base.links.some(l => l.main) && base.links.some(l => !l.main),
                   marked: base && !!base.marked };
     for (const o of $("serve").options) o.hidden = o.disabled = !has[o.value];
     if (!has[$("serve").value]) $("serve").value = "all";
     $("share-field").hidden = $("serve").value !== "share";
+    $("pick-field").hidden = $("serve").value !== "pick";
   }
   function serviceHint() {
-    return "";
+    return $("serve").value === "pick" && picked.size === 0 ? "Click at least one street to serve." : "";
+  }
+  function showPicked() {
+    const n = base ? base.links.length : 0;
+    $("pick-count").textContent = `${picked.size.toLocaleString("en")} of ${n.toLocaleString("en")} streets to serve (${n ? Math.round(100 * picked.size / n) : 0}%)`;
+  }
+  function pickStreet(i) {
+    if (busy) return;
+    if (picked.has(i)) picked.delete(i); else picked.add(i);
+    applyService();
   }
   function applyService() {
     if (!base) return;
     serveOptions();
+    showPicked();
     showInst(derive());
   }
 
@@ -164,9 +177,11 @@
     $("empty").classList.add("hidden");
     const twoWay = kindOf(inst) === "undirected", partial = inst.links.some(l => l.req === false);
     const showDepot = partial || +$("postmen").value > 1;
+    $("net").classList.toggle("picking", $("serve").value === "pick");
     view = Postman.draw($("net"), inst, { labels: "auto", weights: "auto",
                                           odd: twoWay && !partial && inst.nodes.length <= 400,
-                                          depot: showDepot ? inst.depot : undefined });
+                                          depot: showDepot ? inst.depot : undefined,
+                                          onStreet: $("serve").value === "pick" ? pickStreet : undefined });
     $("cost-hint").textContent = view.costsShown ? "The label on each street gives its cost."
       : "Too many streets to label: rest the pointer on a street, or tap it, to see its cost.";
     $("cost-hint").hidden = false;
@@ -191,7 +206,7 @@
   let loadToken = 0;
   async function load() {
     const src = $("source").value, token = ++loadToken;
-    const show = I => { if (token === loadToken) { base = I; applyService(); } };
+    const show = I => { if (token === loadToken) { base = I; picked.clear(); applyService(); } };
     try {
       if (["example1997", "konigsberg", "petersen", "grid", "delaunay", "oneway-grid", "mixed-town", "hilly-town"].includes(src)) {
         setBusy(true); status("Building the network…");
@@ -406,7 +421,7 @@
       const text = await resp.text();
       status("Building the street network…");
       const I = await js.call("osm", { text, name: `OpenStreetMap area around ${((s + n) / 2).toFixed(4)}, ${((w + e) / 2).toFixed(4)}` });
-      if (token === loadToken) { base = I; applyService(); }
+      if (token === loadToken) { base = I; picked.clear(); applyService(); }
     } catch (err) { setBusy(false); status(err.message, true); }
   }
 
@@ -433,6 +448,8 @@
   $("serve-share").addEventListener("input", () => { $("serve-out").textContent = Math.round($("serve-share").value * 100) + "%"; });
   $("serve-share").addEventListener("change", applyService);
   $("reshare").addEventListener("click", () => { shareSeed++; applyService(); });
+  $("pick-all").addEventListener("click", () => { if (base && !busy) { base.links.forEach((_, i) => picked.add(i)); applyService(); } });
+  $("pick-none").addEventListener("click", () => { if (!busy) { picked.clear(); applyService(); } });
   $("postmen").addEventListener("change", applyService);
   $("on-foot").addEventListener("change", applyService);
   ["side", "junctions", "bench", "file"].forEach(id => $(id).addEventListener("change", load));

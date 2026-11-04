@@ -154,6 +154,7 @@
         h.addEventListener("pointerover", ev => show(ev, i));
         h.addEventListener("pointermove", ev => show(ev, i));
         h.addEventListener("pointerout", () => tip.setAttribute("visibility", "hidden"));
+        if (opts.onStreet) { h.classList.add("pickable"); h.addEventListener("click", () => opts.onStreet(i)); }
       });
     }
 
