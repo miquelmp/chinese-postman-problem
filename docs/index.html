@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Chinese Postman Problem, 1997 and 2026</title>
-<meta name="description" content="A 1997 final-year project on the Chinese Postman Problem, revisited with today's solvers: both reports, open-source code, and a solver that runs in your browser.">
+<meta name="description" content="A 1997 final-year project on the Chinese Postman Problem, revised in 2026: one-way, mixed and windy networks, partial service, several postmen, both reports, open-source code and a solver that runs in your browser.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="The Chinese Postman">
 <meta property="og:title" content="The Chinese Postman Problem, 1997 and 2026">
-<meta property="og:description" content="A 1997 final-year project on the Chinese Postman Problem, revisited with today&#x27;s solvers: both reports, open-source code, and a solver that runs in your browser.">
+<meta property="og:description" content="A 1997 final-year project on the Chinese Postman Problem, revised in 2026: one-way, mixed and windy networks, partial service, several postmen, both reports, open-source code and a solver that runs in your browser.">
 <meta property="og:url" content="https://miquelmp.github.io/chinese-postman-problem/">
 <meta property="og:image" content="https://miquelmp.github.io/chinese-postman-problem/assets/og-image.png">
 <meta property="og:image:width" content="1200">
@@ -31,7 +31,7 @@
     <div>
       <h1>The shortest walk that covers every street</h1>
       <p class="lede">A postman has to walk down every street of a district and return to the office. Some streets must be walked twice; the question is which ones, so that the extra distance is as small as possible.</p>
-      <p>This site revisits a 1997 final-year engineering project on this problem, the Chinese Postman Problem, with today's implementations, and follows the paths it left open: streets that need no service, several postmen, vehicles with a capacity. Read both reports, run the solver in your browser, or use the code.</p>
+      <p>This is the Chinese Postman Problem, the subject of a final-year engineering project in 1997. The 2026 revision works on two-way streets, one-way streets and towns that mix them, and on streets that cost more in one direction. It also handles districts where only some streets need service, and work shared among several postmen or vehicles with a limited capacity.</p>
       <div class="actions">
         <a class="button" href="try/">Solve a network</a>
         <a href="report/">Read the 2026 report</a>
@@ -49,42 +49,82 @@
     </figure>
   </div>
 
+  <section aria-labelledby="routes-title">
+    <h2 id="routes-title" class="visually-hidden">Where to go</h2>
+    <ul class="routes-home">
+      <li>
+        <h3><a href="extensions/">Understand</a></h3>
+        <p>What the problem is, where it came from, and how hard each variation is.</p>
+        <a href="extensions/">Go to Extensions</a>
+      </li>
+      <li class="main-route">
+        <h3><a href="try/">Try</a></h3>
+        <p>Solve a network in your browser: an example, your own file, or an area of OpenStreetMap.</p>
+        <a class="button" href="try/">Solve a network</a>
+      </li>
+      <li>
+        <h3><a href="report/">Research</a></h3>
+        <p>The 2026 report: the methods, the experiments and every result.</p>
+        <a href="report/">Read the 2026 report</a>
+      </li>
+    </ul>
+  </section>
+
   <section class="prose">
     <h2>The problem</h2>
     <p class="reading-intro">A route that walks every street exactly once and returns to its start exists only when every junction joins an even number of streets: Euler proved this for the seven bridges of Königsberg, in a paper written in 1735 and published in 1741. Real districts have junctions with an odd number of streets, so some streets must be walked again. The Chinese mathematician Kwan Mei-Ko posed the question in 1960: which streets should be repeated so that the extra distance is as small as possible?</p>
     <p>The answer pairs up the odd junctions so that the total distance between paired junctions is minimal, repeats the streets along those connections, and then walks the result. Mail delivery, refuse collection, snow ploughing and street sweeping all build on this problem, usually with added limits such as vehicle capacity or working shifts.</p>
   </section>
 
-  <section>
-    <h2>Nearly thirty years later</h2>
+  <section aria-labelledby="glance-title">
+    <h2 id="glance-title">The 2026 revision at a glance</h2>
+    <dl class="figures">
+      <div><dt>40,000</dt><dd><strong>junctions in the largest synthetic towns.</strong> All on two-way streets, each solved to proven optimality. The harder problems below are solved exactly only at smaller sizes.</dd></div>
+      <div><dt>92</dt><dd><strong>benchmark networks from the research literature.</strong> 53 of them are real roads in the UK and Belgium.</dd></div>
+      <div><dt>4</dt><dd><strong>kinds of network.</strong> Two-way, one-way, mixed, and a different cost for each direction (the windy postman).</dd></div>
+      <div><dt>2</dt><dd><strong>kinds of answer.</strong> Exact where the problem and the time allow. Otherwise a heuristic, a quick method that comes with a lower bound showing how far it can be from the optimum.</dd></div>
+    </dl>
+  </section>
+
+  <section aria-labelledby="then-title">
+    <h2 id="then-title">Nearly thirty years later</h2>
     <div class="prose">
-      <p>The method of 1997 is unchanged in outline; each stage now uses what is available today (the polynomial algorithms were already published in 1997; their implementations reach much further), and the paths the project left open are followed up, each with its measured distance from the best known solution.</p>
+      <p>The method of 1997 is unchanged in outline. Each stage now uses what is available today, and the paths the project left open are followed up. <span class="chip easy">Proved</span> marks what holds on every network that meets its assumptions, and <span class="chip method">Measured</span> what was observed on the networks tested.</p>
     </div>
-    <div class="table-scroll">
-      <table>
-        <thead><tr><th>Problem</th><th>1997</th><th>2026</th></tr></thead>
-        <tbody>
-          <tr><td>Every street, two-way</td><td>Exact up to about 20 odd junctions on a 150 MHz Pentium, then a time-limited search</td><td>Exact in polynomial time: 12,000 odd junctions in two minutes</td></tr>
-          <tr><td>One-way streets</td><td>Proposed as future work</td><td>Exact</td></tr>
-          <tr><td>One-way and two-way together</td><td>Not in scope</td><td>Exact for towns of up to 400 junctions and most up to 1,600; beyond that, within about 1% of a proven bound</td></tr>
-          <tr><td>A different cost each way</td><td>—</td><td>Within 0.44% of 99 published optima, in seconds; hard to prove</td></tr>
-          <tr><td>Only some streets to serve</td><td>Proposed: a dearer first pass</td><td>Exact on every benchmark network; the quick method is within 0.7% on average</td></tr>
-          <tr><td>Several postmen</td><td>Noted: a shift limits the work</td><td>Optimal in 61 of 62 cases where the optimum is known</td></tr>
-          <tr><td>Those two on one-way, mixed or windy networks</td><td>—</td><td>Within 0.6% of 47 published optima with some streets, and 2.2% of 629 with several postmen, on average; worst cases 7.6% and 17%</td></tr>
-          <tr><td>Vehicles with a capacity</td><td>—</td><td>About 6% above the best published costs (median), with the number of vehicles left free</td></tr>
-          <tr><td>Platform</td><td>Turbo C on MS-DOS</td><td>Python, open source, also in the browser</td></tr>
-        </tbody>
-      </table>
+    <div class="advances">
+      <article>
+        <h3>Larger networks</h3>
+        <p class="then"><b>1997</b> Exact up to about 20 odd junctions on a 150 MHz Pentium, then a time-limited search.</p>
+        <p class="now"><b>2026</b> <span class="chip easy">Proved</span> Two-way and one-way streets are solved exactly in polynomial time. <span class="chip method">Measured</span> About 12,000 odd junctions in a median of 110 seconds.</p>
+      </article>
+      <article>
+        <h3>More kinds of street</h3>
+        <p class="then"><b>1997</b> Two-way streets. One-way streets proposed as future work.</p>
+        <p class="now"><b>2026</b> <span class="chip easy">Proved</span> Win's method for the windy postman is never above twice the optimum. <span class="chip method">Measured</span> It averages 0.10% above 99 published optima, with a worst case of 0.44%. Mixed towns are solved exactly up to 400 junctions.</p>
+      </article>
+      <article>
+        <h3>Only some streets, several postmen</h3>
+        <p class="then"><b>1997</b> Proposed a dearer first pass, and noted that a shift limits the work.</p>
+        <p class="now"><b>2026</b> <span class="chip easy">Proved</span> On two-way networks, never above 3/2 of the optimum with some streets, and 2 − 1/k with k postmen when one optimal route is split. No such factor is proved on the other networks. <span class="chip method">Measured</span> Means of 0.62% above 47 published optima with some streets and 2.15% above 629 with several postmen, with worst cases of 7.6% and 17.2%, on windy networks. Vehicles with a capacity: a median 5.8% above the best published costs, with the number of vehicles left free.</p>
+      </article>
+      <article>
+        <h3>Exact, heuristic and certified</h3>
+        <p class="then"><b>1997</b> Branch-and-bound, exact when it finished in time.</p>
+        <p class="now"><b>2026</b> Matching and flow where the problem is polynomial, branch-and-cut where it is not, and heuristics that report their distance from a lower bound. Each large matching carries a certificate that is checked on every run.</p>
+      </article>
+      <article>
+        <h3>Open and in the browser</h3>
+        <p class="then"><b>1997</b> Turbo C on MS-DOS.</p>
+        <p class="now"><b>2026</b> Open-source Python, and a solver in the browser for street networks of up to 2,500 junctions.</p>
+      </article>
     </div>
-    <p class="table-note">Details, charts and every result file: <a href="report/">2026 report</a>, chapters 7 to 10, and <a href="extensions/">Extensions</a>.</p>
+    <p class="table-note after-advances">Full comparisons, charts and every result file: <a href="report/">2026 report</a>, chapters 7 to 10, and <a href="extensions/">Extensions</a>.</p>
   </section>
 
   <section>
-    <h2>Read and run</h2>
+    <h2>Reports, code and data</h2>
     <ul class="signposts">
-      <li><a href="report/">2026 report</a><p>The revised report: matching, Eulerian circuits, one-way and mixed streets, experiments on 92 benchmark networks.</p></li>
-      <li><a href="extensions/">Extensions</a><p>The paths left open in 1997, followed up: streets that need service only once, several postmen, vehicles with a capacity. How hard each one is, and how close the answers come to the optimum.</p></li>
-      <li><a href="try/">Solve a network</a><p>Pick an example, upload a file in the 1997 format, or choose an area of OpenStreetMap, and watch the postman's tour, or several postmen sharing the streets. The solver runs in your browser.</p></li>
+      <li><a href="report/">2026 report</a><p>The revised report, with its methods and experiments.</p></li>
       <li><a href="1997/">1997 report</a><p>The original final-year project, ETSEIB, supervised by Ramón Companys Pascual. Readable online and downloadable.</p></li>
       <li><a href="https://github.com/miquelmp/chinese-postman-problem">Code and data</a><p>Python package, tests, benchmark instances and every result file, under the MIT licence.</p></li>
     </ul>
