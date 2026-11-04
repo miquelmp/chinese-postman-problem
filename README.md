@@ -40,13 +40,16 @@ building blocks, Eulerian circuits and matchings, which this package uses.
 
 | Network | Method | Guarantee |
 |---|---|---|
-| Two-way streets | Shortest paths + minimum-weight perfect matching (Edmonds' blossom) + Hierholzer | Optimal, polynomial time |
-| One-way streets | Minimum-cost flow + Hierholzer | Optimal, polynomial time |
-| One-way and two-way mixed (NP-hard) | Heuristic, then branch-and-cut (HiGHS) | Optimal, or within a certified gap at the time limit |
-| First pass dearer than later ones, every street | Matching on the cost of later passes | Optimal, polynomial time |
-| Only some streets need service (rural postman, NP-hard) | Frederickson + local search, then branch-and-cut | Optimal, or within a certified gap; heuristic never above 3/2 of the optimum |
-| k postmen, longest route as short as possible (NP-hard) | One tour split optimally into k routes + local search | Within a certified gap; split never above 2 − 1/k of the optimum |
-| Vehicles with a capacity (CARP, NP-hard) | One tour split by capacity (Ulusoy) + moves between routes | Compared with the best known solutions |
+| Two-way streets | Shortest paths + minimum-weight perfect matching (Edmonds' blossom) + Hierholzer | Proven optimal, in polynomial time |
+| One-way streets | Minimum-cost flow + Hierholzer | Proven optimal, in polynomial time |
+| One-way and two-way mixed (NP-hard) | Heuristic, then branch-and-cut (HiGHS) | Proven optimal if branch-and-cut finishes; otherwise heuristic with a certified lower bound |
+| A cost for each way, every street (windy postman, NP-hard) | Win + local search, then branch-and-cut | Proven optimal if branch-and-cut finishes; otherwise heuristic with a certified lower bound. Win alone: proven approximation ratio 2 |
+| First pass dearer than later ones, every street | Matching on the cost of later passes | Proven optimal, in polynomial time |
+| Only some streets need service, two-way (rural postman, NP-hard) | Frederickson + local search, then branch-and-cut | Proven optimal if branch-and-cut finishes; otherwise heuristic with a certified lower bound. Frederickson alone: proven approximation ratio 3/2, with non-negative costs and one cost per street |
+| Only some streets, on one-way, mixed or windy networks (NP-hard) | Orientation, rebalancing and joining, then branch-and-cut | Proven optimal if branch-and-cut finishes; otherwise heuristic with a certified lower bound. No approximation ratio proved |
+| k postmen, two-way, longest route as short as possible (NP-hard) | One tour split optimally into k routes + local search | Heuristic with a certified lower bound. Split of an optimal single route: proven approximation ratio 2 − 1/k, with non-negative costs and one cost per street |
+| k postmen, on one-way, mixed or windy networks (NP-hard) | One route split into k + local search | Heuristic with a certified lower bound. No approximation ratio proved |
+| Vehicles with a capacity (CARP, NP-hard) | One tour split by capacity (Ulusoy) + moves between routes | Heuristic with a certified lower bound, the one-route bound, which ignores capacity and is weak. Measured against the best known solutions |
 
 ## Install and use
 
