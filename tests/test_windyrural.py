@@ -220,3 +220,9 @@ def test_directed_results_agree_with_the_published_values():
             assert float(r["best"]) >= published - 1e-6
             if r["optimal"] == "True":
                 assert float(r["best"]) == published
+
+
+def test_every_large_published_file_has_a_row():
+    published = {r["instance"] for r in _csv("dgrp_published_values.csv") if r["instance"].startswith("DGRP_LAP")}
+    rows = _csv("dgrp_lap.csv")
+    assert len(rows) == len(published) == 70 and {r["instance"] for r in rows} == published

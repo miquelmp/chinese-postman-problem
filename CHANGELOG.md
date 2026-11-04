@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- On windy networks the solver reports costs, not distances: the labels, units and proof text now say so, and the proof text no longer blames one-way streets.
+- `results/dgrp_lap.csv` holds all 70 large files, including the 3 stopped by the 5-minute limit.
+- The abstract covers the windy postman and the rural and several-postmen problems on every network.
 - Section 10.7 compares the mixed rural results with the 36 published optima: every proved value equals its published value, and no route or bound crosses one.
 - Section 10.7 adds the published directed general routing and stacker crane instances: 113 of 150 proved, each equal to the published optimum. Sixty stacker crane files, which hold fewer arcs than their headers count, were left out.
 - `RuralProblem` takes vertices that must be visited, `read_directed_general` reads these files, and above 10,000 links `solve` runs branch-and-cut first.
