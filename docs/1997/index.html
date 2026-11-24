@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>1997 report — The Chinese Postman Problem</title>
+<title>1997 report: problema del cartero chino — Miquel Monserrat Pons</title>
 <meta name="description" content="Resolución del problema del cartero chino (CPP) mediante la aplicación de un proceso de branch and bound. Final-year project, ETSEIB, 1997.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
 <link rel="canonical" href="https://miquelmp.github.io/chinese-postman-problem/1997/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="The Chinese Postman">
-<meta property="og:title" content="1997 report — The Chinese Postman Problem">
+<meta property="og:title" content="1997 report: problema del cartero chino — Miquel Monserrat Pons">
 <meta property="og:description" content="Resolución del problema del cartero chino (CPP) mediante la aplicación de un proceso de branch and bound. Final-year project, ETSEIB, 1997.">
 <meta property="og:url" content="https://miquelmp.github.io/chinese-postman-problem/1997/">
 <meta property="og:image" content="https://miquelmp.github.io/chinese-postman-problem/assets/og-image.png">
@@ -22,13 +22,14 @@
 <meta property="og:image:alt" content="A street network shared among three postmen, each route in its own colour">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="author" content="Miquel Monserrat Pons">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Person", "@id": "https://miquelmp.github.io/chinese-postman-problem/#author", "name": "Miquel Monserrat Pons", "alternateName": ["Miquel Monserrat i Pons", "Miquel Monserrat"], "jobTitle": "Industrial engineer", "url": "https://miquelmp.github.io/chinese-postman-problem/#author", "sameAs": ["https://www.linkedin.com/in/miquelmonserrat/", "https://github.com/miquelmp"], "alumniOf": {"@type": "CollegeOrUniversity", "name": "Escola Tècnica Superior d'Enginyeria Industrial de Barcelona (ETSEIB), Universitat Politècnica de Catalunya"}}, {"@type": "WebSite", "@id": "https://miquelmp.github.io/chinese-postman-problem/#website", "name": "The Chinese Postman Problem, 1997 and 2026", "url": "https://miquelmp.github.io/chinese-postman-problem/", "inLanguage": "en", "author": {"@id": "https://miquelmp.github.io/chinese-postman-problem/#author"}, "publisher": {"@id": "https://miquelmp.github.io/chinese-postman-problem/#author"}}, {"@type": "Thesis", "@id": "https://miquelmp.github.io/chinese-postman-problem/1997/#thesis", "name": "Resolución del problema del cartero chino (CPP) mediante la aplicación de un proceso de branch and bound", "alternateName": "Solving the Chinese Postman Problem by a branch-and-bound process", "inLanguage": "es", "dateCreated": "1997-06", "author": {"@id": "https://miquelmp.github.io/chinese-postman-problem/#author"}, "sourceOrganization": {"@type": "CollegeOrUniversity", "name": "Universitat Politècnica de Catalunya (ETSEIB)"}, "contributor": {"@type": "Person", "name": "Ramón Companys Pascual", "roleName": "Supervisor"}, "url": "https://miquelmp.github.io/chinese-postman-problem/1997/", "about": "Chinese Postman Problem"}]}</script>
 </head>
 <body>
 <header class="site-header"><div class="inner"><a class="brand" href="../">The Chinese Postman</a><nav class="site-nav" aria-label="Main"><a href="../report/">2026 report</a><a href="../extensions/">Extensions</a><a href="../try/">Solve a network</a><a href="../1997/" aria-current="page">1997 report</a><a href="https://github.com/miquelmp/chinese-postman-problem">Code</a></nav></div></header>
 <main class="wrap">
   <div class="prose" style="margin-top:2.5rem">
     <h1 style="font-size:var(--step-4)">The 1997 report</h1>
-    <p class="lede"><em>Resolución del problema del cartero chino (CPP) mediante la aplicación de un proceso de branch and bound</em> (Solving the Chinese Postman Problem by a branch-and-bound process). Miquel Monserrat Pons, final-year project at the Escola Tècnica Superior d'Enginyeria Industrial de Barcelona (ETSEIB), supervised by Ramón Companys Pascual, June 1997.</p>
+    <p class="lede"><em>Resolución del problema del cartero chino (CPP) mediante la aplicación de un proceso de branch and bound</em> (Solving the Chinese Postman Problem by a branch-and-bound process; in Catalan, <span lang="ca">problema del carter xinès</span>). Miquel Monserrat Pons, final-year project at the Escola Tècnica Superior d'Enginyeria Industrial de Barcelona (ETSEIB), supervised by Ramón Companys Pascual, June 1997.</p>
     <p>The project was an academic exercise. It chose branch-and-bound over the known exact algorithm because the search is simpler and, on large cases, reaches good solutions quickly; <a href="../report/#82-the-1997-branch-and-bound">section 8.2 of the 2026 report</a> explains why.</p>
     <p>The text refers to an Annex 2 describing the test cases; it is not part of this PDF.</p>
     <p>The report is in Spanish. It introduces graphs, matchings and Eulerian circuits, solves the matching step of the Chinese Postman Problem with a purpose-built branch-and-bound search, and studies its behaviour on three districts of Vilanova i la Geltrú. The programs, written in Turbo C, are listed in full in Annex 1. The text is searchable in the viewer below.</p>
@@ -66,6 +67,6 @@
     <p style="font-size:var(--step--1);color:var(--ink-soft)">If the viewer does not appear on your device, <a href="monserrat-1997-chinese-postman.pdf">open the PDF directly</a>.</p>
   </section>
 </main>
-<footer class="site-footer"><div class="inner"><p>Miquel Monserrat Pons. Final-year project, ETSEIB (Universitat Politècnica de Catalunya), 1997; revised 2026 with AI assistance (Claude, by Anthropic).</p><p>Code under the MIT licence; texts and figures under CC BY 4.0. <a href="https://github.com/miquelmp/chinese-postman-problem">Source on GitHub</a>.</p><p>Benchmark instances from the arc-routing literature, as collected in CARPData.jl (MIT). Street data © OpenStreetMap contributors (ODbL). The in-browser solver is written in JavaScript; the optional exact proof runs Python through Pyodide, with NetworkX and SciPy (HiGHS).</p></div></footer>
+<footer class="site-footer"><div class="inner"><p><a href="https://www.linkedin.com/in/miquelmonserrat/" rel="author">Miquel Monserrat Pons</a>. Final-year project, ETSEIB (Universitat Politècnica de Catalunya), 1997; revised 2026 with AI assistance (Claude, by Anthropic).</p><p>Code under the MIT licence; texts and figures under CC BY 4.0. <a href="https://github.com/miquelmp/chinese-postman-problem">Source on GitHub</a>.</p><p>Benchmark instances from the arc-routing literature, as collected in CARPData.jl (MIT). Street data © OpenStreetMap contributors (ODbL). The in-browser solver is written in JavaScript; the optional exact proof runs Python through Pyodide, with NetworkX and SciPy (HiGHS).</p></div></footer>
 </body>
 </html>
