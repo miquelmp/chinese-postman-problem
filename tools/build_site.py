@@ -58,7 +58,7 @@ def header(prefix, current, repo):
 def footer(repo):
     return (
         '<footer class="site-footer"><div class="inner">'
-        '<p>Miquel Monserrat Pons. Final-year project, ETSEIB (Universitat Politècnica de Catalunya), 1997; '
+        '<p><a href="https://www.linkedin.com/in/miquelmonserrat/" rel="author">Miquel Monserrat Pons</a>. Final-year project, ETSEIB (Universitat Politècnica de Catalunya), 1997; '
         'revised 2026 with AI assistance (Claude, by Anthropic).</p>'
         f'<p>Code under the MIT licence; texts and figures under CC BY 4.0. <a href="{repo}">Source on GitHub</a>.</p>'
         '<p>Benchmark instances from the arc-routing literature, as collected in CARPData.jl (MIT). '
@@ -275,6 +275,57 @@ def site_url(repo):
     return f"https://{user.lower()}.github.io/{name}/"
 
 
+LINKEDIN = "https://www.linkedin.com/in/miquelmonserrat/"
+BOOKS = [
+    ("Strategic Thinking: From Analysis to Action. The Art of Designing and Implementing Strategies", "en",
+     "https://www.amazon.es/STRATEGIC-THINKING-ANALYSIS-IMPLEMENT-STRATEGIES/dp/B0DJ88K1R6"),
+    ("Pensamiento estratégico: del análisis a la acción. El arte de diseñar e implementar estrategias", "es",
+     "https://www.amazon.es/PENSAMIENTO-ESTRAT%C3%89GICO-implementar-estrategias-Dise%C3%B1ando/dp/B0DDWQMTD9/"),
+]
+
+
+def structured_data(base, page):
+    """schema.org data (JSON-LD) that tells search engines who wrote what."""
+    person = {"@type": "Person", "@id": base + "#author", "name": "Miquel Monserrat Pons",
+              "alternateName": ["Miquel Monserrat i Pons", "Miquel Monserrat"],
+              "jobTitle": "Industrial engineer", "url": base + "#author",
+              "sameAs": [LINKEDIN, "https://github.com/miquelmp"],
+              "alumniOf": {"@type": "CollegeOrUniversity",
+                           "name": "Escola Tècnica Superior d'Enginyeria Industrial de Barcelona (ETSEIB), "
+                                   "Universitat Politècnica de Catalunya"}}
+    author = {"@id": base + "#author"}
+    upc = {"@type": "CollegeOrUniversity", "name": "Universitat Politècnica de Catalunya (ETSEIB)"}
+    thesis = {"@type": "Thesis", "@id": base + "1997/#thesis",
+              "name": "Resolución del problema del cartero chino (CPP) mediante la aplicación de un proceso de branch and bound",
+              "alternateName": "Solving the Chinese Postman Problem by a branch-and-bound process",
+              "inLanguage": "es", "dateCreated": "1997-06", "author": author, "sourceOrganization": upc,
+              "contributor": {"@type": "Person", "name": "Ramón Companys Pascual", "roleName": "Supervisor"},
+              "url": base + "1997/", "about": "Chinese Postman Problem"}
+    report = {"@type": "ScholarlyArticle", "@id": base + "report/#report",
+              "headline": "The Chinese Postman Problem — 2026 revision", "inLanguage": "en", "datePublished": "2026-11",
+              "author": author, "isBasedOn": {"@id": base + "1997/#thesis"}, "url": base + "report/",
+              "about": ["Chinese Postman Problem", "Arc routing", "Rural postman problem"]}
+    code = {"@type": "SoftwareSourceCode", "name": "chinese_postman",
+            "codeRepository": "https://github.com/miquelmp/chinese-postman-problem",
+            "programmingLanguage": ["Python", "JavaScript"], "license": "https://opensource.org/licenses/MIT",
+            "author": author}
+    site = {"@type": "WebSite", "@id": base + "#website", "name": "The Chinese Postman Problem, 1997 and 2026",
+            "url": base, "inLanguage": "en", "author": author, "publisher": author}
+    graph = [person, site]
+    if page == "":
+        graph += [thesis, report, code] + [
+            {"@type": "Book", "name": name, "inLanguage": lang, "author": author, "url": url} for name, lang, url in BOOKS]
+    elif page == "1997/":
+        graph.append(thesis)
+    elif page == "report/":
+        graph.append(report)
+    elif page == "try/":
+        graph.append({"@type": "WebApplication", "name": "Chinese Postman solver", "url": base + "try/",
+                      "applicationCategory": "EducationalApplication", "operatingSystem": "Any (web browser)",
+                      "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"}, "author": author})
+    return {"@context": "https://schema.org", "@graph": graph}
+
+
 def seo(repo):
     """Canonical URL and link-preview tags (Open Graph) on every page, and a sitemap.
     A project site cannot have its own robots.txt (only the domain root can), so the
@@ -298,6 +349,7 @@ def seo(repo):
             '<meta property="og:image:alt" content="A street network shared among three postmen, each route in its own colour">',
             '<meta name="twitter:card" content="summary_large_image">',
             '<meta name="author" content="Miquel Monserrat Pons">',
+            '<script type="application/ld+json">' + json.dumps(structured_data(base, page), ensure_ascii=False) + "</script>",
         ])
         f.write_text(html_.replace("</head>", tags + "\n</head>", 1), encoding="utf-8")
     today = __import__("datetime").date.today().isoformat()
