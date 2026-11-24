@@ -277,9 +277,9 @@ def site_url(repo):
 
 LINKEDIN = "https://www.linkedin.com/in/miquelmonserrat/"
 BOOKS = [
-    ("Strategic Thinking: From Analysis to Action. The Art of Designing and Implementing Strategies", "en",
+    ("Strategic Thinking: From Analysis to Action", "en",
      "https://www.amazon.es/STRATEGIC-THINKING-ANALYSIS-IMPLEMENT-STRATEGIES/dp/B0DJ88K1R6"),
-    ("Pensamiento estratégico: del análisis a la acción. El arte de diseñar e implementar estrategias", "es",
+    ("Pensamiento estratégico: del análisis a la acción", "es",
      "https://www.amazon.es/PENSAMIENTO-ESTRAT%C3%89GICO-implementar-estrategias-Dise%C3%B1ando/dp/B0DDWQMTD9/"),
 ]
 
